@@ -46,7 +46,7 @@ public class LoginApi {
         password = DigestUtils.md5DigestAsHex(password.getBytes(StandardCharsets.UTF_8));
         user.setPassword(password);
         if(sysUserService.getByUserName(username) == null){
-            return new ResultBody<>(false,500,"用户不存在");
+            return ResultBody.fail("用户不存在");
         }
         Subject subject = SecurityUtils.getSubject();
         UserToken token = new UserToken(username, user.getPassword(), true, LoginType.PASSWORD1);
@@ -62,29 +62,29 @@ public class LoginApi {
             res.put("username",sysUserService.getByUserName(username).getUsername());
         } catch (UnknownAccountException e) {
             log.error("用户名不存在！", e);
-            return new ResultBody<>(false,500,"用户名不存在");
+            return ResultBody.fail("用户名不存在");
         } catch (AuthenticationException e) {
             log.error("账号或密码错误！", e);
-            return new ResultBody<>(false,501,"账号或密码错误！");
+            return ResultBody.fail("账号或密码错误！");
         } catch (AuthorizationException e) {
             log.error("没有权限！", e);
-            return new ResultBody<>(false,502,"没有权限！");
+            return ResultBody.fail("没有权限！");
         }
-        return new ResultBody<>(true,200,res);
+        return ResultBody.ok(res);
     }
     @ApiOperation("退出登录")
     @RequestMapping(value = "/logout",method = RequestMethod.GET)
     public Object logout(){
         Subject subject = SecurityUtils.getSubject();
         subject.logout();
-        return new ResultBody<>(true,200,"logout success");
+        return ResultBody.ok("logout success");
     }
 
     @ApiOperation("测试")
     @RequestMapping(value = "test",method = RequestMethod.GET)
     @RequiresRoles("superadmin")
     public Object test(){
-     return new ResultBody<>(true,200,"6666");
+     return ResultBody.ok("6666");
     }
 
 }

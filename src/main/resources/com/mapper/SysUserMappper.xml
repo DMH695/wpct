@@ -2,6 +2,6 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.wpct.dao.SysUserDao">
+<mapper namespace="com.example.wpct.mapper.SysUserMapper">
     <select id="getByUserName" resultType="SysUser">SELECT * FROM sys_user WHERE username=#{username}</select>
 </mapper>

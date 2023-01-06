@@ -39,4 +39,8 @@ public class ResultBody {
         return new ResultBody(true,200,body);
     }
 
+    public static ResultBody fail(Object body){
+        return new ResultBody(false,500,body);
+    }
+
 }
