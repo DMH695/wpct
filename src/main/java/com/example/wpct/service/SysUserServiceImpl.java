@@ -12,13 +12,13 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.annotation.Resource;
 
 @Service
 public class SysUserServiceImpl implements SysUserService{
     @Autowired
     SysUserMapper sysUserMapper;
+
     public static Page page;
 
     @Override
