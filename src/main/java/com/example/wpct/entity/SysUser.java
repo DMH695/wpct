@@ -10,7 +10,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SysUser implements Serializable {
-    private int id;
+    private Integer id;
     private String username;
     private String name;
     private String password;

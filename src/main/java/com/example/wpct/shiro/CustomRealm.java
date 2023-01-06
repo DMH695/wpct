@@ -23,27 +23,11 @@ public class CustomRealm extends AuthorizingRealm {
      */
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
-       /* if (principalCollection.toString().contains("patient")){
-            return null;
-        }else {
-            //获取账号
-            String account = (String) principalCollection.getPrimaryPrincipal();
-            //通过用户名查找用户
-            Doctor doctor = userService.getUserByAccount(account);
-            //添加角色和权限，SimpleAuthorizationInfo：授权信息
-            SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo();
-            for(String role : userService.getRoleByUid(doctor.getId())){
-                simpleAuthorizationInfo.addRole(role);
-            }
-            for(String permission : userService.getPermissionByUid(doctor.getId())){
-                simpleAuthorizationInfo.addStringPermission(permission);
-            }
-            return simpleAuthorizationInfo;
-        }*/
         SysUser user = (SysUser) principalCollection.getPrimaryPrincipal();
         //添加角色和权限，SimpleAuthorizationInfo：授权信息
         SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo();
         simpleAuthorizationInfo.addRole(user.getRole());
+        //simpleAuthorizationInfo.addRole(null);
         return simpleAuthorizationInfo;
     }
     /**
