@@ -13,7 +13,7 @@ spring:
       max-request-size: 300MB
   main:
     allow-circular-references: true
-mybatis:
+mybatis-plus:
   mapper-locations: classpath:com/mapper/*.xml
   type-aliases-package: com.example.wpct.entity
 pagehelper:

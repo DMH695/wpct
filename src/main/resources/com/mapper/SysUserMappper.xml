@@ -8,5 +8,5 @@
     <insert id="insert">INSERT INTO sys_user(username, name, password, role) VALUES (#{user.username},#{user.name},#{user.password},#{user.role})</insert>
     <update id="update">UPDATE sys_user SET username=#{user.username},name=#{user.name},password=#{user.password},role=#{user.role} WHERE id=#{user.id}</update>
     <delete id="delete">DELETE FROM sys_user WHERE id=#{id}</delete>
-    <select id="getById" resultType="SysUser">SELECT * FROM id,username,name,role WHERE id=#{id}</select>
+    <select id="getById" resultType="SysUser">SELECT * FROM sys_user WHERE id=#{id}</select>
 </mapper>
