@@ -2,6 +2,7 @@ package com.example.wpct.entity;
 
 import java.io.Serializable;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@TableName("housing_information")
 public class HousingInformationDto implements Serializable {
 
 	private static final long serialVersionUID = 1682089260817101312L;
