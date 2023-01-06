@@ -1,11 +1,11 @@
 package com.example.wpct.utils;
 
 
-public class ResultBody<T> {
+public class ResultBody {
     private boolean success;
     private int code;
-    private T body;
-    public ResultBody(boolean success, int code, T body){
+    private Object body;
+    public ResultBody(boolean success, int code, Object body){
         this.success = success;
         this.code = code;
         this.body = body;
@@ -19,7 +19,7 @@ public class ResultBody<T> {
         this.code = code;
     }
 
-    public void setBody(T body) {
+    public void setBody(Object body) {
         this.body = body;
     }
 
@@ -31,8 +31,12 @@ public class ResultBody<T> {
         return code;
     }
 
-    public T getBody() {
+    public Object getBody() {
         return body;
+    }
+
+    public static ResultBody ok(Object body){
+        return new ResultBody(true,200,body);
     }
 
 }

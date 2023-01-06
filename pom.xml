@@ -104,11 +104,11 @@
             <scope>provided</scope>
         </dependency>
         <!--mp-->
-        <!--<dependency>
+        <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>3.4.3</version>
-        </dependency>-->
+        </dependency>
         <!--连接池-->
         <dependency>
             <groupId>org.apache.commons</groupId>

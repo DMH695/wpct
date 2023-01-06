@@ -1,0 +1,52 @@
+package com.example.wpct.controller;
+
+
+import com.example.wpct.entity.HousingInformationDto;
+import com.example.wpct.entity.vo.HousingInformationVo;
+import com.example.wpct.service.impl.HousingInformationServiceImpl;
+import com.example.wpct.utils.ResultBody;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@Api(tags = "房屋信息管理模块")
+@CrossOrigin
+@RequestMapping("/house/info")
+public class HousingInformationController {
+
+    @Autowired
+    private HousingInformationServiceImpl housingInformationService;
+
+    @PostMapping("/insert")
+    @ApiOperation("新增房屋信息")
+    public ResultBody insert(@RequestBody HousingInformationDto body) {
+        return ResultBody.ok(housingInformationService.save(body));
+    }
+
+    @DeleteMapping("/delete")
+    @ApiOperation("删除指定id的房屋信息")
+    public ResultBody delete(@RequestParam Integer id) {
+        return ResultBody.ok(housingInformationService.remove(housingInformationService.query().eq("id", id)));
+    }
+
+    @PostMapping("/update")
+    @ApiOperation("更新房屋信息")
+    public ResultBody update(@RequestBody HousingInformationDto body){
+        return ResultBody.ok(housingInformationService.updateById(body));
+    }
+
+    @GetMapping("/list")
+    @ApiOperation("条件查询房屋信息")
+    public ResultBody selectByVo(HousingInformationVo vo){
+        return ResultBody.ok(housingInformationService.listByVo(vo));
+    }
+
+
+
+
+
+
+}
