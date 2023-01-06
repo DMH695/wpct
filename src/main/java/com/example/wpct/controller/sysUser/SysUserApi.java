@@ -57,7 +57,7 @@ public class SysUserApi {
         }
         String password = sysUser.getPassword();
         sysUser.setPassword(DigestUtils.md5DigestAsHex(password.getBytes(StandardCharsets.UTF_8)));
-        sysUserService.insert(sysUser);
+        sysUserService.update(sysUser);
         return ResultBody.ok(null);
     }
 
