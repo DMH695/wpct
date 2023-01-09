@@ -24,9 +24,6 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
     @Autowired
     private HousingInformationServiceImpl housingInformationService;
 
-    @Autowired
-    private PropertyOrderServiceImpl propertyOrderService;
-
     /**
      * 生成物业费订单
      * @return 生成的订单数量
@@ -50,7 +47,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
             propertyOrderDtoList.add(buildResult);
             log.info("生成订单：{}",buildResult);
         }
-        propertyOrderService.saveBatch(propertyOrderDtoList);
+        saveBatch(propertyOrderDtoList);
         return propertyOrderDtoList.size();
     }
 
