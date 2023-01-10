@@ -40,7 +40,7 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
     @Autowired
     WechatUserMapper wechatUserMapper;
     @Override
-    public ResultBody addExamine(String openid,String examineContent) {
+    public ResultBody addExamine(String openid,String examineContent,int vid,int bid,int rid) {
         QueryWrapper queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("openid", openid);
         WechatUser wechatUser = wechatUserMapper.selectOne(queryWrapper);
@@ -49,10 +49,12 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         } else {
             ExamineDto examineDto = new ExamineDto();
             examineDto.setOpenid(openid);
-            examineDto.setName(wechatUser.getName());
             examineDto.setCommitTime(LocalDateTime.now());
             examineDto.setExamineContent(examineContent);
             examineDto.setApprovalStatus("否");
+            examineDto.setBid(bid);
+            examineDto.setVid(vid);
+            examineDto.setRid(rid);
             baseMapper.insert(examineDto);
             return ResultBody.ok("新增成功");
         }
