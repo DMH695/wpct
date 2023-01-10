@@ -108,10 +108,14 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         }
         return new PageInfo<>(res);
     }
+    @SneakyThrows
     public String soluExamine(Integer id, String resolveMsg) {
         UpdateWrapper<ExamineDto> updateWrapper = new UpdateWrapper<>();
         Subject subject = SecurityUtils.getSubject();
         SysUser user = (SysUser)subject.getPrincipal();
+        if (user == null){
+            throw new Exception("请先登录");
+        }
         //根据openid和id锁定处理的信息
         updateWrapper.eq("id",id);
         ExamineDto examineDto = baseMapper.selectOne(updateWrapper);
@@ -138,10 +142,14 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         List<ExamineDto> examineDto = baseMapper.selectList(queryWrapper);
         return ResultBody.ok(examineDto);
     }
+    @SneakyThrows
     @Override
     public ResultBody examineHandle(Integer id,String resolveMsg){
         Subject subject = SecurityUtils.getSubject();
         SysUser user = (SysUser)subject.getPrincipal();
+        if (user == null){
+            throw new Exception("请先登录");
+        }
         if(user.getRole().equals("超级管理员")){
             return ResultBody.ok(approval(id));
         }else{
