@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -71,21 +72,30 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         return PageUtil.getPageResult(getPageInfo(pageRequest),page);
     }
     private PageInfo<?> getPageInfo(PageRequest pageRequest) {
+        List<ExamineDto> res;
+        Subject subject = SecurityUtils.getSubject();
+        SysUser user = (SysUser) subject.getPrincipal();
         int pageNum = pageRequest.getPageNum();
         int pageSize = pageRequest.getPageSize();
         //设置分页数据
-        page = PageHelper.startPage(pageNum,pageSize);
-        List<ExamineDto> res = baseMapper.selectList(null);
-        for(int i = 0;i<res.size();i++){
+        page = PageHelper.startPage(pageNum, pageSize);
+        if (user.getRole().equals("超级管理员")) {
+            QueryWrapper queryWrapper = new QueryWrapper<>();
+            queryWrapper.isNotNull("uname");
+            res = baseMapper.selectList(queryWrapper);
+        } else {
+            res = baseMapper.selectList(null);
+        }
+        for (int i = 0; i < res.size(); i++) {
             ExamineDto examineDto = res.get(i);
             QueryWrapper queryWrapper = new QueryWrapper<>();
-            queryWrapper.in("openid",examineDto.getOpenid());
+            queryWrapper.in("openid", examineDto.getOpenid());
             QueryWrapper queryWrapper1 = new QueryWrapper<>();
-            queryWrapper1.in("id",examineDto.getBid());
+            queryWrapper1.in("id", examineDto.getBid());
             QueryWrapper queryWrapper2 = new QueryWrapper<>();
-            queryWrapper2.in("id",examineDto.getRid());
+            queryWrapper2.in("id", examineDto.getRid());
             QueryWrapper queryWrapper3 = new QueryWrapper<>();
-            queryWrapper3.in("id",examineDto.getVid());
+            queryWrapper3.in("id", examineDto.getVid());
             examineDto.setWechatUser(wechatUserMapper.selectOne(queryWrapper));
             examineDto.setBuildDto(buildMapper.selectOne(queryWrapper1));
             examineDto.setVillageDto(villageMapper.selectOne(queryWrapper3));
@@ -93,7 +103,6 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         }
         return new PageInfo<>(res);
     }
-
     public String soluExamine(Integer id, String openid, String resolveMsg) {
         UpdateWrapper<ExamineDto> updateWrapper = new UpdateWrapper<>();
         Subject subject = SecurityUtils.getSubject();
