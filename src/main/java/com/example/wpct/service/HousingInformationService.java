@@ -10,4 +10,7 @@ import java.util.List;
 public interface HousingInformationService extends IService<HousingInformationDto> {
 
     PageInfo<HousingInformationDto> listByVo(HousingInformationVo vo);
+
+    List<Long> getIdsByHouseInfo(String villageName,String buildNumber,String houseNo);
+
 }

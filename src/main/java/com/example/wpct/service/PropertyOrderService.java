@@ -2,11 +2,17 @@ package com.example.wpct.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.wpct.entity.PropertyOrderDto;
+import com.example.wpct.entity.vo.PropertyOrderVo;
+import com.example.wpct.utils.ResultBody;
+
+import java.util.List;
 
 public interface PropertyOrderService extends IService<PropertyOrderDto> {
 
     int generateOrders();
 
     int automaticPayment();
+
+    ResultBody list(PropertyOrderVo vo);
 
 }
