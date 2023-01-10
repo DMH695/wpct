@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @Api(tags = "房屋信息管理模块")
 @CrossOrigin
@@ -43,6 +45,14 @@ public class HousingInformationController {
     public ResultBody selectByVo(HousingInformationVo vo){
         return ResultBody.ok(housingInformationService.listByVo(vo));
     }
+
+    @GetMapping("/get/template")
+    @ApiOperation("获取房屋信息导入模板")
+    public void getTemplate(HttpServletResponse response){
+        housingInformationService.getTemplate(response);
+    }
+
+
 
 
 

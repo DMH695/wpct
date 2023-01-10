@@ -9,9 +9,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @Api(tags = "物业费订单管理模块")
+@RequestMapping("/property/order")
 public class PropertyOrderController {
 
     @Autowired
@@ -40,6 +44,19 @@ public class PropertyOrderController {
     @GetMapping("/list")
     public ResultBody list(PropertyOrderVo vo){
         return propertyOrderService.list(vo);
+    }
+
+    @GetMapping("/get/template")
+    @ApiOperation("下载导入模板（未完成）")
+    public void getTemplate(HttpServletResponse response){
+
+    }
+
+    @ApiOperation("通过EXCEL表格导入物业费订单（未完成）")
+    @PostMapping("/import")
+    public ResultBody importOrder(MultipartFile file){
+        return null;
+
     }
 
 }

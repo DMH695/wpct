@@ -2,6 +2,7 @@ package com.example.wpct.entity;
 
 import java.io.Serializable;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
 import lombok.Data;
@@ -28,6 +29,7 @@ public class HousingInformationDto implements Serializable {
 	 * 小区
 	 */
 	@JSONField(name ="villageName")
+	@ExcelProperty("小区名")
 	private String villageName;
 
 
@@ -35,6 +37,7 @@ public class HousingInformationDto implements Serializable {
 	 * 楼号
 	 */
 	@JSONField(name ="buildNumber")
+	@ExcelProperty("楼号")
 	private String buildNumber;
 
 
@@ -42,6 +45,7 @@ public class HousingInformationDto implements Serializable {
 	 * 房号
 	 */
 	@JSONField(name ="houseNo")
+	@ExcelProperty("房号")
 	private String houseNo;
 
 
@@ -49,6 +53,7 @@ public class HousingInformationDto implements Serializable {
 	 * 登记姓名
 	 */
 	@JSONField(name ="name")
+	@ExcelProperty("登记人姓名")
 	private String name;
 
 
@@ -56,6 +61,7 @@ public class HousingInformationDto implements Serializable {
 	 * 登记的电话号码
 	 */
 	@JSONField(name ="phone")
+	@ExcelProperty("登记人电话号码")
 	private String phone;
 
 
@@ -63,6 +69,7 @@ public class HousingInformationDto implements Serializable {
 	 * 户口所在地
 	 */
 	@JSONField(name ="resident")
+	@ExcelProperty("户口所在地")
 	private String resident;
 
 
@@ -70,6 +77,7 @@ public class HousingInformationDto implements Serializable {
 	 * 房屋类型
 	 */
 	@JSONField(name ="houseType")
+	@ExcelProperty("房屋类型")
 	private String houseType;
 
 
@@ -77,6 +85,7 @@ public class HousingInformationDto implements Serializable {
 	 * 车辆类型
 	 */
 	@JSONField(name ="carType")
+	@ExcelProperty("车辆类型")
 	private String carType;
 
 
@@ -84,6 +93,7 @@ public class HousingInformationDto implements Serializable {
 	 * 与房屋的关系
 	 */
 	@JSONField(name ="relation")
+	@ExcelProperty("登记人与房屋的关系")
 	private String relation;
 
 
@@ -91,6 +101,7 @@ public class HousingInformationDto implements Serializable {
 	 * 符合条件的人数
 	 */
 	@JSONField(name ="conditionNumber")
+	@ExcelProperty("符合条件的人数")
 	private long conditionNumber;
 
 
@@ -98,6 +109,7 @@ public class HousingInformationDto implements Serializable {
 	 * 低保人数
 	 */
 	@JSONField(name ="lowNumber")
+	@ExcelProperty("其中低保人数")
 	private long lowNumber;
 
 
@@ -105,6 +117,7 @@ public class HousingInformationDto implements Serializable {
 	 * 租金
 	 */
 	@JSONField(name ="rent")
+	@ExcelProperty("租金")
 	private double rent;
 
 
@@ -112,6 +125,7 @@ public class HousingInformationDto implements Serializable {
 	 * 面积
 	 */
 	@JSONField(name ="area")
+	@ExcelProperty("房屋面积")
 	private double area;
 
 
@@ -119,6 +133,7 @@ public class HousingInformationDto implements Serializable {
 	 * 核准面积
 	 */
 	@JSONField(name ="trueArea")
+	@ExcelProperty("房屋核准面积")
 	private double trueArea;
 
 
@@ -126,6 +141,7 @@ public class HousingInformationDto implements Serializable {
 	 * 超出面积
 	 */
 	@JSONField(name ="exceedArea")
+	@ExcelProperty("超出面积")
 	private double exceedArea;
 
 
@@ -133,6 +149,7 @@ public class HousingInformationDto implements Serializable {
 	 * 超出面积单价
 	 */
 	@JSONField(name ="exceedAreaUnitPrice")
+	@ExcelProperty("超出面积单价")
 	private double exceedAreaUnitPrice;
 
 
@@ -140,6 +157,7 @@ public class HousingInformationDto implements Serializable {
 	 * 面积单价
 	 */
 	@JSONField(name ="areaUnitPrice")
+	@ExcelProperty("面积单价")
 	private double areaUnitPrice;
 
 
@@ -147,6 +165,7 @@ public class HousingInformationDto implements Serializable {
 	 * 停车费
 	 */
 	@JSONField(name ="carFee")
+	@ExcelProperty("停车费")
 	private double carFee;
 
 
@@ -154,6 +173,7 @@ public class HousingInformationDto implements Serializable {
 	 * 其他费用
 	 */
 	@JSONField(name ="otherFee")
+	@ExcelProperty("其他费用")
 	private double otherFee;
 
 
@@ -161,6 +181,7 @@ public class HousingInformationDto implements Serializable {
 	 * 停车位号1
 	 */
 	@JSONField(name ="stopNumberOne")
+	@ExcelProperty("停车位号1")
 	private String stopNumberOne;
 
 
@@ -168,6 +189,7 @@ public class HousingInformationDto implements Serializable {
 	 * 停车位号2
 	 */
 	@JSONField(name ="stopNumberTwo")
+	@ExcelProperty("停车位号2")
 	private String stopNumberTwo;
 
 
@@ -175,6 +197,7 @@ public class HousingInformationDto implements Serializable {
 	 * 收回不符条件疫情减免金额
 	 */
 	@JSONField(name ="recycleFee")
+	@ExcelProperty("收回不符条件疫情减免金额")
 	private double recycleFee;
 
 
@@ -182,6 +205,7 @@ public class HousingInformationDto implements Serializable {
 	 * 收回不符合条件租金
 	 */
 	@JSONField(name ="recycleRent")
+	@ExcelProperty("收回不符合条件租金")
 	private double recycleRent;
 
 
@@ -189,6 +213,7 @@ public class HousingInformationDto implements Serializable {
 	 * 应收应退租金
 	 */
 	@JSONField(name ="calculateRent")
+	@ExcelProperty("应收应退租金")
 	private double calculateRent;
 
 
@@ -196,6 +221,7 @@ public class HousingInformationDto implements Serializable {
 	 * 应收应退物业费
 	 */
 	@JSONField(name ="calculateFee")
+	@ExcelProperty("应收应退物业费")
 	private double calculateFee;
 
 
@@ -203,6 +229,7 @@ public class HousingInformationDto implements Serializable {
 	 * 优惠
 	 */
 	@JSONField(name ="discount")
+	@ExcelProperty("优惠")
 	private double discount;
 
 
@@ -210,6 +237,7 @@ public class HousingInformationDto implements Serializable {
 	 * 备注
 	 */
 	@JSONField(name ="remarks")
+	@ExcelProperty("备注")
 	private String remarks;
 
 
@@ -224,6 +252,7 @@ public class HousingInformationDto implements Serializable {
 	 * 公摊费余额
 	 */
 	@JSONField(name ="poolBalance")
+	@ExcelProperty("公摊费余额")
 	private double poolBalance;
 
 
@@ -231,6 +260,7 @@ public class HousingInformationDto implements Serializable {
 	 * 物业费余额
 	 */
 	@JSONField(name ="propertyFee")
+	@ExcelProperty("物业费余额")
 	private double propertyFee;
 
 
@@ -245,6 +275,7 @@ public class HousingInformationDto implements Serializable {
 	 * 绑定微信用户
 	 */
 	@JSONField(name ="bindWechatUser")
+	@ExcelProperty("微信绑定用户")
 	private String bindWechatUser;
 
 
@@ -252,6 +283,7 @@ public class HousingInformationDto implements Serializable {
 	 * 缴交日期
 	 */
 	@JSONField(name ="dueDate")
+	@ExcelProperty("缴交日期")
 	private java.sql.Timestamp dueDate;
 
 }
