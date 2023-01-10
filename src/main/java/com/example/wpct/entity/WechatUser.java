@@ -1,6 +1,7 @@
 package com.example.wpct.entity;
 
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class WechatUser {
     /**
      * 微信用户昵称
      */
+    @TableField("nickName")
     private String nickName;
 
     /**

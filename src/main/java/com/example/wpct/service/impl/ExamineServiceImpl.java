@@ -15,6 +15,7 @@ import com.example.wpct.utils.page.PageUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.shiro.SecurityUtils;
@@ -71,10 +72,14 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         PageRequest pageRequest = new PageRequest(pageNum, pageSize);
         return PageUtil.getPageResult(getPageInfo(pageRequest),page);
     }
+    @SneakyThrows
     private PageInfo<?> getPageInfo(PageRequest pageRequest) {
         List<ExamineDto> res;
         Subject subject = SecurityUtils.getSubject();
         SysUser user = (SysUser) subject.getPrincipal();
+        if (user == null){
+            throw new Exception("请先登录");
+        }
         int pageNum = pageRequest.getPageNum();
         int pageSize = pageRequest.getPageSize();
         //设置分页数据
