@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.wpct.mapper.ExamineMapper">
+
+    <resultMap id="list" type="com.example.wpct.entity.ExamineDto">
+        <id property="id" column="id"/>
+        <result property="openid" column="openid"/>
+        <result property="name" column="name"/>
+        <result property="examineContent" column="examine_content"/>
+        <result property="resolveHandle" column="resolve_handle"/>
+        <result property="uname" column="uname"/>
+        <result property="approvalStatus" column="approval_status"/>
+        <result property="commitTime" column="commit_time"/>
+        <collection property="wechatUser" ofType="com.example.wpct.entity.WechatUser">
+            <result column="name" property="name"/>
+            <result column="telephone" property="telephone"/>
+        </collection>
+    </resultMap>
+    <select id="listExamine" resultMap="list">
+        SELECT  *  from
+             tb_examine e
+            left join wechat_user w on e.openid=w.openid
+        order by e.commit_time desc
+    </select>
+</mapper>
