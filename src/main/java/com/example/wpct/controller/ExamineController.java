@@ -43,7 +43,7 @@ public class ExamineController {
      */
     @ApiOperation("处理意见/审批")
     @PostMapping("/solu")
-    public ResultBody examineHandle(@RequestParam Integer id,@RequestParam String openid,@RequestParam(required = false) String resolveMsg) {
-        return examineService.examineHandle(id, openid, resolveMsg);
+    public ResultBody examineHandle(@RequestParam Integer id,@RequestParam(required = false) String resolveMsg) {
+        return examineService.examineHandle(id,resolveMsg);
     }
 }

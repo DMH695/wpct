@@ -103,15 +103,12 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         }
         return new PageInfo<>(res);
     }
-    public String soluExamine(Integer id, String openid, String resolveMsg) {
+    public String soluExamine(Integer id, String resolveMsg) {
         UpdateWrapper<ExamineDto> updateWrapper = new UpdateWrapper<>();
         Subject subject = SecurityUtils.getSubject();
         SysUser user = (SysUser)subject.getPrincipal();
         //根据openid和id锁定处理的信息
-        updateWrapper.eq("id",id).eq("openid",openid);
-        QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("id",id);
-        queryWrapper.eq("openid",openid);
+        updateWrapper.eq("id",id);
         ExamineDto examineDto = baseMapper.selectOne(updateWrapper);
         examineDto.setResolveHandle(resolveMsg);
         examineDto.setUname(user.getName());
@@ -119,10 +116,10 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         return examineDto.getExamineContent();
     }
 
-    public String approval(Integer id, String openid) {
+    public String approval(Integer id) {
         UpdateWrapper<ExamineDto> updateWrapper = new UpdateWrapper<>();
         //根据openid和id锁定处理的信息
-        updateWrapper.eq("id",id).eq("openid",openid);
+        updateWrapper.eq("id",id);
         ExamineDto examineDto = baseMapper.selectOne(updateWrapper);
         examineDto.setApprovalStatus("是");
         baseMapper.update(examineDto,updateWrapper);
@@ -137,13 +134,13 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         return ResultBody.ok(examineDto);
     }
     @Override
-    public ResultBody examineHandle(Integer id, String openid,String resolveMsg){
+    public ResultBody examineHandle(Integer id,String resolveMsg){
         Subject subject = SecurityUtils.getSubject();
         SysUser user = (SysUser)subject.getPrincipal();
         if(user.getRole().equals("超级管理员")){
-            return ResultBody.ok(approval(id,openid));
+            return ResultBody.ok(approval(id));
         }else{
-            return ResultBody.ok(soluExamine(id,openid,resolveMsg));
+            return ResultBody.ok(soluExamine(id,resolveMsg));
         }
     }
 }
