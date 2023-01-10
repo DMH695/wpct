@@ -4,9 +4,15 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.PropertyOrderDto;
+import com.example.wpct.entity.vo.PropertyOrderVo;
 import com.example.wpct.mapper.PropertyOrderMapper;
 import com.example.wpct.service.PropertyOrderService;
+import com.example.wpct.utils.ResultBody;
 import com.example.wpct.utils.SnowFlakeIdUtils;
+import com.example.wpct.utils.StringUtils;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +97,20 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
         housingInformationService.updateBatchById(afterUpdateHouseList);
         this.updateBatchById(afterUpdateOrderList);
         return afterUpdateHouseList.size();
+    }
+
+    @Override
+    public ResultBody list(PropertyOrderVo vo) {
+        Page<PropertyOrderDto> page = PageHelper.startPage(vo.getPageNum(),vo.getPageSize());
+        List<Long> houseIds = housingInformationService.getIdsByHouseInfo(
+                vo.getVillageName(), vo.getBuildNumber(), vo.getHouseNo()
+        );
+        List<PropertyOrderDto> orderList = this.query()
+                .in("house_id", houseIds)
+                .le(StringUtils.isNotEmpty(vo.getEndDate()), "end_date", vo.getEndDate())
+                .ge(StringUtils.isNotEmpty(vo.getBeginDate()), "begin_date", vo.getBeginDate()).list();
+        PageInfo<PropertyOrderDto> pageInfo = new PageInfo<>(orderList,vo.getPageSize());
+        return ResultBody.ok(pageInfo);
     }
 
 
