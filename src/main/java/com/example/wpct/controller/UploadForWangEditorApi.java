@@ -6,10 +6,7 @@ import com.example.wpct.utils.PathUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.Data;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -21,7 +18,7 @@ import java.util.List;
 public class UploadForWangEditorApi {
 
     @ApiOperation("上传图片")
-    @RequestMapping("/editor/picture")
+    @RequestMapping(value = "/editor/picture",method = RequestMethod.GET)
     @ResponseBody
     public Object editor(@RequestParam("file") MultipartFile file) {
         String fileName = "";
@@ -50,7 +47,7 @@ public class UploadForWangEditorApi {
         } else {
             return new PictureResponse(1);
         }
-        String imgUrl = "https://124.71.9.121:8080/api/upload/examinePicture/" + fileName;
+        String imgUrl = "http://124.71.9.121:8080/api/upload/examinePicture/" + fileName;
         List<JSONObject> res = new ArrayList<>();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("url", imgUrl);
@@ -59,7 +56,7 @@ public class UploadForWangEditorApi {
     }
 
     @ApiOperation("上传视频")
-    @RequestMapping("/editor/video")
+    @RequestMapping(value = "/editor/video",method = RequestMethod.GET)
     @ResponseBody
     public Object editorOfVideo(@RequestParam("file") MultipartFile file) {
         String fileName = "";

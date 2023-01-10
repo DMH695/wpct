@@ -9,7 +9,11 @@ public class PathUtils {
     private static String getJarFilePath() {
         ApplicationHome home = new ApplicationHome(PathUtils.class);
         File jarFile = home.getSource();
-        return jarFile.getParentFile().toString();
+        if(jarFile != null){
+            String path = jarFile.getParentFile().getPath().toString();
+            return path;
+        }
+        return null;
     }
 
     /**
