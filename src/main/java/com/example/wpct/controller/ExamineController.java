@@ -18,8 +18,12 @@ public class ExamineController {
 
     @ApiOperation("新增处理（审批）")
     @PostMapping("/add")
-    public ResultBody addExamine(@RequestParam String openid,@RequestParam String examineContent) {
-        return examineService.addExamine(openid,examineContent);
+    public ResultBody addExamine(@RequestParam String openid,
+                                 @RequestParam String examineContent,
+                                 @RequestParam int vid,
+                                 @RequestParam int bid,
+                                 @RequestParam int rid ) {
+        return examineService.addExamine(openid,examineContent,vid,bid,rid);
     }
     @ApiOperation("后台处理（意见,审批）列表")
     @GetMapping("/list")
@@ -39,7 +43,7 @@ public class ExamineController {
      */
     @ApiOperation("处理意见/审批")
     @PostMapping("/solu")
-    public ResultBody examineHandle(@RequestParam Integer id,@RequestParam String openid,@RequestParam(required = false) String resolveMsg) {
-        return examineService.examineHandle(id, openid, resolveMsg);
+    public ResultBody examineHandle(@RequestParam Integer id,@RequestParam(required = false) String resolveMsg) {
+        return examineService.examineHandle(id,resolveMsg);
     }
 }

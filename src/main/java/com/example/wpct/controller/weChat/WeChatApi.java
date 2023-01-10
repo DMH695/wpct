@@ -31,9 +31,12 @@ public class WeChatApi {
     WechatPayService wechatPayService;
 
     @ApiOperation("获取openid")
-    @RequestMapping(value = "/get",method = RequestMethod.GET)
+    @RequestMapping(value = "/getOpenid",method = RequestMethod.GET)
     public Object get(HttpServletResponse response, HttpServletRequest request) throws IOException {
         String code = request.getParameter("code");
+        if(code == null){
+            return ResultBody.fail("request中没携带code");
+        }
         // String state = request.getParameter("state");
 
         /**
