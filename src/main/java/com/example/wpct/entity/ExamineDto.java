@@ -64,4 +64,19 @@ public class ExamineDto implements Serializable {
      */
     @TableField(exist = false)
     private WechatUser wechatUser;
+    /**
+     * 楼栋
+     */
+    @TableField(exist = false)
+    private BuildDto buildDto;
+    /**
+     * 小区
+     */
+    @TableField(exist = false)
+    private VillageDto villageDto;
+    /**
+     * 房号
+     */
+    @TableField(exist = false)
+    private RoomDto roomDto;
 }

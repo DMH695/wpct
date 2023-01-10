@@ -4,9 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.ExamineDto;
 import com.example.wpct.entity.SysUser;
+import com.example.wpct.entity.VillageDto;
 import com.example.wpct.entity.WechatUser;
-import com.example.wpct.mapper.ExamineMapper;
-import com.example.wpct.mapper.WechatUserMapper;
+import com.example.wpct.mapper.*;
 import com.example.wpct.service.ExamineService;
 import com.example.wpct.utils.ResultBody;
 import com.example.wpct.utils.page.PageRequest;
@@ -39,6 +39,12 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
     public static Page page;
     @Autowired
     WechatUserMapper wechatUserMapper;
+    @Autowired
+    VillageMapper villageMapper;
+    @Autowired
+    RoomMapper roomMapper;
+    @Autowired
+    BuildMapper buildMapper;
     @Override
     public ResultBody addExamine(String openid,String examineContent,int vid,int bid,int rid) {
         QueryWrapper queryWrapper = new QueryWrapper<>();
@@ -69,7 +75,22 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         int pageSize = pageRequest.getPageSize();
         //设置分页数据
         page = PageHelper.startPage(pageNum,pageSize);
-        List<ExamineDto> res = baseMapper.listExamine();
+        List<ExamineDto> res = baseMapper.selectList(null);
+        for(int i = 0;i<res.size();i++){
+            ExamineDto examineDto = res.get(i);
+            QueryWrapper queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("openid",examineDto.getOpenid());
+            QueryWrapper queryWrapper1 = new QueryWrapper<>();
+            queryWrapper1.in("id",examineDto.getBid());
+            QueryWrapper queryWrapper2 = new QueryWrapper<>();
+            queryWrapper2.in("id",examineDto.getRid());
+            QueryWrapper queryWrapper3 = new QueryWrapper<>();
+            queryWrapper3.in("id",examineDto.getVid());
+            examineDto.setWechatUser(wechatUserMapper.selectOne(queryWrapper));
+            examineDto.setBuildDto(buildMapper.selectOne(queryWrapper1));
+            examineDto.setVillageDto(villageMapper.selectOne(queryWrapper3));
+            examineDto.setRoomDto(roomMapper.selectOne(queryWrapper2));
+        }
         return new PageInfo<>(res);
     }
 
