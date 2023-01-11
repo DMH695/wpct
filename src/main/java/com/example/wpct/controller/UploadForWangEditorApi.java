@@ -18,7 +18,7 @@ import java.util.List;
 public class UploadForWangEditorApi {
 
     @ApiOperation("上传图片")
-    @RequestMapping(value = "/editor/picture",method = RequestMethod.GET)
+    @RequestMapping(value = "/editor/picture",method = RequestMethod.POST)
     @ResponseBody
     public Object editor(@RequestParam("file") MultipartFile file) {
         String fileName = "";
@@ -56,7 +56,7 @@ public class UploadForWangEditorApi {
     }
 
     @ApiOperation("上传视频")
-    @RequestMapping(value = "/editor/video",method = RequestMethod.GET)
+    @RequestMapping(value = "/editor/video",method = RequestMethod.POST)
     @ResponseBody
     public Object editorOfVideo(@RequestParam("file") MultipartFile file) {
         String fileName = "";
