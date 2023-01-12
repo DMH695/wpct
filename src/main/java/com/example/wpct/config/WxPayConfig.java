@@ -89,7 +89,7 @@ public class WxPayConfig {
      *
      * @return Verifier
      */
-    /*@Bean
+    @Bean
     public Verifier getVerifier() throws NotFoundException, GeneralSecurityException, IOException, HttpCodeException {
 
         log.info("获取签名验证器");
@@ -107,13 +107,13 @@ public class WxPayConfig {
         // 从证书管理器中获取verifier
         Verifier verifier = certificatesManager.getVerifier(mchId);
         return verifier;
-    }*/
+    }
 
     /**
      * 获取HttpClient对象
      *
      */
-   /* @Primary
+    @Primary
     @Bean(name = "WxPayClient")
     public CloseableHttpClient getWxPayClient(Verifier verifier) throws UnsupportedEncodingException {
 
@@ -131,10 +131,10 @@ public class WxPayConfig {
         // 通过WechatPayHttpClientBuilder构造的HttpClient，会自动的处理签名和验签，并进行证书自动更新
         CloseableHttpClient httpClient = builder.build();
         return httpClient;
-    }*/
+    }
 
 
-    /*@Bean(name = "wxPayNoSignClient")
+    @Bean(name = "wxPayNoSignClient")
     public CloseableHttpClient getWxPayNoSignClient(Verifier verifier) throws UnsupportedEncodingException {
         log.info("初始化wxPayNoSignClient");
         //获取商户私钥
@@ -147,7 +147,7 @@ public class WxPayConfig {
         CloseableHttpClient wxPayNoSignClient = builder.build();
         log.info("wxPayNoSignClient初始化完成");
         return wxPayNoSignClient;
-    }*/
+    }
 
 
     //    public  String getSign(String appid ,String timeStamp,String nonceStr ,String prepayId  , String  privateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {

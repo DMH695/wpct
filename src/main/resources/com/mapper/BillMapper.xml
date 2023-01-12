@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.wpct.mapper.BillMapper">
+    <insert id="insert">INSERT INTO bill(pay,detail,openid,villageName,buildName,roomNum,type,location,date) VALUES
+                    (#{bill.pay},#{bill.detail},#{bill.openid},#{bill.villageName},#{bill.buildName},
+                     #{bill.roomNum},#{bill.type},#{bill.location},#{bill.date})</insert>
+</mapper>
