@@ -106,11 +106,23 @@ public class WeChatApi {
         return ResultBody.ok(rMap);
     }
 
-    @ApiOperation("JSAPI下单[没写好]")
-    @PostMapping("/jsapi/pay")
-    public Object wechatPay(@RequestParam String openid, @RequestParam(name = "id") String orderId) throws Exception {
-        String resultJson = wechatPayService.jsapiPay(openid, orderId);
+    @ApiOperation("缴交物业费")
+    @PostMapping("/property/pay")
+    public Object wechatPay(@RequestParam String openid, @RequestParam int orderNo) throws Exception {
+        String resultJson = wechatPayService.jsapiPay(openid, orderNo);
         return ResultBody.ok(resultJson);
     }
 
+    @ApiOperation("物业费余额充值")
+    @RequestMapping(value = "/property/balance/pay",method =RequestMethod.POST)
+    public Object investProperty(@RequestParam String openid,@RequestParam int money,@RequestParam int hid) throws Exception {
+        String resultJson = wechatPayService.investProperty(openid, money,hid);
+        return ResultBody.ok(resultJson);
+    }
+    @ApiOperation("公摊费余额充值")
+    @RequestMapping(value = "/share/balance/pay",method = RequestMethod.POST)
+    public Object investShare(@RequestParam String openid,@RequestParam int money,@RequestParam int hid) throws Exception {
+        String resultJson = wechatPayService.investShare(openid, money,hid);
+        return ResultBody.ok(resultJson);
+    }
 }
