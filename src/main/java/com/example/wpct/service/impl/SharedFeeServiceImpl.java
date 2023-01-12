@@ -3,6 +3,7 @@ package com.example.wpct.service.impl;
 import cn.hutool.core.lang.Snowflake;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.SharedFeeDto;
 import com.example.wpct.entity.model.SharedFeeImportModel;
 import com.example.wpct.entity.vo.SharedFeeVo;
@@ -65,10 +66,16 @@ public class SharedFeeServiceImpl extends ServiceImpl<SharedFeeMapper, SharedFee
                 .read(file.getInputStream()).head(SharedFeeImportModel.class).sheet().doReadSync();
         List<SharedFeeDto> sharedFeeDtoList = new ArrayList<>();
         for (SharedFeeImportModel sharedFeeImportModel : sharedFeeImportModels) {
-            long house_id = housingInformationService.query()
+            HousingInformationDto one = housingInformationService.query()
                     .eq("village_name", sharedFeeImportModel.getVillageName())
                     .eq("build_number", sharedFeeImportModel.getBuildNumber())
-                    .eq("house_no", sharedFeeImportModel.getHouseNo()).one().getId();
+                    .eq("house_no", sharedFeeImportModel.getHouseNo()).one();
+            long house_id;
+            if (one == null)
+                continue;
+            else {
+                house_id = one.getId();
+            }
             SharedFeeDto sharedFeeDto = SharedFeeDto.builder()
                     .houseId(house_id).liftFee(sharedFeeImportModel.getLiftFee())
                     .eleFee(sharedFeeImportModel.getEleFee()).waterFee(sharedFeeImportModel.getWaterFee())
