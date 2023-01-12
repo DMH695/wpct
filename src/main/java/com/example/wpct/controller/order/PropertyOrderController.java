@@ -49,14 +49,13 @@ public class PropertyOrderController {
     @GetMapping("/get/template")
     @ApiOperation("下载导入模板（未完成）")
     public void getTemplate(HttpServletResponse response){
-
+        propertyOrderService.getTemplate(response);
     }
 
     @ApiOperation("通过EXCEL表格导入物业费订单（未完成）")
     @PostMapping("/import")
     public ResultBody importOrder(MultipartFile file){
-        return null;
-
+        return propertyOrderService.importPropertyOrder(file);
     }
 
 }
