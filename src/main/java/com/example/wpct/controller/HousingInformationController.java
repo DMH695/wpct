@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -50,6 +51,12 @@ public class HousingInformationController {
     @ApiOperation("获取房屋信息导入模板")
     public void getTemplate(HttpServletResponse response){
         housingInformationService.getTemplate(response);
+    }
+
+    @PostMapping("/import")
+    @ApiOperation("通过EXCEL导入房屋信息")
+    public ResultBody importHousingInfo(MultipartFile file){
+        return housingInformationService.importHousingInformation(file);
     }
 
 

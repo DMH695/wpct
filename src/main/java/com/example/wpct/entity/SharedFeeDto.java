@@ -3,6 +3,7 @@ package com.example.wpct.entity;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -12,6 +13,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @TableName("shared_fee")
 public class SharedFeeDto implements Serializable {
 

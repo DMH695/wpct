@@ -1,5 +1,6 @@
 package com.example.wpct.service.impl;
 
+import cn.hutool.core.lang.Snowflake;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.HousingInformationDto;
@@ -18,7 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -111,6 +114,19 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
                 .ge(StringUtils.isNotEmpty(vo.getBeginDate()), "begin_date", vo.getBeginDate()).list();
         PageInfo<PropertyOrderDto> pageInfo = new PageInfo<>(orderList,vo.getPageSize());
         return ResultBody.ok(pageInfo);
+    }
+
+    @Override
+    public void getTemplate(HttpServletResponse response) {
+        Snowflake snowflake = new Snowflake();
+        List<PropertyOrderDto> excelList = new ArrayList<>();
+        PropertyOrderDto example = PropertyOrderDto.builder()
+                .houseId(123L).paymentStatus(0).cost(123).costDetail("{}").build();
+    }
+
+    @Override
+    public ResultBody importPropertyOrder(MultipartFile file) {
+        return null;
     }
 
 
