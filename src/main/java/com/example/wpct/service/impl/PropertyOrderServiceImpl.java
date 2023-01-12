@@ -85,8 +85,8 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
                         , dto.getCost(), house.getPropertyFee() - dto.getCost()
                 );
                 house.setPropertyFee(house.getPropertyFee() - dto.getCost());
-                house.setDueDate(new Timestamp(System.currentTimeMillis()));
-                house.setUpdated(new Timestamp(System.currentTimeMillis()));
+                house.setDueDate(new Timestamp(System.currentTimeMillis()).toString());
+                house.setUpdated(new Timestamp(System.currentTimeMillis()).toString());
                 afterUpdateHouseList.add(house);
                 dto.setPaymentStatus(1);
                 dto.setUpdateTime(new Timestamp(System.currentTimeMillis()));

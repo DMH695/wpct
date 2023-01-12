@@ -1,9 +1,7 @@
 package com.example.wpct.service.impl;
 
 import cn.hutool.core.lang.Snowflake;
-import cn.hutool.core.lang.generator.SnowflakeGenerator;
 import com.alibaba.excel.EasyExcel;
-import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.vo.HousingInformationVo;
@@ -66,7 +64,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .exceedArea(0).exceedAreaUnitPrice(10).areaUnitPrice(10).carFee(100).otherFee(10)
                 .stopNumberOne("123").stopNumberTwo("124").recycleFee(0).recycleRent(0).calculateRent(0)
                 .calculateFee(0).discount(0).remarks("测试数据").poolBalance(1500).propertyFee(1500)
-                .bindWechatUser("wechatUser").dueDate(new Timestamp(System.currentTimeMillis())).build();
+                .bindWechatUser("wechatUser").dueDate(new Timestamp(System.currentTimeMillis()).toString()).build();
         excelList.add(example);
         response.setHeader("Content-Disposition", "attachment;filename="+snowflake.nextIdStr()+"template.xlsx");
         EasyExcel.write(response.getOutputStream())
