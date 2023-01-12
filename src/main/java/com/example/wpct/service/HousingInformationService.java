@@ -20,4 +20,6 @@ public interface HousingInformationService extends IService<HousingInformationDt
 
     ResultBody importHousingInformation(MultipartFile file);
 
+    HousingInformationDto getByVbr(String villageName,String buildName,String roomNum);
+
 }

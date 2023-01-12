@@ -7,12 +7,17 @@ import com.example.wpct.config.WxPayConfig;
 import com.example.wpct.entity.Bill;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.PropertyOrderDto;
-import com.example.wpct.mapper.BillMapper;
-import com.example.wpct.mapper.HousingInformationMapper;
-import com.example.wpct.mapper.PropertyOrderMapper;
+import com.example.wpct.entity.WechatUser;
+import com.example.wpct.mapper.*;
+import com.example.wpct.utils.HttpUtils;
 import com.example.wpct.utils.ResultBody;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.wechat.pay.contrib.apache.httpclient.exception.HttpCodeException;
+import com.wechat.pay.contrib.apache.httpclient.exception.NotFoundException;
+import com.wechat.pay.contrib.apache.httpclient.notification.Notification;
+import com.wechat.pay.contrib.apache.httpclient.notification.NotificationHandler;
+import com.wechat.pay.contrib.apache.httpclient.notification.NotificationRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -22,9 +27,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 @Service
 public class WechatServiceImpl implements WechatPayService{
@@ -42,6 +53,18 @@ public class WechatServiceImpl implements WechatPayService{
 
     @Autowired
     BillMapper billMapper;
+
+    @Autowired
+    WechatUserMapper wechatUserMapper;
+
+    @Autowired
+    VillageMapper villageMapper;
+
+    @Autowired
+    BuildMapper buildMapper;
+
+    @Autowired
+    RoomMapper roomMapper;
 
     /**
      * 微信用户缴费后，需要修改property_order表中的status和housing表中的due_date 并生成账单
@@ -321,5 +344,95 @@ public class WechatServiceImpl implements WechatPayService{
         } finally {
             response.close();
         }
+    }
+
+    @Override
+    public List<WechatUser> getByOpenid(String openid) {
+        return wechatUserMapper.getByOpenid(openid);
+    }
+
+    @Override
+    public void bind(WechatUser wechatUser) {
+        wechatUserMapper.bind(wechatUser);
+    }
+
+    @Override
+    public List<JSONObject> getTree() {
+        return null;
+    }
+
+    @Override
+    public String payNotify(HttpServletRequest request, HttpServletResponse response) throws GeneralSecurityException, NotFoundException, IOException, HttpCodeException {
+        Gson gson = new Gson();
+        Map<String, String> map = new HashMap<>();  //应答对象  Json格式
+
+
+        try {
+            //处理通知参数
+            String body = HttpUtils.readData(request);
+            String wechatPaySerial = request.getHeader("Wechatpay-Serial");
+            String nonce = request.getHeader("Wechatpay-Nonce");
+            String timestamp = request.getHeader("Wechatpay-Timestamp");
+            String signature = request.getHeader("Wechatpay-Signature");
+            HashMap<String, Object> bodyMap = gson.fromJson(body, HashMap.class);
+
+            /**
+             * {"id":"c17f5eaf-0a90-5e4c-9ec8-e1f068addfcf",
+             * "create_time":"2022-10-04T13:25:40+08:00",
+             * "resource_type":"encrypt-resource","event_type":
+             * "TRANSACTION.SUCCESS","summary":"支付成功",
+             * "resource":{"original_type":"transaction","algorithm":"AEAD_AES_256_GCM","ciphertext":"gTK9I96p3gXvyN6c9tkLrv3ogD/adDzjFJxvLDWpD9cOybuefaxMxdh/6OxW64wdBBR8IWdCq+nqs,
+             * "associated_data":"transaction",
+             * "nonce":"VBNu9IF6GGnX"}}
+             */
+            String requestId = (String) bodyMap.get("id");
+
+            //构建request，传入必要参数(wxPaySDK0.4.8带有request方式验签的方法 github)
+            NotificationRequest Nrequest = new NotificationRequest.Builder()
+                    .withSerialNumber(wechatPaySerial)
+                    .withNonce(nonce)
+                    .withTimestamp(timestamp)
+                    .withSignature(signature)
+                    .withBody(body)
+                    .build();
+
+            NotificationHandler handler = new NotificationHandler(wxPayConfig.getVerifier(), wxPayConfig.getApiV3Key().getBytes(StandardCharsets.UTF_8));
+            //验签和解析请求体(只有这里会报错)
+            Notification notification = handler.parse(Nrequest);
+
+            //从notification获取请求报文(对称解密)
+            String plainText = notification.getDecryptData();
+            //将密文转成map 方便拿取
+            HashMap resultMap = gson.fromJson(plainText, HashMap.class);
+
+
+            //TODO 处理订单
+            //////////////////////////////////////////////////
+            //processOrder(plainText);
+            /**
+             * 验签结果 ===> {"mchid":"1558950191","appid":"wx74862e0dfcf69954",
+             * "out_trade_no":"ORDER_20221004132527865","transaction_id":"4200001569202210040857712725",
+             * "trade_type":"NATIVE","trade_state":"SUCCESS","trade_state_desc":"支付成功",
+             * "bank_type":"OTHERS","attach":"","success_time":"2022-10-04T13:25:40+08:00",
+             * payer":{"openid":"oHwsHuCj4_t6OMpypikZIQ1r-FXY"},
+             * "amount":{"total":1,"payer_total":1,"currency":"CNY","payer_currency":"CNY"}}
+             */
+
+            //成功应答
+            response.setStatus(200);
+            map.put("code", "SUCCESS");
+            map.put("message", "成功");
+            return gson.toJson(map);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            //应答失败
+            response.setStatus(500);
+            map.put("code", "ERROR");
+            map.put("message", "验签失败");
+            return gson.toJson(map);
+        }
+
     }
 }

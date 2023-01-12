@@ -18,7 +18,7 @@ public class WechatUser {
     /**
      * 主键id
      */
-    private BigInteger id;
+    private int id;
 
     /**
      * 微信用户昵称
@@ -39,23 +39,19 @@ public class WechatUser {
     /**
      * openid
      */
-    private Character openid;
+    private String openid;
 
-    /**
-     * 小区id (village_id)
-     */
-    private BigInteger vid;
+    private String villageName;
 
-    /**
-     * 楼栋id (build_id)
-     */
-    private BigInteger bid;
+    private String buildName;
 
     /**
      * 房号
      */
-    private BigInteger rid;
+    private String roomNum;
+    private String relation;
 
+    private int hid;
 
 
 }
