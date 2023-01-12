@@ -51,7 +51,7 @@ public class SharedFeeServiceImpl extends ServiceImpl<SharedFeeMapper, SharedFee
                 .villageName("某某某小区").buildNumber("一单元").houseNo("1203")
                 .liftFee(123).eleFee(1234).waterFee(123).build();
         excelList.add(example);
-        response.setHeader("Content-Disposition", "attachment;filename=" + snowflake.nextIdStr() + "template.xlsx");
+        response.setHeader("Content-Disposition", "attachment;filename="+snowflake.nextIdStr()+"template.xlsx");
         EasyExcel.write(response.getOutputStream())
                 .head(SharedFeeImportModel.class)
                 .sheet("importTemplate")

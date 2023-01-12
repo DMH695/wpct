@@ -3,6 +3,7 @@ package com.example.wpct.entity;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;

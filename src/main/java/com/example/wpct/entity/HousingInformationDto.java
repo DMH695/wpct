@@ -2,6 +2,7 @@ package com.example.wpct.entity;
 
 import java.io.Serializable;
 
+import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
@@ -22,6 +23,7 @@ public class HousingInformationDto implements Serializable {
 
 
 	@JSONField(name ="id")
+	@ExcelIgnore
 	private long id;
 
 
@@ -245,7 +247,8 @@ public class HousingInformationDto implements Serializable {
 	 * 更新时间
 	 */
 	@JSONField(name ="updated")
-	private java.sql.Timestamp updated;
+	@ExcelIgnore
+	private String updated;
 
 
 	/**
@@ -268,6 +271,7 @@ public class HousingInformationDto implements Serializable {
 	 * 更新用户
 	 */
 	@JSONField(name ="updateUser")
+	@ExcelIgnore
 	private String updateUser;
 
 
@@ -284,6 +288,6 @@ public class HousingInformationDto implements Serializable {
 	 */
 	@JSONField(name ="dueDate")
 	@ExcelProperty("缴交日期")
-	private java.sql.Timestamp dueDate;
+	private String dueDate;
 
 }
