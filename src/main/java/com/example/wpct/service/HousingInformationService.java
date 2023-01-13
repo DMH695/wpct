@@ -22,4 +22,8 @@ public interface HousingInformationService extends IService<HousingInformationDt
 
     HousingInformationDto getByVbr(String villageName,String buildName,String roomNum);
 
+    ResultBody insert(HousingInformationDto dto);
+
+    ResultBody updateByDto(HousingInformationDto dto);
+
 }

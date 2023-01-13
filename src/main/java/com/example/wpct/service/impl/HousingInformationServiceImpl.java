@@ -2,6 +2,7 @@ package com.example.wpct.service.impl;
 
 import cn.hutool.core.lang.Snowflake;
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.vo.HousingInformationVo;
@@ -14,6 +15,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.ParameterResolutionDelegate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,7 +30,13 @@ import java.util.List;
 public class HousingInformationServiceImpl extends ServiceImpl<HousingInformationMapper, HousingInformationDto> implements HousingInformationService {
 
     @Autowired
-    HousingInformationMapper housingInformationMapper;
+    private HousingInformationMapper housingInformationMapper;
+
+    @Autowired
+    private VillageServiceImpl villageService;
+
+    @Autowired
+    private BuildServiceImpl buildService;
 
 
     @Override
@@ -105,5 +113,32 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     public HousingInformationDto getByVbr(String villageName, String buildName, String roomNum) {
         return housingInformationMapper.getByVbr(villageName,buildName,roomNum);
     }
+
+    @Override
+    public ResultBody insert(HousingInformationDto dto) {
+        HousingInformationDto one = query()
+                .eq("village_name", dto.getVillageName())
+                .eq("build_number", dto.getBuildNumber())
+                .eq("house_no", dto.getHouseNo()).one();
+        if (one == null){
+            return ResultBody.ok(save(dto));
+        }else {
+            return ResultBody.fail("house already exists");
+        }
+    }
+
+    @Override
+    public ResultBody updateByDto(HousingInformationDto dto) {
+        List<HousingInformationDto> sameHouseList = query()
+                .eq("village_name", dto.getVillageName())
+                .eq("build_number", dto.getBuildNumber())
+                .eq("house_no", dto.getHouseNo()).list();
+        if (sameHouseList.size() > 1){
+            return ResultBody.fail("same house exists");
+        }else {
+            return ResultBody.ok(updateById(dto));
+        }
+    }
+
 
 }

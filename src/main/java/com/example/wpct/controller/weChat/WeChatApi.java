@@ -6,13 +6,14 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.wpct.config.WxPayConfig;
+import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.VillageDto;
 import com.example.wpct.entity.WechatUser;
 import com.example.wpct.mapper.VillageMapper;
 import com.example.wpct.mapper.WechatUserMapper;
 import com.example.wpct.service.BuildService;
 import com.example.wpct.service.HousingInformationService;
-import com.example.wpct.service.RoomService;
+
 import com.example.wpct.service.WechatPayService;
 import com.example.wpct.utils.ResultBody;
 import com.google.gson.Gson;
@@ -51,8 +52,6 @@ public class WeChatApi {
     @Autowired
     BuildService buildService;
 
-    @Autowired
-    RoomService roomService;
 
     @Autowired
     HousingInformationService housingInformationService;
@@ -198,10 +197,21 @@ public class WeChatApi {
             );
             for (Object o1 : builds) {
                 JSONObject build = ((JSONObject) o1);
-                JSONArray rooms = JSONArray.parseArray(
-                        JSON.toJSONString(roomService.listByBuild(build.getInteger("id")))
-                );
-                build.put("children",rooms);
+                List<HousingInformationDto> houseList = housingInformationService.query()
+                        .eq("village_name", village.getString("name"))
+                        .eq("build_number", build.getString("name")).list();
+                JSONArray houses = new JSONArray();
+                for (HousingInformationDto dto : houseList) {
+                    JSONObject tmp = new JSONObject();
+                    tmp.put("name",dto.getHouseNo());
+                    tmp.put("id",dto.getId());
+                    tmp.put("village_id",village.getString("id"));
+                    tmp.put("build_id",build.getString("id"));
+                    tmp.put("village_name",dto.getVillageName());
+                    tmp.put("build_number",dto.getBuildNumber());
+                    houses.add(tmp);
+                }
+                build.put("children",houses);
             }
             village.put("children",builds);
         }

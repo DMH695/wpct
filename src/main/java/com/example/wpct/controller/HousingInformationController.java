@@ -38,7 +38,7 @@ public class HousingInformationController {
     @PostMapping("/update")
     @ApiOperation("更新房屋信息")
     public ResultBody update(@RequestBody HousingInformationDto body){
-        return ResultBody.ok(housingInformationService.updateById(body));
+        return ResultBody.ok(housingInformationService.updateByDto(body));
     }
 
     @GetMapping("/list")
