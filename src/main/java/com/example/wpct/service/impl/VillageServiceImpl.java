@@ -14,6 +14,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,7 +28,6 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
 
     @Autowired
     private BuildServiceImpl buildService;
-
 
     @Autowired
     private HousingInformationServiceImpl housingInformationService;

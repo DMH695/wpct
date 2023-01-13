@@ -29,7 +29,6 @@ import java.util.List;
 
 @Service
 public class HousingInformationServiceImpl extends ServiceImpl<HousingInformationMapper, HousingInformationDto> implements HousingInformationService {
-
     @Autowired
     @Lazy
     private HousingInformationMapper housingInformationMapper;
