@@ -21,4 +21,6 @@ public interface PropertyOrderService extends IService<PropertyOrderDto> {
 
     ResultBody importPropertyOrder(MultipartFile file);
 
+    ResultBody listByUser(String openid);
+
 }

@@ -1,4 +1,4 @@
-package com.example.wpct.service;
+package com.example.wpct.service.impl;
 
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -10,6 +10,7 @@ import com.example.wpct.entity.PropertyOrderDto;
 import com.example.wpct.mapper.BillMapper;
 import com.example.wpct.mapper.HousingInformationMapper;
 import com.example.wpct.mapper.PropertyOrderMapper;
+import com.example.wpct.service.WechatPayService;
 import com.example.wpct.utils.ResultBody;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -27,7 +28,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 @Service
-public class WechatServiceImpl implements WechatPayService{
+public class WechatServiceImpl implements WechatPayService {
     @Resource
     WxPayConfig wxPayConfig;
 

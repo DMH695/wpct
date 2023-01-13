@@ -43,8 +43,8 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
     WechatUserMapper wechatUserMapper;
     @Autowired
     VillageMapper villageMapper;
-    @Autowired
-    RoomMapper roomMapper;
+//    @Autowired
+//    RoomMapper roomMapper;
     @Autowired
     BuildMapper buildMapper;
     @Override
@@ -104,7 +104,7 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
             examineDto.setWechatUser(wechatUserMapper.selectOne(queryWrapper));
             examineDto.setBuildDto(buildMapper.selectOne(queryWrapper1));
             examineDto.setVillageDto(villageMapper.selectOne(queryWrapper3));
-            examineDto.setRoomDto(roomMapper.selectOne(queryWrapper2));
+//            examineDto.setRoomDto(roomMapper.selectOne(queryWrapper2));
         }
         return new PageInfo<>(res);
     }

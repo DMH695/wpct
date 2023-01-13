@@ -74,9 +74,9 @@ public class ExamineDto implements Serializable {
      */
     @TableField(exist = false)
     private VillageDto villageDto;
-    /**
-     * 房号
-     */
-    @TableField(exist = false)
-    private RoomDto roomDto;
+//    /**
+//     * 房号
+//     */
+//    @TableField(exist = false)
+//    private RoomDto roomDto;
 }

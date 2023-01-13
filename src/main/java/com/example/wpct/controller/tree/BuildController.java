@@ -21,18 +21,18 @@ public class BuildController {
     @ApiOperation("增加楼栋")
     @PostMapping("/insert")
     public ResultBody insert(BuildDto dto){
-        return ResultBody.ok(buildService.save(dto));
+        return ResultBody.ok(buildService.insert(dto));
     }
 
     @ApiOperation("通过id删除楼栋")
     @DeleteMapping("/remove")
     public ResultBody remove(@RequestParam Integer id){
-        return ResultBody.ok(buildService.removeById(id));
+        return ResultBody.ok(buildService.remove(id));
     }
 
     @ApiOperation("修改楼栋信息")
     @PostMapping("/update")
     public ResultBody update(BuildDto dto){
-        return ResultBody.ok(buildService.updateById(dto));
+        return ResultBody.ok(buildService.updateByDto(dto));
     }
 }

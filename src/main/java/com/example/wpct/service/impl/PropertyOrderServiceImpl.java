@@ -2,11 +2,14 @@ package com.example.wpct.service.impl;
 
 import cn.hutool.core.lang.Snowflake;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.PropertyOrderDto;
+import com.example.wpct.entity.WechatUser;
 import com.example.wpct.entity.vo.PropertyOrderVo;
 import com.example.wpct.mapper.PropertyOrderMapper;
+import com.example.wpct.mapper.WechatUserMapper;
 import com.example.wpct.service.PropertyOrderService;
 import com.example.wpct.utils.ResultBody;
 import com.example.wpct.utils.SnowFlakeIdUtils;
@@ -34,6 +37,10 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
 
     @Autowired
     private HousingInformationServiceImpl housingInformationService;
+
+    @Autowired
+    private WechatUserMapper wechatUserMapper;
+
 
     /**
      * 生成物业费订单
@@ -126,6 +133,17 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
 
     @Override
     public ResultBody importPropertyOrder(MultipartFile file) {
+        return null;
+    }
+
+    @Override
+    public ResultBody listByUser(String openid) {
+        QueryWrapper<WechatUser> query = new QueryWrapper<>();
+        query.eq("openid",openid);
+        List<WechatUser> wechatUsers = wechatUserMapper.selectList(query);
+        for (WechatUser wechatUser : wechatUsers) {
+            
+        }
         return null;
     }
 

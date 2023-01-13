@@ -20,19 +20,19 @@ public class VillageController {
     @ApiOperation("增加小区")
     @PostMapping("/insert")
     public ResultBody insert(VillageDto dto){
-        return ResultBody.ok(villageService.save(dto));
+        return villageService.insert(dto);
     }
 
     @ApiOperation("通过id删除小区")
     @DeleteMapping("/remove")
     public ResultBody remove(@RequestParam Integer id){
-        return ResultBody.ok(villageService.removeById(id));
+        return villageService.remove(id);
     }
 
     @ApiOperation("修改小区信息")
     @PostMapping("/update")
     public ResultBody update(VillageDto dto){
-        return ResultBody.ok(villageService.updateById(dto));
+        return villageService.updateByDto(dto);
     }
 
     @ApiOperation("获取树形结构")

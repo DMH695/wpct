@@ -1,8 +1,9 @@
-package com.example.wpct.service;
+package com.example.wpct.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.wpct.mapper.SysUserMapper;
 import com.example.wpct.entity.SysUser;
+import com.example.wpct.service.SysUserService;
 import com.example.wpct.utils.page.PageRequest;
 import com.example.wpct.utils.page.PageResult;
 import com.example.wpct.utils.page.PageUtil;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
 @Service
-public class SysUserServiceImpl implements SysUserService{
+public class SysUserServiceImpl implements SysUserService {
     @Autowired
     SysUserMapper sysUserMapper;
 

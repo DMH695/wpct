@@ -8,7 +8,15 @@ import com.example.wpct.utils.ResultBody;
 
 public interface VillageService extends IService<VillageDto> {
 
-    public ResultBody getTree(int pageSize,int pageNum);
+
+    ResultBody insert(VillageDto dto);
+
+
+    ResultBody getTree(int pageSize,int pageNum);
+
+    ResultBody updateByDto(VillageDto dto);
+
+    ResultBody remove(long id);
 
 
 }

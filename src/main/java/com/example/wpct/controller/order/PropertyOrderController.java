@@ -46,6 +46,11 @@ public class PropertyOrderController {
         return propertyOrderService.list(vo);
     }
 
+    @ApiOperation("用户获取自己的物业费订单列表")
+    public ResultBody listByUser(@RequestParam("openid") String openid){
+        return propertyOrderService.listByUser(openid);
+    }
+
 //    @GetMapping("/get/template")
 //    @ApiOperation("下载导入模板（未完成）")
 //    public void getTemplate(HttpServletResponse response){
