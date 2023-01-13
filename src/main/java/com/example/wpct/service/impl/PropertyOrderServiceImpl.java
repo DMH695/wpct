@@ -127,6 +127,11 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
     }
 
     @Override
+    public ResultBody listByHouseId(long houseId) {
+        return ResultBody.ok(query().eq("house_id",houseId).list());
+    }
+
+    @Override
     public void getTemplate(HttpServletResponse response) {
         Snowflake snowflake = new Snowflake();
         List<PropertyOrderDto> excelList = new ArrayList<>();

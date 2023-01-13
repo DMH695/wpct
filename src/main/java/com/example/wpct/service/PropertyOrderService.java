@@ -17,6 +17,8 @@ public interface PropertyOrderService extends IService<PropertyOrderDto> {
 
     ResultBody list(PropertyOrderVo vo);
 
+    ResultBody listByHouseId(long houseId);
+
     void getTemplate(HttpServletResponse response);
 
     ResultBody importPropertyOrder(MultipartFile file);

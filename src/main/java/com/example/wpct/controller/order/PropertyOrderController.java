@@ -46,6 +46,12 @@ public class PropertyOrderController {
         return propertyOrderService.list(vo);
     }
 
+    @ApiOperation("通过房屋id获取订单")
+    @GetMapping("/list/house/id")
+    public ResultBody listByHouseId(long houseId){
+        return propertyOrderService.listByHouseId(houseId);
+    }
+
     @ApiOperation("用户获取自己的物业费订单列表")
     @GetMapping("/wechat/user/get")
     public ResultBody listByUser(@RequestParam("openid") String openid){
