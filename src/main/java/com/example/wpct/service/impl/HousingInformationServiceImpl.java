@@ -16,6 +16,7 @@ import com.github.pagehelper.PageInfo;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.ParameterResolutionDelegate;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,13 +31,9 @@ import java.util.List;
 public class HousingInformationServiceImpl extends ServiceImpl<HousingInformationMapper, HousingInformationDto> implements HousingInformationService {
 
     @Autowired
+    @Lazy
     private HousingInformationMapper housingInformationMapper;
 
-    @Autowired
-    private VillageServiceImpl villageService;
-
-    @Autowired
-    private BuildServiceImpl buildService;
 
 
     @Override

@@ -1,6 +1,7 @@
 package com.example.wpct.service.impl;
 
 import cn.hutool.core.lang.Snowflake;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -20,6 +21,7 @@ import com.github.pagehelper.PageInfo;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,6 +42,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
 
     @Autowired
     private WechatUserMapper wechatUserMapper;
+
 
 
     /**
@@ -141,10 +144,17 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
         QueryWrapper<WechatUser> query = new QueryWrapper<>();
         query.eq("openid",openid);
         List<WechatUser> wechatUsers = wechatUserMapper.selectList(query);
+        JSONArray res = new JSONArray();
         for (WechatUser wechatUser : wechatUsers) {
-            
+            JSONObject tmp = new JSONObject();
+            HousingInformationDto house = housingInformationService.query().eq("id", wechatUser.getHid()).one();
+            if (house == null)
+                continue;
+            tmp.put("house",String.format("%s#%s#%s",house.getVillageName(),house.getBuildNumber(),house.getHouseNo()));
+            tmp.put("property_order",query().eq("house_id",house.getId()).list());
+            res.add(tmp);
         }
-        return null;
+        return ResultBody.ok(res);
     }
 
 

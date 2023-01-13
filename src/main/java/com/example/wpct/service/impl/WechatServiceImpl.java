@@ -1,4 +1,4 @@
-package com.example.wpct.service;
+package com.example.wpct.service.impl;
 
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -9,6 +9,7 @@ import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.PropertyOrderDto;
 import com.example.wpct.entity.WechatUser;
 import com.example.wpct.mapper.*;
+import com.example.wpct.service.WechatPayService;
 import com.example.wpct.utils.HttpUtils;
 import com.example.wpct.utils.ResultBody;
 import com.google.gson.Gson;
@@ -38,7 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 @Service
-public class WechatServiceImpl implements WechatPayService{
+public class WechatServiceImpl implements WechatPayService {
     @Resource
     WxPayConfig wxPayConfig;
 
@@ -63,8 +64,6 @@ public class WechatServiceImpl implements WechatPayService{
     @Autowired
     BuildMapper buildMapper;
 
-    @Autowired
-    RoomMapper roomMapper;
 
     /**
      * 微信用户缴费后，需要修改property_order表中的status和housing表中的due_date 并生成账单

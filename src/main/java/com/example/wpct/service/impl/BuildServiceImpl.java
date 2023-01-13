@@ -8,6 +8,7 @@ import com.example.wpct.mapper.BuildMapper;
 import com.example.wpct.service.BuildService;
 import com.example.wpct.utils.ResultBody;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,9 +17,11 @@ import java.util.List;
 public class BuildServiceImpl extends ServiceImpl<BuildMapper, BuildDto> implements BuildService {
 
     @Autowired
+    @Lazy
     private HousingInformationServiceImpl housingInformationService;
 
     @Autowired
+    @Lazy
     private VillageServiceImpl villageService;
 
     @Override
