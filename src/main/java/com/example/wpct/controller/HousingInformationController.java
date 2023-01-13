@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 public class HousingInformationController {
 
     @Autowired
-    private HousingInformationServiceImpl housingInformationService;
+    HousingInformationServiceImpl housingInformationService;
 
     @PostMapping("/insert")
     @ApiOperation("新增房屋信息")

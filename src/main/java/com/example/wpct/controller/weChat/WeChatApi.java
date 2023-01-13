@@ -169,8 +169,9 @@ public class WeChatApi {
     public Object bind(@RequestBody WechatUser wechatUser){
         if (housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildName(),wechatUser.getRoomNum()) != null){
             int hid = (int) housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildName(),wechatUser.getRoomNum()).getId();
+            wechatUser.setHid(hid);
         }else {
-            return ResultBody.fail("房屋信息表中不存在给房屋");
+            return ResultBody.fail("房屋信息表中不存在该房屋");
         }
         wechatPayService.bind(wechatUser);
         return ResultBody.ok(null);
