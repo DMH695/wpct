@@ -19,4 +19,5 @@ public interface WechatPayService {
     void bind(WechatUser wechatUser);
     List<JSONObject> getTree();
     String payNotify(HttpServletRequest request, HttpServletResponse response) throws GeneralSecurityException, NotFoundException, IOException, HttpCodeException;
+    WechatUser checkBind(String openid,int hid);
 }

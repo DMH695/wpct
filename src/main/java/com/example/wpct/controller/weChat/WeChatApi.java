@@ -15,6 +15,7 @@ import com.example.wpct.service.BuildService;
 import com.example.wpct.service.HousingInformationService;
 
 import com.example.wpct.service.WechatPayService;
+import com.example.wpct.service.impl.WechatServiceImpl;
 import com.example.wpct.utils.ResultBody;
 import com.google.gson.Gson;
 import com.wechat.pay.contrib.apache.httpclient.exception.HttpCodeException;
@@ -55,6 +56,9 @@ public class WeChatApi {
 
     @Autowired
     HousingInformationService housingInformationService;
+
+    @Autowired
+    WechatServiceImpl wechatService;
 
     @ApiOperation("获取openid和昵称")
     @RequestMapping(value = "/getOpenid",method = RequestMethod.GET)
@@ -170,10 +174,13 @@ public class WeChatApi {
         if (housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildName(),wechatUser.getRoomNum()) != null){
             int hid = (int) housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildName(),wechatUser.getRoomNum()).getId();
             wechatUser.setHid(hid);
+            if (wechatPayService.checkBind(wechatUser.getOpenid(),hid) == null){
+                return ResultBody.fail("您已绑定过该房屋，请勿重复绑定");
+            }
+            wechatPayService.bind(wechatUser);
         }else {
             return ResultBody.fail("房屋信息表中不存在该房屋");
         }
-        wechatPayService.bind(wechatUser);
         return ResultBody.ok(null);
     }
 
@@ -219,5 +226,19 @@ public class WeChatApi {
         JSONObject res = new JSONObject();
         res.put("tree",tree);
         return ResultBody.ok(res);
+    }
+
+    @ApiOperation("根据小区楼栋房屋返回姓名、手机号")
+    @RequestMapping(value = "/getByHouse",method = RequestMethod.GET)
+    public Object getByHouse(@RequestParam String villageName,@RequestParam String buildName,@RequestParam String roomName){
+        JSONObject res = new JSONObject();
+        HousingInformationDto housingInformationDto = housingInformationService.getByVbr(villageName,buildName,roomName);
+        if (housingInformationDto == null){
+            return ResultBody.fail("房屋信息表中不存在该房屋");
+        }else {
+            res.put("name",housingInformationDto.getName());
+            res.put("telephone",housingInformationDto.getPhone());
+            return ResultBody.ok(res);
+        }
     }
 }
