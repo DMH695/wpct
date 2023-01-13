@@ -434,4 +434,9 @@ public class WechatServiceImpl implements WechatPayService {
         }
 
     }
+
+    @Override
+    public WechatUser checkBind(String openid, int hid) {
+        return wechatUserMapper.checkBind(openid, hid);
+    }
 }
