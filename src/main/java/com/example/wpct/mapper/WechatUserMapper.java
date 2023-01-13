@@ -3,6 +3,9 @@ package com.example.wpct.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.wpct.entity.WechatUser;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Author ZXX
@@ -12,4 +15,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface WechatUserMapper extends BaseMapper<WechatUser> {
+    List<WechatUser> getByOpenid(String openid);
+    void bind(@Param("w")WechatUser wechatUser);
 }

@@ -9,4 +9,5 @@ public interface HousingInformationMapper extends BaseMapper<HousingInformationD
     void updateDate(int house_id);
     void investProperty(Double property_fee,int hid);
     void investShare(Double poolBanlance,int hid);
+    HousingInformationDto getByVbr(String villageName,String buildName,String rooNum);
 }

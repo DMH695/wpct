@@ -13,6 +13,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +26,9 @@ import java.util.List;
 
 @Service
 public class HousingInformationServiceImpl extends ServiceImpl<HousingInformationMapper, HousingInformationDto> implements HousingInformationService {
+
+    @Autowired
+    HousingInformationMapper housingInformationMapper;
 
 
     @Override
@@ -95,6 +99,11 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         saveBatch(saveList);
         updateBatchById(updateList);
         return ResultBody.ok("insert: " + saveList.size() + ",update: " + updateList.size());
+    }
+
+    @Override
+    public HousingInformationDto getByVbr(String villageName, String buildName, String roomNum) {
+        return housingInformationMapper.getByVbr(villageName,buildName,roomNum);
     }
 
 }
