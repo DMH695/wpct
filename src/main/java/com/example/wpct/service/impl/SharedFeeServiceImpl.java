@@ -84,4 +84,11 @@ public class SharedFeeServiceImpl extends ServiceImpl<SharedFeeMapper, SharedFee
         }
         return ResultBody.ok(saveBatch(sharedFeeDtoList));
     }
+
+    @Override
+    public ResultBody insert(SharedFeeDto dto) {
+        dto.setUpdateDate(new Date(System.currentTimeMillis()));
+        dto.setUpdateUser("admin");
+        return ResultBody.ok(save(dto));
+    }
 }

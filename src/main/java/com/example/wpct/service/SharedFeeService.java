@@ -16,4 +16,6 @@ public interface SharedFeeService extends IService<SharedFeeDto> {
 
     ResultBody importSharedFee(MultipartFile file);
 
+    ResultBody insert(SharedFeeDto dto);
+
 }

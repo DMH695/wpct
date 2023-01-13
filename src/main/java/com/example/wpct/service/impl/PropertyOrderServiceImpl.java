@@ -67,7 +67,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
             PropertyOrderDto buildResult = PropertyOrderDto.builder()
                     .orderNo(idUtils.nextId()).houseId(dto.getId()).paymentStatus(0).cost(cost)
                     .costDetail(getCostDetail(dto).toJSONString()).beginDate(new Date(System.currentTimeMillis()))
-                    .endDate(new Date(calendar.getTimeInMillis())).updateTime(new Timestamp(System.currentTimeMillis())).build();
+                    .endDate(new Date(calendar.getTimeInMillis())).updateTime(new Timestamp(System.currentTimeMillis()).toString()).build();
             propertyOrderDtoList.add(buildResult);
             log.info("生成订单：{}", buildResult);
         }
@@ -99,7 +99,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
                 house.setUpdated(new Timestamp(System.currentTimeMillis()).toString());
                 afterUpdateHouseList.add(house);
                 dto.setPaymentStatus(1);
-                dto.setUpdateTime(new Timestamp(System.currentTimeMillis()));
+                dto.setUpdateTime(new Timestamp(System.currentTimeMillis()).toString());
                 afterUpdateOrderList.add(dto);
             } else {
                 log.info("{}#{}#{}房屋自动缴费失败,余额不足"
@@ -155,6 +155,14 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
             res.add(tmp);
         }
         return ResultBody.ok(res);
+    }
+
+    @Override
+    public ResultBody insert(PropertyOrderDto dto) {
+        Snowflake snowflake = new Snowflake();
+        dto.setUpdateTime(new Timestamp(System.currentTimeMillis()).toString());
+        dto.setOrderNo(snowflake.nextId());
+        return ResultBody.ok(save(dto));
     }
 
 

@@ -24,7 +24,7 @@ public class PropertyOrderController {
     @ApiOperation("手动添加订单")
     @PostMapping("/insert")
     public ResultBody insert(PropertyOrderDto dto){
-        return ResultBody.ok(propertyOrderService.save(dto));
+        return propertyOrderService.insert(dto);
     }
 
 

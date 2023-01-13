@@ -26,6 +26,7 @@ public class SharedFeeDto implements Serializable {
 	 * id
 	 */
 	@JSONField(name ="id")
+	@ApiModelProperty(value = "id", hidden = true)
 	private long id;
 
 
@@ -61,6 +62,7 @@ public class SharedFeeDto implements Serializable {
 	 * 更新日期
 	 */
 	@JSONField(name ="updateDate")
+	@ApiModelProperty(value = "更新日期", hidden = true)
 	private java.sql.Date updateDate;
 
 
@@ -68,6 +70,7 @@ public class SharedFeeDto implements Serializable {
 	 * 修改人
 	 */
 	@JSONField(name ="updateUser")
+	@ApiModelProperty(value = "更新用户", hidden = true)
 	private String updateUser;
 
 }

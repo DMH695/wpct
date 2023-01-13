@@ -23,4 +23,6 @@ public interface PropertyOrderService extends IService<PropertyOrderDto> {
 
     ResultBody listByUser(String openid);
 
+    ResultBody insert(PropertyOrderDto dto);
+
 }

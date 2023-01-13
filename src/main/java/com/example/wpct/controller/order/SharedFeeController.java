@@ -23,7 +23,7 @@ public class SharedFeeController {
     @ApiOperation("手动添加公摊费订单表")
     @PostMapping("/insert")
     public ResultBody insert(SharedFeeDto dto){
-        return ResultBody.ok(sharedFeeService.save(dto));
+        return sharedFeeService.insert(dto);
     }
 
     @ApiOperation("手动删除公摊费订单表")

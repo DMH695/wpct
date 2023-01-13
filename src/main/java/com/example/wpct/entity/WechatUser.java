@@ -41,13 +41,16 @@ public class WechatUser {
      */
     private String openid;
 
+    @TableField(exist = false)
     private String villageName;
 
+    @TableField(exist = false)
     private String buildName;
 
     /**
      * 房号
      */
+    @TableField(exist = false)
     private String roomNum;
     private String relation;
 
