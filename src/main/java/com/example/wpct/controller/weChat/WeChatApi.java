@@ -174,7 +174,7 @@ public class WeChatApi {
         if (housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildName(),wechatUser.getRoomNum()) != null){
             int hid = (int) housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildName(),wechatUser.getRoomNum()).getId();
             wechatUser.setHid(hid);
-            if (wechatPayService.checkBind(wechatUser.getOpenid(),hid) == null){
+            if (wechatPayService.checkBind(wechatUser.getOpenid(),hid) != null){
                 return ResultBody.fail("您已绑定过该房屋，请勿重复绑定");
             }
             wechatPayService.bind(wechatUser);
