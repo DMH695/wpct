@@ -19,6 +19,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class SharedFeeServiceImpl extends ServiceImpl<SharedFeeMapper, SharedFeeDto> implements SharedFeeService {
 
     @Autowired
@@ -59,7 +61,7 @@ public class SharedFeeServiceImpl extends ServiceImpl<SharedFeeMapper, SharedFee
                 .villageName("某某某小区").buildNumber("一单元").houseNo("1203")
                 .liftFee(123).eleFee(1234).waterFee(123).build();
         excelList.add(example);
-        response.setHeader("Content-Disposition", "attachment;filename="+snowflake.nextIdStr()+"template.xlsx");
+        response.setHeader("Content-Disposition", "attachment;filename=" + snowflake.nextIdStr() + "template.xlsx");
         EasyExcel.write(response.getOutputStream())
                 .head(SharedFeeImportModel.class)
                 .sheet("importTemplate")
@@ -97,24 +99,79 @@ public class SharedFeeServiceImpl extends ServiceImpl<SharedFeeMapper, SharedFee
     public ResultBody insert(SharedFeeDto dto) {
         dto.setUpdateDate(new Date(System.currentTimeMillis()));
         dto.setUpdateUser("admin");
-        return ResultBody.ok(save(dto));
+        SharedFeeDto preShared = query().eq("house_id", dto.getHouseId()).one();
+        if (preShared == null) {
+            return ResultBody.ok(save(dto));
+        } else {
+            return ResultBody.ok(update(dto, query().eq("house_id", dto.getHouseId())));
+        }
     }
 
     @Override
     public ResultBody listByUser(String openid) {
         QueryWrapper<WechatUser> query = new QueryWrapper<>();
-        query.eq("openid",openid);
+        query.eq("openid", openid);
         List<WechatUser> wechatUsers = wechatUserMapper.selectList(query);
         JSONArray res = new JSONArray();
         for (WechatUser wechatUser : wechatUsers) {
             JSONObject tmp = new JSONObject();
-            HousingInformationDto house = housingInformationService.query().eq("id",wechatUser.getHid()).one();
+            HousingInformationDto house = housingInformationService.query().eq("id", wechatUser.getHid()).one();
             if (house == null)
                 continue;
-            tmp.put("house",String.format("%s#%s#%s",house.getVillageName(),house.getBuildNumber(),house.getHouseNo()));
-            tmp.put("shared_fee_order",query().eq("house_id",house.getId()).list());
+            tmp.put("house", String.format("%s#%s#%s", house.getVillageName(), house.getBuildNumber(), house.getHouseNo()));
+            tmp.put("shared_fee_order", query().eq("house_id", house.getId()).list());
             res.add(tmp);
         }
         return ResultBody.ok(res);
     }
+
+    @Override
+    public int automaticPayment() {
+        List<SharedFeeDto> sharedFees = query().list();
+        int num = 0;
+        List<HousingInformationDto> updateHouse = new ArrayList<>();
+        List<SharedFeeDto> updateSharedFee = new ArrayList<>();
+        for (SharedFeeDto sharedFee : sharedFees) {
+            double need = sharedFee.getLiftFee() + sharedFee.getEleFee() + sharedFee.getWaterFee();
+            if (need > 0) {
+                HousingInformationDto house = housingInformationService.query().eq("id", sharedFee.getHouseId()).one();
+                if (house == null) {
+                    log.info("房屋id" + sharedFee.getHouseId() + "不存在,缴交失败");
+                    continue;
+                }
+                double sharedBla = house.getPoolBalance();
+                if (sharedBla > need) {
+                    sharedBla -= need;
+                    sharedFee.setEleFee(0);
+                    sharedFee.setLiftFee(0);
+                    sharedFee.setWaterFee(0);
+                    updateSharedFee.add(sharedFee);
+                    house.setPoolBalance(sharedBla);
+                    updateHouse.add(house);
+                    num++;
+                    log.info("{}#{}#{}房屋自动公摊费缴费成功，缴交{}元，剩余{}元"
+                            , house.getVillageName(), house.getBuildNumber(), house.getHouseNo()
+                            , need, house.getPoolBalance()
+                    );
+                }
+            }
+        }
+        housingInformationService.updateBatchById(updateHouse);
+        updateBatchById(updateSharedFee);
+        return num;
+    }
+
+    @Override
+    public ResultBody updateByDto(SharedFeeDto dto) {
+        dto.setUpdateDate(new Date(System.currentTimeMillis()));
+        SharedFeeDto sharedFee = query().eq("house_id", dto.getHouseId()).one();
+        if (sharedFee == null || dto.getId() == sharedFee.getId()) {
+            return ResultBody.ok(updateById(dto));
+        }
+        {
+            return ResultBody.fail("same house id");
+        }
+    }
+
+
 }

@@ -35,7 +35,7 @@ public class SharedFeeController {
     @ApiOperation("更新公台肥订单表信息")
     @PostMapping("/update")
     public ResultBody update(SharedFeeDto dto){
-        return ResultBody.ok(sharedFeeService.updateById(dto));
+        return sharedFeeService.updateByDto(dto);
     }
 
     @ApiOperation("根据条件获取公摊费订单列表")
@@ -59,6 +59,12 @@ public class SharedFeeController {
     @GetMapping("/wechat/user/get")
     public ResultBody listByUser(@RequestParam("openid") String openid){
         return sharedFeeService.listByUser(openid);
+    }
+
+    @ApiOperation("手动缴交公摊费")
+    @GetMapping("/manual/payment")
+    public ResultBody manualPayment(){
+        return ResultBody.ok(sharedFeeService.automaticPayment());
     }
 
 

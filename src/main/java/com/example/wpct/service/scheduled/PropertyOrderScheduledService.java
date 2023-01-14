@@ -36,6 +36,6 @@ public class PropertyOrderScheduledService {
      */
     @Scheduled(cron = "0 0 0,3 1 * ?")
     public void automaticPayment(){
-        log.info("自动缴交订单成功数量：" + propertyOrderService.automaticPayment());
+        log.info("物业费自动缴交订单成功数量：" + propertyOrderService.automaticPayment());
     }
 }

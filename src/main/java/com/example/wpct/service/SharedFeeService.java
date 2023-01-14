@@ -20,4 +20,8 @@ public interface SharedFeeService extends IService<SharedFeeDto> {
 
     ResultBody listByUser(String openid);
 
+    int automaticPayment();
+
+    ResultBody updateByDto(SharedFeeDto dto);
+
 }

@@ -89,6 +89,10 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
         List<PropertyOrderDto> afterUpdateOrderList = new ArrayList<>();
         for (PropertyOrderDto dto : notPayment) {
             HousingInformationDto house = housingInformationService.query().eq("id", dto.getHouseId()).one();
+            if (house == null){
+                log.info("房屋id"+dto.getHouseId()+"不存在,缴交失败");
+                continue;
+            }
             if (house.getPropertyFee() >= dto.getCost()) {
                 log.info("{}#{}#{}房屋自动缴费成功，缴交{}元，剩余{}元"
                         , house.getVillageName(), house.getBuildNumber(), house.getHouseNo()

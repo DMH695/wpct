@@ -125,14 +125,14 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
 
     @Override
     public ResultBody updateByDto(HousingInformationDto dto) {
-        List<HousingInformationDto> sameHouseList = query()
+        HousingInformationDto house = query()
                 .eq("village_name", dto.getVillageName())
                 .eq("build_number", dto.getBuildNumber())
-                .eq("house_no", dto.getHouseNo()).list();
-        if (sameHouseList.size() > 1){
-            return ResultBody.fail("same house exists");
-        }else {
+                .eq("house_no", dto.getHouseNo()).one();
+        if (house == null || house.getId() == dto.getId()){
             return ResultBody.ok(updateById(dto));
+        }else {
+            return ResultBody.fail("same house exists");
         }
     }
 

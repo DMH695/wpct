@@ -26,7 +26,7 @@ public class HousingInformationController {
     @PostMapping("/insert")
     @ApiOperation("新增房屋信息")
     public ResultBody insert(@RequestBody HousingInformationDto body) {
-        return ResultBody.ok(housingInformationService.save(body));
+        return ResultBody.ok(housingInformationService.insert(body));
     }
 
     @DeleteMapping("/delete")
