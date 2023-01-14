@@ -2,12 +2,17 @@ package com.example.wpct.service.impl;
 
 import cn.hutool.core.lang.Snowflake;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.SharedFeeDto;
+import com.example.wpct.entity.WechatUser;
 import com.example.wpct.entity.model.SharedFeeImportModel;
 import com.example.wpct.entity.vo.SharedFeeVo;
 import com.example.wpct.mapper.SharedFeeMapper;
+import com.example.wpct.mapper.WechatUserMapper;
 import com.example.wpct.service.SharedFeeService;
 import com.example.wpct.utils.ResultBody;
 import com.github.pagehelper.Page;
@@ -31,6 +36,9 @@ public class SharedFeeServiceImpl extends ServiceImpl<SharedFeeMapper, SharedFee
     @Autowired
     @Lazy
     private HousingInformationServiceImpl housingInformationService;
+
+    @Autowired
+    private WechatUserMapper wechatUserMapper;
 
     @Override
     public ResultBody list(SharedFeeVo vo) {
@@ -90,5 +98,23 @@ public class SharedFeeServiceImpl extends ServiceImpl<SharedFeeMapper, SharedFee
         dto.setUpdateDate(new Date(System.currentTimeMillis()));
         dto.setUpdateUser("admin");
         return ResultBody.ok(save(dto));
+    }
+
+    @Override
+    public ResultBody listByUser(String openid) {
+        QueryWrapper<WechatUser> query = new QueryWrapper<>();
+        query.eq("openid",openid);
+        List<WechatUser> wechatUsers = wechatUserMapper.selectList(query);
+        JSONArray res = new JSONArray();
+        for (WechatUser wechatUser : wechatUsers) {
+            JSONObject tmp = new JSONObject();
+            HousingInformationDto house = housingInformationService.query().eq("id",wechatUser.getHid()).one();
+            if (house == null)
+                continue;
+            tmp.put("house",String.format("%s#%s#%s",house.getVillageName(),house.getBuildNumber(),house.getHouseNo()));
+            tmp.put("shared_fee_order",query().eq("house_id",house.getId()).list());
+            res.add(tmp);
+        }
+        return ResultBody.ok(res);
     }
 }

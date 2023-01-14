@@ -54,7 +54,11 @@ public class SharedFeeController {
     @PostMapping("/import")
     public ResultBody importSharedFee(MultipartFile file){
         return sharedFeeService.importSharedFee(file);
+    }
 
+    @GetMapping("/wechat/user/get")
+    public ResultBody listByUser(@RequestParam("openid") String openid){
+        return sharedFeeService.listByUser(openid);
     }
 
 

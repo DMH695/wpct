@@ -18,4 +18,6 @@ public interface SharedFeeService extends IService<SharedFeeDto> {
 
     ResultBody insert(SharedFeeDto dto);
 
+    ResultBody listByUser(String openid);
+
 }
