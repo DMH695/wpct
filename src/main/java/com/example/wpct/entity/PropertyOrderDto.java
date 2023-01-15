@@ -1,10 +1,14 @@
 package com.example.wpct.entity;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import com.alibaba.fastjson.annotation.JSONField;
@@ -26,8 +30,10 @@ public class PropertyOrderDto implements Serializable {
 	 * 订单编号
 	 */
 	@JSONField(name ="orderNo")
-	@ApiModelProperty(value = "订单号", readOnly = true, hidden = true)
-	private long orderNo;
+	@ApiModelProperty(value = "订单号", hidden = true)
+	@TableId(value = "order_no")
+	@JsonSerialize(using= ToStringSerializer.class)
+	private Long orderNo;
 
 
 	/**

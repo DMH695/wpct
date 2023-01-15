@@ -1,6 +1,7 @@
 package com.example.wpct.entity;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -23,7 +24,7 @@ public class BuildDto implements Serializable {
 	 * id
 	 */
 	@JSONField(name ="id")
-	private long id;
+	private BigInteger id;
 
 
 	/**

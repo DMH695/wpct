@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
     public int generateOrders() {
         List<HousingInformationDto> housingInformationDtoList = housingInformationService.query().list();
         List<PropertyOrderDto> propertyOrderDtoList = new ArrayList<>();
-        SnowFlakeIdUtils idUtils = new SnowFlakeIdUtils(3, 1);
+        Snowflake snowflake = new Snowflake();
         for (HousingInformationDto dto : housingInformationDtoList) {
             double cost = dto.getArea() * dto.getAreaUnitPrice() + dto.getExceedArea() * dto.getExceedAreaUnitPrice() +
                     dto.getCarFee() + dto.getOtherFee() + dto.getRecycleFee() + dto.getRecycleRent() + dto.getCalculateRent() +
@@ -65,7 +66,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
             calendar.setTime(new java.util.Date());
             calendar.add(Calendar.MONTH, 1);
             PropertyOrderDto buildResult = PropertyOrderDto.builder()
-                    .orderNo(idUtils.nextId()).houseId(dto.getId()).paymentStatus(0).cost(cost)
+                    .orderNo(snowflake.nextId()).houseId(dto.getId()).paymentStatus(0).cost(cost)
                     .costDetail(getCostDetail(dto).toJSONString()).beginDate(new Date(System.currentTimeMillis()))
                     .endDate(new Date(calendar.getTimeInMillis())).updateTime(new Timestamp(System.currentTimeMillis()).toString()).build();
             propertyOrderDtoList.add(buildResult);

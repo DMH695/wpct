@@ -1,6 +1,7 @@
 package com.example.wpct.entity;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModelProperty;

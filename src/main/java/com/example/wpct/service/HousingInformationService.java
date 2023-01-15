@@ -8,13 +8,14 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigInteger;
 import java.util.List;
 
 public interface HousingInformationService extends IService<HousingInformationDto> {
 
     PageInfo<HousingInformationDto> listByVo(HousingInformationVo vo);
 
-    List<Long> getIdsByHouseInfo(String villageName,String buildNumber,String houseNo);
+    List<Long> getIdsByHouseInfo(String villageName, String buildNumber, String houseNo);
 
     void getTemplate(HttpServletResponse response);
 

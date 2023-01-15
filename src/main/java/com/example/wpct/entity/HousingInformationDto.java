@@ -1,6 +1,7 @@
 package com.example.wpct.entity;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
