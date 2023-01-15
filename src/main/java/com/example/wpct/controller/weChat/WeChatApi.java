@@ -1,5 +1,7 @@
 package com.example.wpct.controller.weChat;
 
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -7,8 +9,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.wpct.config.WxPayConfig;
 import com.example.wpct.entity.HousingInformationDto;
+import com.example.wpct.entity.PropertyOrderDto;
 import com.example.wpct.entity.VillageDto;
 import com.example.wpct.entity.WechatUser;
+import com.example.wpct.mapper.HousingInformationMapper;
 import com.example.wpct.mapper.VillageMapper;
 import com.example.wpct.mapper.WechatUserMapper;
 import com.example.wpct.service.BuildService;
@@ -17,6 +21,7 @@ import com.example.wpct.service.HousingInformationService;
 import com.example.wpct.service.WechatPayService;
 import com.example.wpct.service.impl.WechatServiceImpl;
 import com.example.wpct.utils.ResultBody;
+import com.example.wpct.utils.WeiXinUtil;
 import com.google.gson.Gson;
 import com.wechat.pay.contrib.apache.httpclient.exception.HttpCodeException;
 import com.wechat.pay.contrib.apache.httpclient.exception.NotFoundException;
@@ -30,9 +35,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Api(tags = "微信相关API")
 @RestController
@@ -59,6 +63,9 @@ public class WeChatApi {
 
     @Autowired
     WechatServiceImpl wechatService;
+
+    @Autowired
+    HousingInformationMapper housingInformationMapper;
 
     @ApiOperation("获取openid和昵称")
     @RequestMapping(value = "/getOpenid",method = RequestMethod.GET)
@@ -143,11 +150,52 @@ public class WeChatApi {
         }
         return ResultBody.ok(rMap);
     }
+    /**
+     * 初始化前端 wx.config必要参数
+     */
+    @ApiOperation("获取jsapiSDK")
+    @PostMapping("/jsapi/sdk")
+    public Object wechatPaySDK() {
+        Gson gson = new Gson();
 
+        // https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET
+        String url1 = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + wxPayConfig.getAppid() + "&secret=" + wxPayConfig.getAppSecret();
+        String resu1 = WeiXinUtil.httpRequest(url1, "GET", null);
+
+        HashMap<String, Object> map = gson.fromJson(resu1, HashMap.class);
+        String access_token = (String) map.get("access_token");
+
+
+
+        // https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token="+access_token+"&type=jsapi";
+        url1 = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=" + access_token + "&type=jsapi";
+        String resu2 = WeiXinUtil.httpRequest(url1, "GET", null);
+
+        HashMap<String, Object> map2 = gson.fromJson(resu2, HashMap.class);
+        String ticket = (String) map2.get("ticket");
+        String nonceStr = RandomUtil.randomString(32);// 随机字符串
+        String timeStamp = String.valueOf(System.currentTimeMillis() / 1000);// 时间戳
+        String url = "http://wpct.x597.com";   //test
+        //String url = "http://fjwpct.com";
+
+        String jsapi_ticket = "jsapi_ticket=" + ticket + "&noncestr=" + nonceStr + "&timestamp=" + timeStamp + "&url=" + url;
+
+        String resSign = DigestUtil.sha1Hex(jsapi_ticket);
+        HashMap<String, Object> respJsonMap = new HashMap();
+
+        respJsonMap.put("appId", wxPayConfig.getAppid());
+        respJsonMap.put("timestamp", timeStamp);
+        respJsonMap.put("nonceStr", nonceStr);
+        respJsonMap.put("signature", resSign);
+
+        String respJson = gson.toJson(respJsonMap);
+
+        return ResultBody.ok(respJson);
+    }
     @ApiOperation("缴交物业费")
     @PostMapping("/property/pay")
-    public Object wechatPay(@RequestParam String openid, @RequestParam int orderNo) throws Exception {
-        String resultJson = wechatPayService.jsapiPay(openid, orderNo);
+    public Object wechatPay(@RequestParam String openid, @RequestParam int[] orderNos) throws Exception {
+        String resultJson = wechatPayService.jsapiPay(openid, orderNos);
         return ResultBody.ok(resultJson);
     }
 
@@ -171,10 +219,10 @@ public class WeChatApi {
     @ApiOperation(value = "微信用户绑定房屋信息",notes = "id、hid不传")
     @RequestMapping(value = "/bind",method = RequestMethod.POST)
     public Object bind(@RequestBody WechatUser wechatUser){
-        if (housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildName(),wechatUser.getRoomNum()) != null){
-            int hid = (int) housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildName(),wechatUser.getRoomNum()).getId();
+        if (housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildNumber(),wechatUser.getHouseNo()) != null){
+            int hid = (int) housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildNumber(),wechatUser.getHouseNo()).getId();
             wechatUser.setHid(hid);
-            if (wechatPayService.checkBind(wechatUser.getOpenid(),hid) == null){
+            if (wechatPayService.checkBind(wechatUser.getOpenid(),hid) != null){
                 return ResultBody.fail("您已绑定过该房屋，请勿重复绑定");
             }
             wechatPayService.bind(wechatUser);
@@ -240,5 +288,23 @@ public class WeChatApi {
             res.put("telephone",housingInformationDto.getPhone());
             return ResultBody.ok(res);
         }
+    }
+
+    @ApiOperation("根据openid获取房屋信息")
+    @RequestMapping(value = "/getHouse",method = RequestMethod.GET)
+    public Object getHouse(@RequestParam String openid){
+        List<JSONObject> res = new ArrayList<>();
+        for(WechatUser wechatUser : wechatService.getByOpenid(openid)){
+            JSONObject jsonObject = new JSONObject();
+            QueryWrapper queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("id",wechatUser.getHid());
+            HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper);
+            jsonObject.put("hid",wechatUser.getHid());
+            jsonObject.put("villageName",housingInformationDto.getVillageName());
+            jsonObject.put("buildName",housingInformationDto.getBuildNumber());
+            jsonObject.put("roomNum",housingInformationDto.getHouseNo());
+            res.add(jsonObject);
+        }
+        return res;
     }
 }
