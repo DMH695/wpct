@@ -1,5 +1,7 @@
 package com.example.wpct.controller.weChat;
 
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -19,6 +21,7 @@ import com.example.wpct.service.HousingInformationService;
 import com.example.wpct.service.WechatPayService;
 import com.example.wpct.service.impl.WechatServiceImpl;
 import com.example.wpct.utils.ResultBody;
+import com.example.wpct.utils.WeiXinUtil;
 import com.google.gson.Gson;
 import com.wechat.pay.contrib.apache.httpclient.exception.HttpCodeException;
 import com.wechat.pay.contrib.apache.httpclient.exception.NotFoundException;
@@ -149,7 +152,48 @@ public class WeChatApi {
         }
         return ResultBody.ok(rMap);
     }
+    /**
+     * 初始化前端 wx.config必要参数
+     */
+    @ApiOperation("获取jsapiSDK")
+    @PostMapping("/jsapi/sdk")
+    public Object wechatPaySDK() {
+        Gson gson = new Gson();
 
+        // https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET
+        String url1 = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + wxPayConfig.getAppid() + "&secret=" + wxPayConfig.getAppSecret();
+        String resu1 = WeiXinUtil.httpRequest(url1, "GET", null);
+
+        HashMap<String, Object> map = gson.fromJson(resu1, HashMap.class);
+        String access_token = (String) map.get("access_token");
+
+
+
+        // https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token="+access_token+"&type=jsapi";
+        url1 = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=" + access_token + "&type=jsapi";
+        String resu2 = WeiXinUtil.httpRequest(url1, "GET", null);
+
+        HashMap<String, Object> map2 = gson.fromJson(resu2, HashMap.class);
+        String ticket = (String) map2.get("ticket");
+        String nonceStr = RandomUtil.randomString(32);// 随机字符串
+        String timeStamp = String.valueOf(System.currentTimeMillis() / 1000);// 时间戳
+        String url = "http://wpct.x597.com";   //test
+        //String url = "http://fjwpct.com";
+
+        String jsapi_ticket = "jsapi_ticket=" + ticket + "&noncestr=" + nonceStr + "&timestamp=" + timeStamp + "&url=" + url;
+
+        String resSign = DigestUtil.sha1Hex(jsapi_ticket);
+        HashMap<String, Object> respJsonMap = new HashMap();
+
+        respJsonMap.put("appId", wxPayConfig.getAppid());
+        respJsonMap.put("timestamp", timeStamp);
+        respJsonMap.put("nonceStr", nonceStr);
+        respJsonMap.put("signature", resSign);
+
+        String respJson = gson.toJson(respJsonMap);
+
+        return ResultBody.ok(respJson);
+    }
     @ApiOperation("缴交物业费")
     @PostMapping("/property/pay")
     public Object wechatPay(@RequestParam String openid, @RequestParam int orderNo) throws Exception {

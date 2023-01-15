@@ -13,6 +13,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
         //访问路径
         registry.addResourceHandler("/api/**") //不能直接/**
                 //映射真实路径
-                .addResourceLocations("file:" + PathUtils.getRunPath() + "/");//必须加"/"，不然映射不到
+                .addResourceLocations("file:" + "/tmp/work/Tomcat/localhost/ROOT/null/");//必须加"/"，不然映射不到
     }
 }
