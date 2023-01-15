@@ -35,10 +35,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Api(tags = "微信相关API")
 @RestController
@@ -196,8 +194,8 @@ public class WeChatApi {
     }
     @ApiOperation("缴交物业费")
     @PostMapping("/property/pay")
-    public Object wechatPay(@RequestParam String openid, @RequestParam int orderNo) throws Exception {
-        String resultJson = wechatPayService.jsapiPay(openid, orderNo);
+    public Object wechatPay(@RequestParam String openid, @RequestParam int[] orderNos) throws Exception {
+        String resultJson = wechatPayService.jsapiPay(openid, orderNos);
         return ResultBody.ok(resultJson);
     }
 

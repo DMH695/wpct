@@ -34,10 +34,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
 @Service
 public class WechatServiceImpl implements WechatPayService {
     @Resource
@@ -69,10 +68,16 @@ public class WechatServiceImpl implements WechatPayService {
      * 微信用户缴费后，需要修改property_order表中的status和housing表中的due_date 并生成账单
      */
     @Override
-    public String jsapiPay(String openid, int orderId) throws Exception {
-        QueryWrapper queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("order_no",orderId);
-        PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
+    public String jsapiPay(String openid, int[] orderIds) throws Exception {
+        double total = 0;
+        List<Integer> orderIds1 = Arrays.stream(orderIds).boxed().collect(Collectors.toList());
+        //遍历累加计算总金额
+        for(int orderId : orderIds1){
+            QueryWrapper queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("order_no",orderId);
+            PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
+            total = total + propertyOrderDto.getCost();
+        }
         HttpPost httpPost = new HttpPost(wxPayConfig.getDomain().concat("/v3/pay/transactions/jsapi"));
         //请求body参数
         //设置gson不转码
@@ -80,13 +85,14 @@ public class WechatServiceImpl implements WechatPayService {
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("appid", wxPayConfig.getAppid());
         paramsMap.put("mchid", wxPayConfig.getMchId());
-        paramsMap.put("description", propertyOrderDto.getCostDetail());
-        paramsMap.put("out_trade_no", propertyOrderDto.getOrderNo());   //test
+        String no = UUID.randomUUID().toString();
+        paramsMap.put("description", "武平城投-缴交物业费");
+        paramsMap.put("out_trade_no", no);   //test
         paramsMap.put("notify_url", "http://wpct.x597.com/weixin/jsapi/notify");  //test
 
         Map amountMap = new HashMap();
         //金额转化为分
-        String str  = String.valueOf(propertyOrderDto.getCost() * 100);
+        String str  = String.valueOf(total * 100);
         Integer cost = Integer.parseInt(str);
         amountMap.put("total",cost);
         amountMap.put("currency", "CNY");
@@ -139,26 +145,32 @@ public class WechatServiceImpl implements WechatPayService {
             resultMap.put("signType", "RSA");
             resultMap.put("paySign", Sign);
             String resultJson = gson.toJson(resultMap);
-            //修改property_order表中的payment_status
-            propertyOrderMapper.updateStatus(orderId);
-            //修改housing中的due_date
-            housingInformationMapper.updateDate((int) propertyOrderDto.getHouseId());
-            //生成账单
-            Bill bill = new Bill();
-            bill.setPay(propertyOrderDto.getCost());
-            bill.setDetail(propertyOrderDto.getCostDetail());
-            bill.setOpenid(openid);
-            QueryWrapper queryWrapper1 = new QueryWrapper<>();
-            queryWrapper1.eq("id",propertyOrderDto.getHouseId());
-            HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
-            bill.setVillageName(housingInformationDto.getVillageName());
-            bill.setBuildName(housingInformationDto.getBuildNumber());
-            bill.setRooNum(housingInformationDto.getHouseNo());
-            bill.setType("物业费");
-            bill.setLocation("微信");
-            String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
-            bill.setDate(date);
-            billMapper.insert(bill);
+            for(int orderId : orderIds1){
+                QueryWrapper queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("order_no",orderId);
+                PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
+                total = total + propertyOrderDto.getCost();
+                //修改property_order表中的payment_status
+                propertyOrderMapper.updateStatus(orderId);
+                //修改housing中的due_date
+                housingInformationMapper.updateDate((int) propertyOrderDto.getHouseId());
+                //生成账单
+                Bill bill = new Bill();
+                bill.setPay(propertyOrderDto.getCost());
+                bill.setDetail(propertyOrderDto.getCostDetail());
+                bill.setOpenid(openid);
+                QueryWrapper queryWrapper1 = new QueryWrapper<>();
+                queryWrapper1.eq("id",propertyOrderDto.getHouseId());
+                HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
+                bill.setVillageName(housingInformationDto.getVillageName());
+                bill.setBuildName(housingInformationDto.getBuildNumber());
+                bill.setRooNum(housingInformationDto.getHouseNo());
+                bill.setType("物业费");
+                bill.setLocation("微信");
+                String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
+                bill.setDate(date);
+                billMapper.insert(bill);
+            }
             return resultJson;
         } finally {
             response.close();
