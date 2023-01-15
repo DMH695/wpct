@@ -7,8 +7,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.wpct.config.WxPayConfig;
 import com.example.wpct.entity.HousingInformationDto;
+import com.example.wpct.entity.PropertyOrderDto;
 import com.example.wpct.entity.VillageDto;
 import com.example.wpct.entity.WechatUser;
+import com.example.wpct.mapper.HousingInformationMapper;
 import com.example.wpct.mapper.VillageMapper;
 import com.example.wpct.mapper.WechatUserMapper;
 import com.example.wpct.service.BuildService;
@@ -30,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +62,9 @@ public class WeChatApi {
 
     @Autowired
     WechatServiceImpl wechatService;
+
+    @Autowired
+    HousingInformationMapper housingInformationMapper;
 
     @ApiOperation("获取openid和昵称")
     @RequestMapping(value = "/getOpenid",method = RequestMethod.GET)
@@ -240,5 +246,23 @@ public class WeChatApi {
             res.put("telephone",housingInformationDto.getPhone());
             return ResultBody.ok(res);
         }
+    }
+
+    @ApiOperation("根据openid获取房屋信息")
+    @RequestMapping(value = "/getHouse",method = RequestMethod.GET)
+    public Object getHouse(@RequestParam String openid){
+        List<JSONObject> res = new ArrayList<>();
+        for(WechatUser wechatUser : wechatService.getByOpenid(openid)){
+            JSONObject jsonObject = new JSONObject();
+            QueryWrapper queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("id",wechatUser.getHid());
+            HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper);
+            jsonObject.put("hid",wechatUser.getHid());
+            jsonObject.put("villageName",housingInformationDto.getVillageName());
+            jsonObject.put("buildName",housingInformationDto.getBuildNumber());
+            jsonObject.put("roomNum",housingInformationDto.getHouseNo());
+            res.add(jsonObject);
+        }
+        return res;
     }
 }
