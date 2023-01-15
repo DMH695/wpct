@@ -51,13 +51,13 @@ public class WechatUser {
      * build_number
      */
     @TableField(exist = false)
-    private String buildName;
+    private String buildNumber;
 
     /**
      * 房号 house_no
      */
     @TableField(exist = false)
-    private String roomNum;
+    private String houseNo;
     private String relation;
 
     private int hid;

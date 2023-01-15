@@ -18,8 +18,8 @@ public class WechatUserController {
 
     @ApiOperation("分页查找微信用户信息")
     @GetMapping("/wechatuserinfo")
-    public ResultBody wechatUserInfoAndHouseInfo(int pageNum,int pageSize){
-        return ResultBody.ok(wechatUserService.getWechatUserInfoAndHouseInfo(pageNum, pageSize));
+    public ResultBody wechatUserInfoAndHouseInfo(int pageNum,int pageSize,String name,String telephone){
+        return ResultBody.ok(wechatUserService.getWechatUserInfoAndHouseInfo(pageNum, pageSize, name, telephone));
     }
 
     @ApiOperation("删除微信用户信息")

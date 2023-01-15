@@ -6,6 +6,6 @@ import io.swagger.models.auth.In;
 import javax.xml.transform.Result;
 
 public interface WechatUserService {
-    ResultBody getWechatUserInfoAndHouseInfo(int pageNum, int pageSize);
+    ResultBody getWechatUserInfoAndHouseInfo(int pageNum, int pageSize,String name,String telephone);
     ResultBody deleteWechatUser(Integer id);
 }

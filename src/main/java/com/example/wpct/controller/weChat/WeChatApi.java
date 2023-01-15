@@ -219,8 +219,8 @@ public class WeChatApi {
     @ApiOperation(value = "微信用户绑定房屋信息",notes = "id、hid不传")
     @RequestMapping(value = "/bind",method = RequestMethod.POST)
     public Object bind(@RequestBody WechatUser wechatUser){
-        if (housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildName(),wechatUser.getRoomNum()) != null){
-            int hid = (int) housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildName(),wechatUser.getRoomNum()).getId();
+        if (housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildNumber(),wechatUser.getHouseNo()) != null){
+            int hid = (int) housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildNumber(),wechatUser.getHouseNo()).getId();
             wechatUser.setHid(hid);
             if (wechatPayService.checkBind(wechatUser.getOpenid(),hid) != null){
                 return ResultBody.fail("您已绑定过该房屋，请勿重复绑定");

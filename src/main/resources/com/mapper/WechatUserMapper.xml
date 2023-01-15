@@ -8,12 +8,18 @@
                     VALUES(#{w.nickName},#{w.name},#{w.telephone},#{w.openid},#{w.hid},#{w.relation})</insert>
     <select id="checkBind" resultType="WechatUser">SELECT * FROM wechat_user WHERE openid=#{openid} and hid=#{hid}</select>
 
-    <select id="getWechatUserInfoAndHouseInfo" resultType="com.example.wpct.entity.WechatUser">
+    <select id="getWechatUserInfoAndHouseInfo" resultType="com.example.wpct.entity.WechatUser" parameterType="String">
         SELECT
             w.id,w.nickname,w.name,w.telephone,w.openid,w.relation,w.hid,
-            h.village_name,h.build_number,h.house_no
+            h.village_name villageName,h.build_number buildNumber,h.house_no houseNo
         FROM wechat_user w,housing_information h
         where h.id=w.hid
+        <if test="telephone != null and telephone !=''">
+            and w.telephone like "%"#{telephone}"%"
+        </if>
+        <if test="name !=null and name !=''">
+            and w.name like "%"#{name}"%"
+        </if>
     </select>
 
 </mapper>
