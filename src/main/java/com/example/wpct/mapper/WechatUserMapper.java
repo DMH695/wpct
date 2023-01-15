@@ -18,4 +18,5 @@ public interface WechatUserMapper extends BaseMapper<WechatUser> {
     List<WechatUser> getByOpenid(String openid);
     void bind(@Param("w")WechatUser wechatUser);
     WechatUser checkBind(String openid, int hid);
+    List<WechatUser> getWechatUserInfoAndHouseInfo();
 }
