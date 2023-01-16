@@ -19,6 +19,7 @@ import com.wechat.pay.contrib.apache.httpclient.exception.NotFoundException;
 import com.wechat.pay.contrib.apache.httpclient.notification.Notification;
 import com.wechat.pay.contrib.apache.httpclient.notification.NotificationHandler;
 import com.wechat.pay.contrib.apache.httpclient.notification.NotificationRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -36,7 +37,7 @@ import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 public class WechatServiceImpl implements WechatPayService {
     @Resource
@@ -78,6 +79,7 @@ public class WechatServiceImpl implements WechatPayService {
             PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
             total = total + propertyOrderDto.getCost();
         }
+        log.warn("调用统一下单api");
         HttpPost httpPost = new HttpPost(wxPayConfig.getDomain().concat("/v3/pay/transactions/jsapi"));
         //请求body参数
         //设置gson不转码
@@ -105,7 +107,7 @@ public class WechatServiceImpl implements WechatPayService {
 
         //将参数转换成json字符串
         String jsonParams = gson.toJson(paramsMap);
-
+        log.info("请求参数:{}", jsonParams);
         StringEntity entity = new StringEntity(jsonParams, "utf-8");
         entity.setContentType("application/json");
         httpPost.setEntity(entity);
@@ -118,10 +120,14 @@ public class WechatServiceImpl implements WechatPayService {
             String bodyAsString = EntityUtils.toString(response.getEntity());
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 200) { //处理成功
+                log.info("成功, 返回结果 = " + bodyAsString);
             } else if (statusCode == 204) { //处理成功，无返回Body
+                log.info("成功");
             } else {
                 //throw new IOException("request failed");
                 //给前端返回信息
+                log.info("JSAPI下单失败,响应码 = " + statusCode + ",返回结果 = " +
+                        bodyAsString);
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("statusCode",statusCode);
                 jsonObject.put("bodyAsString",bodyAsString);
@@ -145,6 +151,7 @@ public class WechatServiceImpl implements WechatPayService {
             resultMap.put("signType", "RSA");
             resultMap.put("paySign", Sign);
             String resultJson = gson.toJson(resultMap);
+            log.warn("resultJson是=====>{}", resultJson);
             for(String orderId : orderIds){
                 QueryWrapper queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("order_no",Long.parseLong(orderId));
