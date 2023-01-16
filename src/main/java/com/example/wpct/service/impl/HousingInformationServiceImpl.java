@@ -40,7 +40,6 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     private BuildServiceImpl buildService;
 
 
-
     @Override
     public PageInfo<HousingInformationDto> listByVo(HousingInformationVo vo) {
         int pageNum = vo.getPageNum();
@@ -80,7 +79,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .calculateFee(0).discount(0).remarks("测试数据").poolBalance(1500).propertyFee(1500)
                 .bindWechatUser("wechatUser").dueDate(new Timestamp(System.currentTimeMillis()).toString()).build();
         excelList.add(example);
-        response.setHeader("Content-Disposition", "attachment;filename="+snowflake.nextIdStr()+"template.xlsx");
+        response.setHeader("Content-Disposition", "attachment;filename=" + snowflake.nextIdStr() + "template.xlsx");
         EasyExcel.write(response.getOutputStream())
                 .head(HousingInformationDto.class)
                 .sheet("importTemplate")
@@ -99,10 +98,10 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
             HousingInformationDto one = query().eq("village_name", dto.getVillageName())
                     .eq("build_number", dto.getBuildNumber())
                     .eq("house_no", dto.getHouseNo()).one();
-            if (one == null){
+            if (one == null) {
                 saveList.add(dto);
                 saveParent(dto);
-            }else {
+            } else {
                 dto.setId(one.getId());
                 updateList.add(dto);
                 saveParent(dto);
@@ -115,7 +114,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
 
     @Override
     public HousingInformationDto getByVbr(String villageName, String buildName, String roomNum) {
-        return housingInformationMapper.getByVbr(villageName,buildName,roomNum);
+        return housingInformationMapper.getByVbr(villageName, buildName, roomNum);
     }
 
     @Override
@@ -124,10 +123,10 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .eq("village_name", dto.getVillageName())
                 .eq("build_number", dto.getBuildNumber())
                 .eq("house_no", dto.getHouseNo()).one();
-        if (one == null){
+        if (one == null) {
             saveParent(dto);
             return ResultBody.ok(save(dto));
-        }else {
+        } else {
             return ResultBody.fail("house already exists");
         }
     }
@@ -138,25 +137,26 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .eq("village_name", dto.getVillageName())
                 .eq("build_number", dto.getBuildNumber())
                 .eq("house_no", dto.getHouseNo()).one();
-        if (house == null || house.getId() == dto.getId()){
+        if (house == null || house.getId() == dto.getId()) {
             saveParent(dto);
             return ResultBody.ok(updateById(dto));
-        }else {
+        } else {
             return ResultBody.fail("same house exists");
         }
     }
 
-    private void saveParent(HousingInformationDto dto){
+    private void saveParent(HousingInformationDto dto) {
         String villageName = dto.getVillageName();
         String buildNumber = dto.getBuildNumber();
         VillageDto village = villageService.query().eq("name", villageName).one();
         BuildDto build = buildService.query().eq("name", buildNumber).one();
-        if (village == null){
+        if (village == null) {
             village = VillageDto.builder().name(villageName).build();
             villageService.save(village);
         }
-        if (build == null){
-            buildService.save(BuildDto.builder().villageId(village.getId()).name(buildNumber).build());
+        if (build == null) {
+            build = BuildDto.builder().villageId(village.getId()).name(buildNumber).build();
+            buildService.save(build);
         }
     }
 
