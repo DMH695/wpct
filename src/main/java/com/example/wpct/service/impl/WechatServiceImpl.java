@@ -85,7 +85,7 @@ public class WechatServiceImpl implements WechatPayService {
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("appid", wxPayConfig.getAppid());
         paramsMap.put("mchid", wxPayConfig.getMchId());
-        String no = UUID.randomUUID().toString();
+        String no = String.valueOf(System.currentTimeMillis());
         paramsMap.put("description", "武平城投-缴交物业费");
         paramsMap.put("out_trade_no", no);   //test
         paramsMap.put("notify_url", "http://wpct.x597.com/weixin/jsapi/notify");  //test
@@ -125,6 +125,7 @@ public class WechatServiceImpl implements WechatPayService {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("statusCode",statusCode);
                 jsonObject.put("bodyAsString",bodyAsString);
+                System.out.println(jsonObject);
                 return ResultBody.ok(jsonObject).toString();
             }
 
@@ -132,8 +133,7 @@ public class WechatServiceImpl implements WechatPayService {
             String timeStamp = String.valueOf(System.currentTimeMillis() / 1000);// 时间戳
 
             //响应结果
-            Map<String, String> resultMap = gson.fromJson(bodyAsString,
-                    HashMap.class);
+            Map<String, String> resultMap = gson.fromJson(bodyAsString, HashMap.class);
             String prepayId = resultMap.get("prepay_id");
 
 
@@ -164,7 +164,7 @@ public class WechatServiceImpl implements WechatPayService {
                 HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
                 bill.setVillageName(housingInformationDto.getVillageName());
                 bill.setBuildName(housingInformationDto.getBuildNumber());
-                bill.setRooNum(housingInformationDto.getHouseNo());
+                bill.setRoomNum(housingInformationDto.getHouseNo());
                 bill.setType("物业费");
                 bill.setLocation("微信");
                 String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
@@ -253,7 +253,7 @@ public class WechatServiceImpl implements WechatPayService {
             HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
             bill.setVillageName(housingInformationDto.getVillageName());
             bill.setBuildName(housingInformationDto.getBuildNumber());
-            bill.setRooNum(housingInformationDto.getHouseNo());
+            bill.setRoomNum(housingInformationDto.getHouseNo());
             String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
             bill.setDate(date);
             bill.setOpenid(openid);
@@ -343,7 +343,7 @@ public class WechatServiceImpl implements WechatPayService {
             HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
             bill.setVillageName(housingInformationDto.getVillageName());
             bill.setBuildName(housingInformationDto.getBuildNumber());
-            bill.setRooNum(housingInformationDto.getHouseNo());
+            bill.setRoomNum(housingInformationDto.getHouseNo());
             String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
             bill.setDate(date);
             bill.setOpenid(openid);

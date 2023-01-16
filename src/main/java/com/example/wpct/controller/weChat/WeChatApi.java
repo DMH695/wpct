@@ -197,8 +197,8 @@ public class WeChatApi {
     public Object wechatPay(@RequestParam String openid, @RequestParam List<String> orderNos) throws Exception {
 
         //List<String> orderNos1 = Arrays.asList(orderNos);
-        System.out.println(orderNos);
         String resultJson = wechatPayService.jsapiPay(openid, orderNos);
+        System.out.println(resultJson);
         return ResultBody.ok(resultJson);
     }
 

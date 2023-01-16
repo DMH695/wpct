@@ -14,7 +14,7 @@ public class Bill {
     private String openid;
     private String villageName;
     private String buildName;
-    private String rooNum;
+    private String roomNum;
     private String type;//缴交方式
     private String location;//从哪里扣钱
     private String date;//缴交日期
