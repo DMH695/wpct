@@ -194,7 +194,10 @@ public class WeChatApi {
     }
     @ApiOperation("缴交物业费")
     @PostMapping("/property/pay")
-    public Object wechatPay(@RequestParam String openid, @RequestParam int[] orderNos) throws Exception {
+    public Object wechatPay(@RequestParam String openid, @RequestParam List<String> orderNos) throws Exception {
+
+        //List<String> orderNos1 = Arrays.asList(orderNos);
+        System.out.println(orderNos);
         String resultJson = wechatPayService.jsapiPay(openid, orderNos);
         return ResultBody.ok(resultJson);
     }

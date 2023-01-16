@@ -6,4 +6,18 @@
     <insert id="insert">INSERT INTO bill(pay,detail,openid,villageName,buildName,roomNum,type,location,date) VALUES
                     (#{bill.pay},#{bill.detail},#{bill.openid},#{bill.villageName},#{bill.buildName},
                      #{bill.roomNum},#{bill.type},#{bill.location},#{bill.date})</insert>
+    <select id="getAll" resultType="Bill">SELECT * FROM bill
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="villageName!=null and villageName!=''" >
+                and villageName=#{villageName}
+            </if>
+            <if test="buildName!=null and buildName!=''" >
+                and buildName=#{buildName}
+            </if>
+            <if test="roomNum!=null and roomNum!=''" >
+                and roomNum=#{roomNum}
+            </if>
+        </trim>
+    </select>
+    <delete id="delete">DELETE FROM bill WHERE id=#{id}</delete>
 </mapper>

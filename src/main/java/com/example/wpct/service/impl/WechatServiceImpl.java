@@ -68,13 +68,13 @@ public class WechatServiceImpl implements WechatPayService {
      * 微信用户缴费后，需要修改property_order表中的status和housing表中的due_date 并生成账单
      */
     @Override
-    public String jsapiPay(String openid, int[] orderIds) throws Exception {
+    public String jsapiPay(String openid, List<String> orderIds) throws Exception {
         double total = 0;
-        List<Integer> orderIds1 = Arrays.stream(orderIds).boxed().collect(Collectors.toList());
+        //List<Long> orderIds1 = Arrays.stream(orderIds).boxed().collect(Collectors.toList());
         //遍历累加计算总金额
-        for(int orderId : orderIds1){
+        for(String orderId : orderIds){
             QueryWrapper queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("order_no",orderId);
+            queryWrapper.eq("order_no",Long.parseLong(orderId));
             PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
             total = total + propertyOrderDto.getCost();
         }
@@ -93,7 +93,7 @@ public class WechatServiceImpl implements WechatPayService {
         Map amountMap = new HashMap();
         //金额转化为分
         String str  = String.valueOf(total * 100);
-        Integer cost = Integer.parseInt(str);
+        Integer cost = Integer.parseInt(replace(str));
         amountMap.put("total",cost);
         amountMap.put("currency", "CNY");
 
@@ -145,13 +145,13 @@ public class WechatServiceImpl implements WechatPayService {
             resultMap.put("signType", "RSA");
             resultMap.put("paySign", Sign);
             String resultJson = gson.toJson(resultMap);
-            for(int orderId : orderIds1){
+            for(String orderId : orderIds){
                 QueryWrapper queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("order_no",orderId);
+                queryWrapper.eq("order_no",Long.parseLong(orderId));
                 PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
                 total = total + propertyOrderDto.getCost();
                 //修改property_order表中的payment_status
-                propertyOrderMapper.updateStatus(orderId);
+                propertyOrderMapper.updateStatus(Long.parseLong(orderId));
                 //修改housing中的due_date
                 housingInformationMapper.updateDate((int) propertyOrderDto.getHouseId());
                 //生成账单
@@ -446,7 +446,13 @@ public class WechatServiceImpl implements WechatPayService {
         }
 
     }
-
+    public static String replace(String s){
+        if(null != s && s.indexOf(".") > 0){
+            s = s.replaceAll("0+?$", "");//去掉多余的0
+            s = s.replaceAll("[.]$", "");//如最后一位是.则去掉
+        }
+        return s;
+    }
     @Override
     public WechatUser checkBind(String openid, int hid) {
         return wechatUserMapper.checkBind(openid, hid);
