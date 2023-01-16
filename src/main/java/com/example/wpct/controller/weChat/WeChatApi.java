@@ -241,6 +241,15 @@ public class WeChatApi {
         String notify = wechatPayService.payNotify(request, response);
         return ResultBody.ok(notify);
     }
+    /**
+     * 查询订单
+     */
+    @ApiOperation("查询订单：测试订单状态用")
+    @GetMapping("/query")
+    public Object queryOrder(@RequestParam String orderNo,@RequestParam String openid) throws IOException {
+        String bodyAsString = wechatPayService.queryOrder(Long.parseLong(orderNo),openid);
+        return ResultBody.ok(bodyAsString);
+    }
 
     @ApiOperation("微信绑定房屋信息——返回树形结构楼栋")
     @RequestMapping(value = "/house/tree",method = RequestMethod.GET)

@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface HousingInformationMapper extends BaseMapper<HousingInformationDto> {
-    void updateDate(int house_id);
+    void updateDate(long house_id);
     void investProperty(Double property_fee,int hid);
     void investShare(Double poolBanlance,int hid);
     HousingInformationDto getByVbr(String villageName,String buildName,String roomNum);
