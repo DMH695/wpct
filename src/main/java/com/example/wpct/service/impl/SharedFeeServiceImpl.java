@@ -15,7 +15,6 @@ import com.example.wpct.mapper.SharedFeeMapper;
 import com.example.wpct.mapper.WechatUserMapper;
 import com.example.wpct.service.SharedFeeService;
 import com.example.wpct.utils.ResultBody;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.SneakyThrows;
@@ -27,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.math.BigInteger;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +43,7 @@ public class SharedFeeServiceImpl extends ServiceImpl<SharedFeeMapper, SharedFee
 
     @Override
     public ResultBody list(SharedFeeVo vo) {
-        Page<SharedFeeDto> page = PageHelper.startPage(vo.getPageNum(), vo.getPageSize());
+        PageHelper.startPage(vo.getPageNum(), vo.getPageSize());
         String villageName = vo.getVillageName();
         String buildNumber = vo.getBuildNumber();
         String houseNo = vo.getHouseNo();

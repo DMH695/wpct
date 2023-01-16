@@ -13,21 +13,17 @@ import com.example.wpct.mapper.PropertyOrderMapper;
 import com.example.wpct.mapper.WechatUserMapper;
 import com.example.wpct.service.PropertyOrderService;
 import com.example.wpct.utils.ResultBody;
-import com.example.wpct.utils.SnowFlakeIdUtils;
 import com.example.wpct.utils.StringUtils;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -86,7 +82,6 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
     @Synchronized
     public int automaticPayment() {
         List<PropertyOrderDto> notPayment = query().eq("payment_status", 0).list();
-        List<HousingInformationDto> afterUpdateHouseList = new ArrayList<>();
         List<PropertyOrderDto> afterUpdateOrderList = new ArrayList<>();
         for (PropertyOrderDto dto : notPayment) {
             HousingInformationDto house = housingInformationService.query().eq("id", dto.getHouseId()).one();
@@ -102,7 +97,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
                 house.setPropertyFee(house.getPropertyFee() - dto.getCost());
                 house.setDueDate(new Timestamp(System.currentTimeMillis()).toString());
                 house.setUpdated(new Timestamp(System.currentTimeMillis()).toString());
-                afterUpdateHouseList.add(house);
+                housingInformationService.updateById(house);
                 dto.setPaymentStatus(1);
                 dto.setUpdateTime(new Timestamp(System.currentTimeMillis()).toString());
                 afterUpdateOrderList.add(dto);
@@ -112,17 +107,16 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
                 );
             }
         }
-        housingInformationService.updateBatchById(afterUpdateHouseList);
         this.updateBatchById(afterUpdateOrderList);
-        return afterUpdateHouseList.size();
+        return afterUpdateOrderList.size();
     }
 
     @Override
     public ResultBody list(PropertyOrderVo vo) {
-        Page<PropertyOrderDto> page = PageHelper.startPage(vo.getPageNum(),vo.getPageSize());
         List<Long> houseIds = housingInformationService.getIdsByHouseInfo(
                 vo.getVillageName(), vo.getBuildNumber(), vo.getHouseNo()
         );
+        PageHelper.startPage(vo.getPageNum(),vo.getPageSize());
         List<PropertyOrderDto> orderList = this.query()
                 .in("house_id", houseIds)
                 .le(StringUtils.isNotEmpty(vo.getEndDate()), "end_date", vo.getEndDate())
@@ -138,10 +132,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
 
     @Override
     public void getTemplate(HttpServletResponse response) {
-        Snowflake snowflake = new Snowflake();
-        List<PropertyOrderDto> excelList = new ArrayList<>();
-        PropertyOrderDto example = PropertyOrderDto.builder()
-                .houseId(123L).paymentStatus(0).cost(123).costDetail("{}").build();
+
     }
 
     @Override

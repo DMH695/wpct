@@ -18,7 +18,7 @@ public class SharedFeeScheduledService {
     /**
      * 每月二号晚上三点执行自动缴交物业费计划任务
      */
-    @Scheduled(cron = "0 0 0,3 2 * ?")
+    //@Scheduled(cron = "0 0 0,3 2 * ?")
     public void automaticPayment(){
         log.info("公摊费自动缴交订单成功数量：" + sharedFeeService.automaticPayment());
     }

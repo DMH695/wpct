@@ -30,8 +30,8 @@ public class PropertyOrderController {
 
     @ApiOperation("手动删除订单")
     @DeleteMapping("/remove")
-    public ResultBody remove(@RequestParam Integer id){
-        return ResultBody.ok(propertyOrderService.removeById(id));
+    public ResultBody remove(@RequestParam Long orderNo){
+        return ResultBody.ok(propertyOrderService.removeById(orderNo));
     }
 
     @ApiOperation("手动更新订单信息")

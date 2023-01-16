@@ -32,7 +32,7 @@ public class HousingInformationController {
     @DeleteMapping("/delete")
     @ApiOperation("删除指定id的房屋信息")
     public ResultBody delete(@RequestParam Integer id) {
-        return ResultBody.ok(housingInformationService.remove(housingInformationService.query().eq("id", id)));
+        return ResultBody.ok(housingInformationService.removeById(id));
     }
 
     @PostMapping("/update")

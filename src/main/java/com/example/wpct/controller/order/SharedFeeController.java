@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/shared/fee")
-@Api(tags = "公摊费管理模块")
+@Api(tags = "公摊费管理模块(弃用)", hidden = true)
 public class SharedFeeController {
 
     @Autowired

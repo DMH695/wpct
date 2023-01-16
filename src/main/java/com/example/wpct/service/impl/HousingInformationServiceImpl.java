@@ -2,7 +2,6 @@ package com.example.wpct.service.impl;
 
 import cn.hutool.core.lang.Snowflake;
 import com.alibaba.excel.EasyExcel;
-import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.vo.HousingInformationVo;
@@ -10,22 +9,18 @@ import com.example.wpct.mapper.HousingInformationMapper;
 import com.example.wpct.service.HousingInformationService;
 import com.example.wpct.utils.ResultBody;
 import com.example.wpct.utils.StringUtils;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.ParameterResolutionDelegate;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -40,7 +35,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     public PageInfo<HousingInformationDto> listByVo(HousingInformationVo vo) {
         int pageNum = vo.getPageNum();
         int pageSize = vo.getPageSize();
-        Page<HousingInformationDto> page = PageHelper.startPage(pageNum, pageSize);
+        PageHelper.startPage(pageNum, pageSize);
         List<HousingInformationDto> res = query()
                 .like(StringUtils.isNotEmpty(vo.getVillageName()), "village_name", vo.getVillageName())
                 .eq(StringUtils.isNotEmpty(vo.getBuildNumber()), "build_number", vo.getBuildNumber())
