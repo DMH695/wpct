@@ -15,10 +15,12 @@ spring:
       max-request-size: 300MB
   main:
     allow-circular-references: true
+  redis:
+    host: 124.71.9.121
+    port: 6379
 mybatis-plus:
   mapper-locations: classpath:com/mapper/*.xml
   type-aliases-package: com.example.wpct.entity
 pagehelper:
   helperDialect: mysql
   supportMethodsArguments: true
-
