@@ -19,6 +19,7 @@ import com.wechat.pay.contrib.apache.httpclient.exception.NotFoundException;
 import com.wechat.pay.contrib.apache.httpclient.notification.Notification;
 import com.wechat.pay.contrib.apache.httpclient.notification.NotificationHandler;
 import com.wechat.pay.contrib.apache.httpclient.notification.NotificationRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -36,7 +37,7 @@ import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 public class WechatServiceImpl implements WechatPayService {
     @Resource
@@ -68,16 +69,17 @@ public class WechatServiceImpl implements WechatPayService {
      * 微信用户缴费后，需要修改property_order表中的status和housing表中的due_date 并生成账单
      */
     @Override
-    public String jsapiPay(String openid, int[] orderIds) throws Exception {
+    public String jsapiPay(String openid, List<String> orderIds) throws Exception {
         double total = 0;
-        List<Integer> orderIds1 = Arrays.stream(orderIds).boxed().collect(Collectors.toList());
+        //List<Long> orderIds1 = Arrays.stream(orderIds).boxed().collect(Collectors.toList());
         //遍历累加计算总金额
-        for(int orderId : orderIds1){
+        for(String orderId : orderIds){
             QueryWrapper queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("order_no",orderId);
+            queryWrapper.eq("order_no",Long.parseLong(orderId));
             PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
             total = total + propertyOrderDto.getCost();
         }
+        log.warn("调用统一下单api");
         HttpPost httpPost = new HttpPost(wxPayConfig.getDomain().concat("/v3/pay/transactions/jsapi"));
         //请求body参数
         //设置gson不转码
@@ -85,7 +87,7 @@ public class WechatServiceImpl implements WechatPayService {
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("appid", wxPayConfig.getAppid());
         paramsMap.put("mchid", wxPayConfig.getMchId());
-        String no = UUID.randomUUID().toString();
+        String no = String.valueOf(System.currentTimeMillis());
         paramsMap.put("description", "武平城投-缴交物业费");
         paramsMap.put("out_trade_no", no);   //test
         paramsMap.put("notify_url", "http://wpct.x597.com/weixin/jsapi/notify");  //test
@@ -93,7 +95,7 @@ public class WechatServiceImpl implements WechatPayService {
         Map amountMap = new HashMap();
         //金额转化为分
         String str  = String.valueOf(total * 100);
-        Integer cost = Integer.parseInt(str);
+        Integer cost = Integer.parseInt(replace(str));
         amountMap.put("total",cost);
         amountMap.put("currency", "CNY");
 
@@ -105,7 +107,7 @@ public class WechatServiceImpl implements WechatPayService {
 
         //将参数转换成json字符串
         String jsonParams = gson.toJson(paramsMap);
-
+        log.info("请求参数:{}", jsonParams);
         StringEntity entity = new StringEntity(jsonParams, "utf-8");
         entity.setContentType("application/json");
         httpPost.setEntity(entity);
@@ -118,13 +120,18 @@ public class WechatServiceImpl implements WechatPayService {
             String bodyAsString = EntityUtils.toString(response.getEntity());
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 200) { //处理成功
+                log.info("成功, 返回结果 = " + bodyAsString);
             } else if (statusCode == 204) { //处理成功，无返回Body
+                log.info("成功");
             } else {
                 //throw new IOException("request failed");
                 //给前端返回信息
+                log.info("JSAPI下单失败,响应码 = " + statusCode + ",返回结果 = " +
+                        bodyAsString);
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("statusCode",statusCode);
                 jsonObject.put("bodyAsString",bodyAsString);
+                System.out.println(jsonObject);
                 return ResultBody.ok(jsonObject).toString();
             }
 
@@ -132,8 +139,7 @@ public class WechatServiceImpl implements WechatPayService {
             String timeStamp = String.valueOf(System.currentTimeMillis() / 1000);// 时间戳
 
             //响应结果
-            Map<String, String> resultMap = gson.fromJson(bodyAsString,
-                    HashMap.class);
+            Map<String, String> resultMap = gson.fromJson(bodyAsString, HashMap.class);
             String prepayId = resultMap.get("prepay_id");
 
 
@@ -145,13 +151,14 @@ public class WechatServiceImpl implements WechatPayService {
             resultMap.put("signType", "RSA");
             resultMap.put("paySign", Sign);
             String resultJson = gson.toJson(resultMap);
-            for(int orderId : orderIds1){
+            log.warn("resultJson是=====>{}", resultJson);
+            for(String orderId : orderIds){
                 QueryWrapper queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("order_no",orderId);
+                queryWrapper.eq("order_no",Long.parseLong(orderId));
                 PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
                 total = total + propertyOrderDto.getCost();
                 //修改property_order表中的payment_status
-                propertyOrderMapper.updateStatus(orderId);
+                propertyOrderMapper.updateStatus(Long.parseLong(orderId));
                 //修改housing中的due_date
                 housingInformationMapper.updateDate((int) propertyOrderDto.getHouseId());
                 //生成账单
@@ -164,7 +171,7 @@ public class WechatServiceImpl implements WechatPayService {
                 HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
                 bill.setVillageName(housingInformationDto.getVillageName());
                 bill.setBuildName(housingInformationDto.getBuildNumber());
-                bill.setRooNum(housingInformationDto.getHouseNo());
+                bill.setRoomNum(housingInformationDto.getHouseNo());
                 bill.setType("物业费");
                 bill.setLocation("微信");
                 String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
@@ -253,7 +260,7 @@ public class WechatServiceImpl implements WechatPayService {
             HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
             bill.setVillageName(housingInformationDto.getVillageName());
             bill.setBuildName(housingInformationDto.getBuildNumber());
-            bill.setRooNum(housingInformationDto.getHouseNo());
+            bill.setRoomNum(housingInformationDto.getHouseNo());
             String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
             bill.setDate(date);
             bill.setOpenid(openid);
@@ -343,7 +350,7 @@ public class WechatServiceImpl implements WechatPayService {
             HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
             bill.setVillageName(housingInformationDto.getVillageName());
             bill.setBuildName(housingInformationDto.getBuildNumber());
-            bill.setRooNum(housingInformationDto.getHouseNo());
+            bill.setRoomNum(housingInformationDto.getHouseNo());
             String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
             bill.setDate(date);
             bill.setOpenid(openid);
@@ -446,7 +453,13 @@ public class WechatServiceImpl implements WechatPayService {
         }
 
     }
-
+    public static String replace(String s){
+        if(null != s && s.indexOf(".") > 0){
+            s = s.replaceAll("0+?$", "");//去掉多余的0
+            s = s.replaceAll("[.]$", "");//如最后一位是.则去掉
+        }
+        return s;
+    }
     @Override
     public WechatUser checkBind(String openid, int hid) {
         return wechatUserMapper.checkBind(openid, hid);

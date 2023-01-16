@@ -12,7 +12,7 @@ import java.security.GeneralSecurityException;
 import java.util.List;
 
 public interface WechatPayService {
-    String  jsapiPay(String openid, int[] orderIds) throws Exception;
+    String  jsapiPay(String openid, List<String> orderIds) throws Exception;
     String  investProperty(String openid, int money,int hid) throws Exception;
     String  investShare(String openid, int money,int hid) throws Exception;
     List<WechatUser> getByOpenid(String openid);
