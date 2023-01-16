@@ -3,7 +3,10 @@ package com.example.wpct.entity;
 import java.io.Serializable;
 import java.math.BigInteger;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -13,6 +16,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @TableName("village")
 public class VillageDto implements Serializable {
 
@@ -24,7 +28,8 @@ public class VillageDto implements Serializable {
 	 * id
 	 */
 	@JSONField(name ="id")
-	private BigInteger id;
+	@TableId(value = "id", type = IdType.AUTO)
+	private long id;
 
 
 	/**

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @TableName("build")
 public class BuildDto implements Serializable {
 

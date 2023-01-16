@@ -3,7 +3,9 @@ package com.example.wpct.service.impl;
 import cn.hutool.core.lang.Snowflake;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.wpct.entity.BuildDto;
 import com.example.wpct.entity.HousingInformationDto;
+import com.example.wpct.entity.VillageDto;
 import com.example.wpct.entity.vo.HousingInformationVo;
 import com.example.wpct.mapper.HousingInformationMapper;
 import com.example.wpct.service.HousingInformationService;
@@ -28,6 +30,14 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     @Autowired
     @Lazy
     private HousingInformationMapper housingInformationMapper;
+
+    @Autowired
+    @Lazy
+    private VillageServiceImpl villageService;
+
+    @Autowired
+    @Lazy
+    private BuildServiceImpl buildService;
 
 
 
@@ -91,9 +101,11 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                     .eq("house_no", dto.getHouseNo()).one();
             if (one == null){
                 saveList.add(dto);
+                saveParent(dto);
             }else {
                 dto.setId(one.getId());
                 updateList.add(dto);
+                saveParent(dto);
             }
         }
         saveBatch(saveList);
@@ -113,6 +125,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .eq("build_number", dto.getBuildNumber())
                 .eq("house_no", dto.getHouseNo()).one();
         if (one == null){
+            saveParent(dto);
             return ResultBody.ok(save(dto));
         }else {
             return ResultBody.fail("house already exists");
@@ -126,9 +139,24 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .eq("build_number", dto.getBuildNumber())
                 .eq("house_no", dto.getHouseNo()).one();
         if (house == null || house.getId() == dto.getId()){
+            saveParent(dto);
             return ResultBody.ok(updateById(dto));
         }else {
             return ResultBody.fail("same house exists");
+        }
+    }
+
+    private void saveParent(HousingInformationDto dto){
+        String villageName = dto.getVillageName();
+        String buildNumber = dto.getBuildNumber();
+        VillageDto village = villageService.query().eq("name", villageName).one();
+        BuildDto build = buildService.query().eq("name", buildNumber).one();
+        if (village == null){
+            village = VillageDto.builder().name(villageName).build();
+            villageService.save(village);
+        }
+        if (build == null){
+            buildService.save(BuildDto.builder().villageId(village.getId()).name(buildNumber).build());
         }
     }
 
