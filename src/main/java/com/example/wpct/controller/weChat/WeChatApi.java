@@ -335,5 +335,9 @@ public class WeChatApi {
         res.put("shared",list1);
         return ResultBody.ok(res);
     }
+    /*@ApiOperation("根据hid进行催缴")
+    @RequestMapping(value = "/sendHasten",method = RequestMethod.GET)
+    public Object sendHasten(@RequestParam int hid){
 
+    }*/
 }
