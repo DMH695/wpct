@@ -323,24 +323,21 @@ public class WeChatApi {
     /**
      * 根据hid获取物业费订单
      */
-    @ApiOperation("根据hid获取物业费订单")
-    @RequestMapping(value = "/getPorpertyOrder",method = RequestMethod.GET)
+    @ApiOperation("根据hid获取物业费订单和公摊费订单")
+    @RequestMapping(value = "/getOrder",method = RequestMethod.GET)
     public Object getPropertyOrder(@RequestParam int hid){
         QueryWrapper queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("house_id",hid);
-        List<PropertyOrderDto> res =  propertyOrderService.list(queryWrapper);
+        JSONObject res = new JSONObject();
+        List<PropertyOrderDto> list =  propertyOrderService.list(queryWrapper);
+        List<SharedFeeOrderDto> list1 =  sharedFeeOrderService.list(queryWrapper);
+        res.put("property",list);
+        res.put("shared",list1);
         return ResultBody.ok(res);
     }
-    /**
-     * 根据hid获取公摊费订单
-     */
-    @ApiOperation("根据hid获取物业费订单")
-    @RequestMapping(value = "/getSharedOrder",method = RequestMethod.GET)
-    public Object getSharedOrder(@RequestParam int hid){
-        QueryWrapper queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("house_id",hid);
-        List<SharedFeeOrderDto> res =  sharedFeeOrderService.list(queryWrapper);
-        return ResultBody.ok(res);
-    }
+    /*@ApiOperation("根据hid进行催缴")
+    @RequestMapping(value = "/sendHasten",method = RequestMethod.GET)
+    public Object sendHasten(@RequestParam int hid){
 
+    }*/
 }

@@ -22,7 +22,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -83,9 +85,9 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         //设置分页数据
         page = PageHelper.startPage(pageNum, pageSize);
         if (user.getRole().equals("超级管理员")) {
-            QueryWrapper queryWrapper = new QueryWrapper<>();
-            queryWrapper.isNotNull("uname");
-            res = baseMapper.selectList(queryWrapper);
+            /*QueryWrapper queryWrapper = new QueryWrapper<>();
+            queryWrapper.isNotNull("uname");*/
+            res = baseMapper.selectList(null);
         } else {
             res = baseMapper.selectList(null);
         }
@@ -143,6 +145,22 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         QueryWrapper<ExamineDto> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("openid",openid);
         List<ExamineDto> examineDto = baseMapper.selectList(queryWrapper);
+        for (ExamineDto examineDto1 : examineDto){
+            QueryWrapper queryWrapper1 = new QueryWrapper<>();
+            queryWrapper1.eq("id",examineDto1.getHid());
+            HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
+            examineDto1.setVillageName(housingInformationDto.getVillageName());
+            examineDto1.setBuildName(housingInformationDto.getBuildNumber());
+            examineDto1.setRoomNum(housingInformationDto.getHouseNo());
+            List<WechatUser> list = wechatUserMapper.getByOpenid(examineDto1.getOpenid());
+            Set set = new HashSet();
+            for (WechatUser wechatUser : list){
+                set.add(wechatUser.getName());
+            }
+            WechatUser wechatUser = new WechatUser();
+            wechatUser.setName((String) set.toArray()[0]);
+            examineDto1.setWechatUser(wechatUser);
+        }
         return ResultBody.ok(examineDto);
     }
     @SneakyThrows
