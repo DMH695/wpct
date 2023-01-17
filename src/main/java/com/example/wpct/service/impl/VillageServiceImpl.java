@@ -14,6 +14,7 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -102,7 +103,7 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
      * 去重更新小区信息，同时更新至房屋信息里
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public ResultBody updateByDto(VillageDto dto) {
         VillageDto one = query().eq("id", dto.getId()).one();
         if (one == null){
@@ -123,7 +124,7 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public ResultBody remove(long id) {
         VillageDto village = query().eq("id", id).one();
         if (village == null){

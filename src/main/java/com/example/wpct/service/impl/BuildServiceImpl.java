@@ -9,6 +9,7 @@ import com.example.wpct.utils.ResultBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -48,7 +49,7 @@ public class BuildServiceImpl extends ServiceImpl<BuildMapper, BuildDto> impleme
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public int remove(long id) {
         BuildDto buildDto = query().eq("id", id).one();
         if (buildDto == null)
@@ -70,7 +71,7 @@ public class BuildServiceImpl extends ServiceImpl<BuildMapper, BuildDto> impleme
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public ResultBody updateByDto(BuildDto dto) {
         VillageDto village = villageService.query().eq("id", dto.getVillageId()).one();
         BuildDto preBuild = query().eq("id", dto.getId()).one();
