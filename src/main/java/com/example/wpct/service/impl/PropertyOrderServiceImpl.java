@@ -121,13 +121,26 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
                 .in("house_id", houseIds)
                 .le(StringUtils.isNotEmpty(vo.getEndDate()), "end_date", vo.getEndDate())
                 .ge(StringUtils.isNotEmpty(vo.getBeginDate()), "begin_date", vo.getBeginDate()).list();
+        for (PropertyOrderDto propertyOrderDto : orderList) {
+            HousingInformationDto house = housingInformationService.query().eq("id", propertyOrderDto.getHouseId()).one();
+            propertyOrderDto.setVillageName(house.getVillageName());
+            propertyOrderDto.setBuildNumber(house.getBuildNumber());
+            propertyOrderDto.setHouseNo(house.getHouseNo());
+        }
         PageInfo<PropertyOrderDto> pageInfo = new PageInfo<>(orderList,vo.getPageSize());
         return ResultBody.ok(pageInfo);
     }
 
     @Override
     public ResultBody listByHouseId(long houseId) {
-        return ResultBody.ok(query().eq("house_id",houseId).list());
+        List<PropertyOrderDto> orders = query().eq("house_id", houseId).list();
+        for (PropertyOrderDto order : orders) {
+            HousingInformationDto house = housingInformationService.query().eq("id", order.getHouseId()).one();
+            order.setVillageName(house.getVillageName());
+            order.setBuildNumber(house.getBuildNumber());
+            order.setHouseNo(house.getHouseNo());
+        }
+        return ResultBody.ok(orders);
     }
 
     @Override

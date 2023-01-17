@@ -2,6 +2,7 @@ package com.example.wpct.entity;
 
 import java.io.Serializable;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -102,5 +103,17 @@ public class SharedFeeOrderDto implements Serializable {
 	@JSONField(name ="updateUser")
 	@ApiModelProperty(value = "更新用户", hidden = true)
 	private String updateUser;
+
+	@ApiModelProperty(hidden = true)
+	@TableField(exist = false)
+	private String villageName;
+
+	@ApiModelProperty(hidden = true)
+	@TableField(exist = false)
+	private String buildNumber;
+
+	@ApiModelProperty(hidden = true)
+	@TableField(exist = false)
+	private String houseNo;
 
 }

@@ -1,7 +1,9 @@
 package com.example.wpct.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.wpct.entity.BuildDto;
 import com.example.wpct.entity.HousingInformationDto;
+import com.example.wpct.entity.VillageDto;
 import com.example.wpct.entity.vo.HousingInformationVo;
 import com.example.wpct.utils.ResultBody;
 import com.github.pagehelper.PageInfo;
@@ -26,5 +28,13 @@ public interface HousingInformationService extends IService<HousingInformationDt
     ResultBody insert(HousingInformationDto dto);
 
     ResultBody updateByDto(HousingInformationDto dto);
+
+    List<HousingInformationDto> listByVillage(VillageDto village);
+
+    List<HousingInformationDto> listByBuild(BuildDto build);
+
+    List<HousingInformationDto> listByVillageName(String villageName);
+
+    List<HousingInformationDto> listByBuildNumber(String buildNumber);
 
 }

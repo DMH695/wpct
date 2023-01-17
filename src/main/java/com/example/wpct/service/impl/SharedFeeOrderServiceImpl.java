@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.SharedFeeOrderDto;
+import com.example.wpct.entity.VillageDto;
 import com.example.wpct.entity.model.SharedFeeOrderImportModel;
 import com.example.wpct.entity.vo.SharedFeeOrderVo;
 import com.example.wpct.mapper.SharedFeeOrderMapper;
@@ -16,6 +17,7 @@ import com.github.pagehelper.PageInfo;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +34,10 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
 
     @Autowired
     private HousingInformationServiceImpl housingInformationService;
+
+    @Autowired
+    @Lazy
+    private VillageServiceImpl villageService;
 
     @Override
     public ResultBody insert(SharedFeeOrderDto dto) {
@@ -53,6 +59,12 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
                 .le(vo.getPaymentStatus() != null && vo.getPay_time_end() != null, "pay_time", vo.getPay_time_end())
                 .ge(vo.getPaymentStatus() != null && vo.getPay_time_begin() != null, "pay_time", vo.getPay_time_begin())
                 .list();
+        for (SharedFeeOrderDto order : orderList) {
+            HousingInformationDto house = housingInformationService.query().eq("id", order.getHouseId()).one();
+            order.setVillageName(house.getVillageName());
+            order.setBuildNumber(house.getBuildNumber());
+            order.setHouseNo(house.getHouseNo());
+        }
         PageInfo<SharedFeeOrderDto> pageInfo = new PageInfo<>(orderList, vo.getPageSize());
         return ResultBody.ok(pageInfo);
     }
@@ -62,12 +74,15 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
     public void getTemplate(HttpServletResponse response) {
         Snowflake snowflake = new Snowflake();
         List<SharedFeeOrderImportModel> excelList = new ArrayList<>();
-        SharedFeeOrderImportModel order = SharedFeeOrderImportModel.builder()
-                .villageName("某某小区").buildNumber("一单元").houseNo("301")
-                .liftFee(12).eleFee(123).waterFee(12).paymentStatus(true)
-                .payTime("2023-01-15 06:16").endDate(new Date(System.currentTimeMillis()).toString())
-                .beginDate(new Date(System.currentTimeMillis() + 10000).toString()).build();
-        excelList.add(order);
+        List<VillageDto> villageList = villageService.query().list();
+        for (VillageDto village : villageList) {
+            excelList.add(
+                    SharedFeeOrderImportModel.builder()
+                            .villageName(village.getName())
+                            .beginDate(new Date(System.currentTimeMillis()).toString())
+                            .build());
+        }
+        ;
         response.setHeader("Content-Disposition", "attachment;filename=" + snowflake.nextIdStr() + "template.xlsx");
         EasyExcel.write(response.getOutputStream())
                 .head(SharedFeeOrderImportModel.class)
@@ -84,29 +99,24 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
         List<SharedFeeOrderDto> sharedFeeOrderList = new ArrayList<>();
         Snowflake snowflake = new Snowflake();
         for (SharedFeeOrderImportModel sharedFeeOrderImportModel : sharedFeeOrderImportModels) {
-            HousingInformationDto house = housingInformationService.query()
-                    .eq("village_name", sharedFeeOrderImportModel.getVillageName())
-                    .eq("build_number", sharedFeeOrderImportModel.getBuildNumber())
-                    .eq("house_no", sharedFeeOrderImportModel.getHouseNo()).one();
-            long house_id;
-            if (house == null)
-                continue;
-            else
-                house_id = house.getId();
-            double allFee = sharedFeeOrderImportModel.getEleFee()
-                    + sharedFeeOrderImportModel.getLiftFee()
-                    + sharedFeeOrderImportModel.getWaterFee();
-            JSONObject detail = new JSONObject();
-            detail.put("lift",sharedFeeOrderImportModel.getLiftFee());
-            detail.put("ele",sharedFeeOrderImportModel.getEleFee());
-            detail.put("water",sharedFeeOrderImportModel.getWaterFee());
-            SharedFeeOrderDto sharedFeeOrderDto = SharedFeeOrderDto.builder()
-                    .orderNo(snowflake.nextId()).houseId(house_id).cost(allFee)
-                    .payTime(sharedFeeOrderImportModel.getPayTime())
-                    .costDetail(detail.toJSONString()).beginDate(sharedFeeOrderImportModel.getBeginDate())
-                    .endDate(sharedFeeOrderImportModel.getEndDate()).updateDate(new Date(System.currentTimeMillis()).toString())
-                    .updateUser("admin").build();
-            sharedFeeOrderList.add(sharedFeeOrderDto);
+            List<HousingInformationDto> houseList = housingInformationService
+                    .listByVillageName(sharedFeeOrderImportModel.getVillageName());
+            for (HousingInformationDto house : houseList) {
+                double cost = sharedFeeOrderImportModel.getWaterFee()
+                        + sharedFeeOrderImportModel.getLiftFee()
+                        + sharedFeeOrderImportModel.getEleFee();
+                JSONObject costDetail = new JSONObject();
+                costDetail.put("lift", sharedFeeOrderImportModel.getLiftFee());
+                costDetail.put("water", sharedFeeOrderImportModel.getWaterFee());
+                costDetail.put("ele", sharedFeeOrderImportModel.getEleFee());
+                SharedFeeOrderDto order = SharedFeeOrderDto.builder()
+                        .orderNo(snowflake.nextId()).houseId(house.getId()).cost(cost).paymentStatus(0)
+                        .costDetail(costDetail.toJSONString()).beginDate(sharedFeeOrderImportModel.getBeginDate())
+                        .endDate(sharedFeeOrderImportModel.getEndDate()).updateDate(new Timestamp(System.currentTimeMillis()).toString())
+                        .updateUser("admin").build();
+                sharedFeeOrderList.add(order);
+            }
+
         }
         return ResultBody.ok(saveBatch(sharedFeeOrderList));
     }
@@ -114,15 +124,15 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
     @Override
     @Transactional
     public ResultBody executeDeduction() {
-        List<SharedFeeOrderDto> notPayments = query().eq("payment_status",0).list();
+        List<SharedFeeOrderDto> notPayments = query().eq("payment_status", 0).list();
         List<SharedFeeOrderDto> updateOrderList = new ArrayList<>();
         for (SharedFeeOrderDto notPayment : notPayments) {
-            HousingInformationDto house = housingInformationService.query().eq("id",notPayment.getHouseId()).one();
-            if (house == null){
-                log.info("房屋id"+notPayment.getHouseId()+"不存在,缴交失败");
+            HousingInformationDto house = housingInformationService.query().eq("id", notPayment.getHouseId()).one();
+            if (house == null) {
+                log.info("房屋id" + notPayment.getHouseId() + "不存在,缴交失败");
                 continue;
             }
-            if (house.getPoolBalance() >= notPayment.getCost()){
+            if (house.getPoolBalance() >= notPayment.getCost()) {
                 log.info("{}#{}#{}房屋缴费成功，缴交{}元，剩余{}元"
                         , house.getVillageName(), house.getBuildNumber(), house.getHouseNo()
                         , notPayment.getCost(), house.getPoolBalance() - notPayment.getCost()
@@ -133,7 +143,7 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
                 notPayment.setPaymentStatus(1);
                 notPayment.setUpdateDate(new Timestamp(System.currentTimeMillis()).toString());
                 updateOrderList.add(notPayment);
-            }else {
+            } else {
                 log.info("{}#{}#{}房屋缴费失败,余额不足"
                         , house.getVillageName(), house.getBuildNumber(), house.getHouseNo()
                 );

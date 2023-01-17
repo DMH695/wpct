@@ -3,6 +3,7 @@ package com.example.wpct.entity;
 import java.io.Serializable;
 import java.math.BigInteger;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -87,5 +88,17 @@ public class PropertyOrderDto implements Serializable {
 	@JSONField(name ="updateTime")
 	@ApiModelProperty(value = "更新时间", readOnly = true, hidden = true)
 	private String updateTime;
+
+	@ApiModelProperty(hidden = true)
+	@TableField(exist = false)
+	private String villageName;
+
+	@ApiModelProperty(hidden = true)
+	@TableField(exist = false)
+	private String buildNumber;
+
+	@ApiModelProperty(hidden = true)
+	@TableField(exist = false)
+	private String houseNo;
 
 }

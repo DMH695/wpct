@@ -145,6 +145,39 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         }
     }
 
+    @Override
+    public List<HousingInformationDto> listByVillage(VillageDto village) {
+        String name = village.getName();
+        return query().eq("village_name", name).list();
+    }
+
+    @Override
+    public List<HousingInformationDto> listByBuild(BuildDto build) {
+        long villageId = build.getVillageId();
+        VillageDto village = villageService.query().eq("id", villageId).one();
+        String villageName = village.getName();
+        String buildName = build.getName();
+        return query().eq("village_name", villageName).eq("build_number", buildName).list();
+    }
+
+    @Override
+    public List<HousingInformationDto> listByVillageName(String villageName) {
+        return query().eq("village_name", villageName).list();
+    }
+
+    @Override
+    public List<HousingInformationDto> listByBuildNumber(String buildNumber) {
+        BuildDto build = buildService.query().eq("name", buildNumber).one();
+        if (build == null)
+            return new ArrayList<>();
+        long villageId = build.getVillageId();
+        VillageDto village = villageService.query().eq("id", villageId).one();
+        String villageName = village.getName();
+        String buildName = build.getName();
+        return query().eq("village_name", villageName).eq("build_number", buildName).list();
+    }
+
+
     private void saveParent(HousingInformationDto dto) {
         String villageName = dto.getVillageName();
         String buildNumber = dto.getBuildNumber();
