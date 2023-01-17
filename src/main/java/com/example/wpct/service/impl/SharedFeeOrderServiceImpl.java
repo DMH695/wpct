@@ -152,4 +152,10 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
         }
         return ResultBody.ok(updateOrderList.size());
     }
+
+    @Override
+    public ResultBody updateByDto(SharedFeeOrderDto dto) {
+        dto.setUpdateDate(new Date(System.currentTimeMillis()).toString());
+        return ResultBody.ok(updateById(dto));
+    }
 }

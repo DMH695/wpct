@@ -19,4 +19,6 @@ public interface SharedFeeOrderService extends IService<SharedFeeOrderDto> {
     ResultBody importOrder(MultipartFile file);
 
     ResultBody executeDeduction();
+
+    ResultBody updateByDto(SharedFeeOrderDto dto);
 }

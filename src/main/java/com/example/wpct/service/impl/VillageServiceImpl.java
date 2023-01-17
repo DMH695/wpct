@@ -3,6 +3,7 @@ package com.example.wpct.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.BuildDto;
 import com.example.wpct.entity.HousingInformationDto;
@@ -14,6 +15,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -93,6 +95,7 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
      * 去重更新小区信息，同时更新至房屋信息里
      */
     @Override
+    @Transactional
     public ResultBody updateByDto(VillageDto dto) {
         VillageDto one = query().eq("id", dto.getId()).one();
         if (one == null){
@@ -113,20 +116,24 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
     }
 
     @Override
+    @Transactional
     public ResultBody remove(long id) {
         VillageDto village = query().eq("id", id).one();
         if (village == null){
             return ResultBody.fail("unknown id");
         }
         List<BuildDto> builds = buildService.query().eq("village_id", id).list();
+        QueryWrapper<HousingInformationDto> houseDeleteQuery = new QueryWrapper<>();
+        houseDeleteQuery
+                .eq("village_name", village.getName());
         for (BuildDto build : builds) {
-            housingInformationService.remove(
-                    housingInformationService.query()
-                            .eq("village_name",village.getName())
-                            .eq("build_number",build.getName())
-            );
+            houseDeleteQuery
+                    .eq("build_number",build.getName());
+            housingInformationService.remove(houseDeleteQuery);
         }
-        buildService.remove(buildService.query().eq("village_id",id));
+        QueryWrapper<BuildDto> buildDeleteQuery = new QueryWrapper<>();
+        buildService.remove(buildDeleteQuery.eq("village_id",id));
+        getBaseMapper().deleteById(id);
         return ResultBody.ok("All building numbers and houses under village have been deleted");
     }
 }

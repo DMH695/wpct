@@ -30,7 +30,7 @@ public class SharedFeeOrderDto implements Serializable {
 	 * 订单号
 	 */
 	@JSONField(name ="orderNo")
-	@ApiModelProperty(value = "订单号", hidden = true)
+	@ApiModelProperty(value = "订单号，插入时不填，更新时填写")
 	@TableId(value = "order_no")
 	@JsonSerialize(using= ToStringSerializer.class)
 	private long orderNo;

@@ -1,5 +1,6 @@
 package com.example.wpct.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.BuildDto;
 import com.example.wpct.entity.HousingInformationDto;
@@ -10,6 +11,7 @@ import com.example.wpct.utils.ResultBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,19 +42,23 @@ public class BuildServiceImpl extends ServiceImpl<BuildMapper, BuildDto> impleme
     }
 
     @Override
+    @Transactional
     public int remove(long id) {
         BuildDto buildDto = query().eq("id", id).one();
+        if (buildDto == null)
+            return -1;
         long villageId = buildDto.getVillageId();
         VillageDto villageDto = villageService.query().eq("id", villageId).one();
         baseMapper.deleteById(id);
-        return housingInformationService.getBaseMapper().delete(
-                housingInformationService.query()
-                        .eq("village_name", villageDto.getName())
-                        .eq("build_number", buildDto.getName())
-        );
+        QueryWrapper<HousingInformationDto> deleteQuery = new QueryWrapper<>();
+        deleteQuery
+                .eq("village_name", villageDto.getName())
+                .eq("build_number", buildDto.getName());
+        return housingInformationService.getBaseMapper().delete(deleteQuery);
     }
 
     @Override
+    @Transactional
     public ResultBody updateByDto(BuildDto dto) {
         VillageDto village = villageService.query().eq("id", dto.getVillageId()).one();
         BuildDto preBuild = query().eq("id", dto.getId()).one();
