@@ -4,6 +4,7 @@ import com.example.wpct.service.impl.ExamineServiceImpl;
 import com.example.wpct.utils.ResultBody;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,9 +41,18 @@ public class ExamineController {
     /**
      * 后台管理员处理用户意见
      */
-    @ApiOperation("处理意见/审批")
+    @ApiOperation("处理意见")
     @PostMapping("/solu")
-    public ResultBody examineHandle(@RequestParam Integer id,@RequestParam(required = false) String resolveMsg) {
-        return examineService.examineHandle(id,resolveMsg);
+    public ResultBody examineHandle(@RequestParam Integer id,@RequestParam String resolveMsg) {
+        examineService.soluExamine(id,resolveMsg);
+        return ResultBody.ok(null);
+    }
+
+    @ApiOperation("审批")
+    @PostMapping("/approve")
+    //@RequiresRoles("超级管理员")
+    public ResultBody approve(@RequestParam Integer id) {
+        examineService.approval(id);
+        return ResultBody.ok(null);
     }
 }

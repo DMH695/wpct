@@ -124,6 +124,7 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         //根据openid和id锁定处理的信息
         updateWrapper.eq("id",id);
         ExamineDto examineDto = baseMapper.selectOne(updateWrapper);
+        System.out.println(resolveMsg);
         examineDto.setResolveHandle(resolveMsg);
         examineDto.setUname(user.getName());
         baseMapper.update(examineDto,updateWrapper);
