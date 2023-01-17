@@ -96,7 +96,8 @@ public class WechatServiceImpl implements WechatPayService {
         String no = String.valueOf(System.currentTimeMillis());
         paramsMap.put("description", "武平城投-缴交物业费");
         paramsMap.put("out_trade_no", no);   //test
-        //将no和对应的订单号存入redis
+        //将no和对应的订单号、openid存入redis
+        orderIds.add(openid);
         stringRedisTemplate.opsForValue().set(no,orderIds.toString(), 60 * 10,
                 TimeUnit.SECONDS);
         paramsMap.put("notify_url", "http://wpct.x597.com/weixin/jsapi/notify");  //test
@@ -134,7 +135,6 @@ public class WechatServiceImpl implements WechatPayService {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("statusCode",statusCode);
                 jsonObject.put("bodyAsString",bodyAsString);
-                System.out.println(jsonObject);
                 return ResultBody.ok(jsonObject).toString();
             }
             String nonceStr = RandomUtil.randomString(32);// 随机字符串
@@ -420,6 +420,7 @@ public class WechatServiceImpl implements WechatPayService {
 
             //从notification获取请求报文(对称解密)
             String plainText = notification.getDecryptData();
+            processNotify(plainText);
             //将密文转成map 方便拿取
             HashMap resultMap = gson.fromJson(plainText, HashMap.class);
 
@@ -429,19 +430,18 @@ public class WechatServiceImpl implements WechatPayService {
             //processOrder(plainText);
             /**
              * 验签结果 ===> {"mchid":"1558950191","appid":"wx74862e0dfcf69954",
-             * "out_trade_no":"ORDER_20221004132527865","transaction_id":"4200001569202210040857712725",
-             * "trade_type":"NATIVE","trade_state":"SUCCESS","trade_state_desc":"支付成功",
-             * "bank_type":"OTHERS","attach":"","success_time":"2022-10-04T13:25:40+08:00",
-             * payer":{"openid":"oHwsHuCj4_t6OMpypikZIQ1r-FXY"},
-             * "amount":{"total":1,"payer_total":1,"currency":"CNY","payer_currency":"CNY"}}
+              "out_trade_no":"ORDER_20221004132527865","transaction_id":"4200001569202210040857712725",
+              "trade_type":"NATIVE","trade_state":"SUCCESS","trade_state_desc":"支付成功",
+              "bank_type":"OTHERS","attach":"","success_time":"2022-10-04T13:25:40+08:00",
+              payer":{"openid":"oHwsHuCj4_t6OMpypikZIQ1r-FXY"},
+              "amount":{"total":1,"payer_total":1,"currency":"CNY","payer_currency":"CNY"}}
              */
-
+            
             //成功应答
             response.setStatus(200);
             map.put("code", "SUCCESS");
             map.put("message", "成功");
             return gson.toJson(map);
-
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -479,7 +479,7 @@ public class WechatServiceImpl implements WechatPayService {
             int statusCode = response.getStatusLine().getStatusCode();//响应状态码
             if (statusCode == 200) { //处理成功
                 log.info("成功, 返回结果 = " + bodyAsString);
-                processOrder(bodyAsString,openid);
+                //processOrder(bodyAsString,openid);
             } else if (statusCode == 204) { //处理成功，无返回Body
                 log.info("成功");
             } else {
@@ -530,6 +530,53 @@ public class WechatServiceImpl implements WechatPayService {
         }
 
     }
+
+    /**
+     * 结果通知后的也出逻辑处理
+     */
+    public void processNotify(String plainText) {
+        log.info("处理订单");
+        Gson gson = new Gson();
+        //拿到map格式
+        Map<String, Object> plainTextMap = gson.fromJson(plainText, HashMap.class);
+        String out_trade_no = (String) plainTextMap.get("out_trade_no");
+        String orderIds = stringRedisTemplate.opsForValue().get(out_trade_no);
+        orderIds = orderIds.replaceAll("\\[", "").replaceAll("\\]", "");
+        List<Long> ids = new ArrayList<>();
+        String[] strings = orderIds.split(",");
+        String openid = strings[strings.length - 1].trim();
+        log.info("openid为"  + openid);
+        List<String> list = new ArrayList<>(Arrays.asList(strings));
+        log.info("当前数组为" + list);
+        list.remove(strings.length - 1);
+        for(String s : list){
+            QueryWrapper queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("order_no",Long.parseLong(s.trim()));
+            PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
+            //修改property_order表中的payment_status
+            propertyOrderMapper.updateStatus(Long.parseLong(s.trim()));
+            //修改housing中的due_date
+            housingInformationMapper.updateDate(propertyOrderDto.getHouseId());
+            //生成账单
+            Bill bill = new Bill();
+            bill.setPay(propertyOrderDto.getCost());
+            bill.setDetail(propertyOrderDto.getCostDetail());
+            bill.setOpenid(openid);
+            QueryWrapper queryWrapper1 = new QueryWrapper<>();
+            queryWrapper1.eq("id",propertyOrderDto.getHouseId());
+            HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
+            bill.setVillageName(housingInformationDto.getVillageName());
+            bill.setBuildName(housingInformationDto.getBuildNumber());
+            bill.setRoomNum(housingInformationDto.getHouseNo());
+            bill.setType("物业费");
+            bill.setLocation("微信");
+            String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
+            bill.setDate(date);
+            billMapper.insert(bill);
+        }
+
+    }
+
     public static String replace(String s){
         if(null != s && s.indexOf(".") > 0){
             s = s.replaceAll("0+?$", "");//去掉多余的0

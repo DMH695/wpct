@@ -8,17 +8,12 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.wpct.config.WxPayConfig;
-import com.example.wpct.entity.HousingInformationDto;
-import com.example.wpct.entity.PropertyOrderDto;
-import com.example.wpct.entity.VillageDto;
-import com.example.wpct.entity.WechatUser;
+import com.example.wpct.entity.*;
 import com.example.wpct.mapper.HousingInformationMapper;
 import com.example.wpct.mapper.VillageMapper;
 import com.example.wpct.mapper.WechatUserMapper;
-import com.example.wpct.service.BuildService;
-import com.example.wpct.service.HousingInformationService;
+import com.example.wpct.service.*;
 
-import com.example.wpct.service.WechatPayService;
 import com.example.wpct.service.impl.WechatServiceImpl;
 import com.example.wpct.utils.ResultBody;
 import com.example.wpct.utils.WeiXinUtil;
@@ -57,15 +52,20 @@ public class WeChatApi {
     @Autowired
     BuildService buildService;
 
-
     @Autowired
     HousingInformationService housingInformationService;
+
+    @Autowired
+    SharedFeeOrderService sharedFeeOrderService;
 
     @Autowired
     WechatServiceImpl wechatService;
 
     @Autowired
     HousingInformationMapper housingInformationMapper;
+
+    @Autowired
+    PropertyOrderService  propertyOrderService;
 
     @ApiOperation("获取openid和昵称")
     @RequestMapping(value = "/getOpenid",method = RequestMethod.GET)
@@ -319,4 +319,28 @@ public class WeChatApi {
         }
         return res;
     }
+
+    /**
+     * 根据hid获取物业费订单
+     */
+    @ApiOperation("根据hid获取物业费订单")
+    @RequestMapping(value = "/getPorpertyOrder",method = RequestMethod.GET)
+    public Object getPropertyOrder(@RequestParam int hid){
+        QueryWrapper queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("house_id",hid);
+        List<PropertyOrderDto> res =  propertyOrderService.list(queryWrapper);
+        return ResultBody.ok(res);
+    }
+    /**
+     * 根据hid获取公摊费订单
+     */
+    @ApiOperation("根据hid获取物业费订单")
+    @RequestMapping(value = "/getSharedOrder",method = RequestMethod.GET)
+    public Object getSharedOrder(@RequestParam int hid){
+        QueryWrapper queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("house_id",hid);
+        List<SharedFeeOrderDto> res =  sharedFeeOrderService.list(queryWrapper);
+        return ResultBody.ok(res);
+    }
+
 }

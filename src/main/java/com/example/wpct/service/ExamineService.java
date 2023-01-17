@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public interface ExamineService extends IService<ExamineDto> {
-    ResultBody addExamine(String openid,String examineContentString,int vid,int bid,int rid);
+    ResultBody addExamine(String openid,String examineContentString,int hid);
     PageResult listExamine(int pageNum, int pageSize);
     ResultBody examineHandle(Integer id,String resolveMsg);
     ResultBody userExamineList(String openid);
