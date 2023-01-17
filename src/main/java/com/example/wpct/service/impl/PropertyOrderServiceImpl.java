@@ -20,6 +20,7 @@ import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -48,7 +49,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
      * @return 生成的订单数量
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Synchronized
     public int generateOrders() {
         List<HousingInformationDto> housingInformationDtoList = housingInformationService.query().list();
@@ -78,7 +79,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
      * @return 缴交成功数量
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Synchronized
     public int automaticPayment() {
         List<PropertyOrderDto> notPayment = query().eq("payment_status", 0).list();

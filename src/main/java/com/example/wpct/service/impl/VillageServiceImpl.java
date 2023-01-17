@@ -5,16 +5,16 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.wpct.entity.BuildDto;
-import com.example.wpct.entity.HousingInformationDto;
-import com.example.wpct.entity.VillageDto;
+import com.example.wpct.entity.*;
 import com.example.wpct.mapper.VillageMapper;
 import com.example.wpct.service.VillageService;
 import com.example.wpct.utils.ResultBody;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -28,6 +28,14 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
 
     @Autowired
     private HousingInformationServiceImpl housingInformationService;
+
+    @Autowired
+    @Lazy
+    private PropertyOrderServiceImpl propertyOrderService;
+
+    @Autowired
+    @Lazy
+    private SharedFeeOrderServiceImpl sharedFeeOrderService;
 
     /**
      * 去重插入小区
@@ -95,7 +103,7 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
      * 去重更新小区信息，同时更新至房屋信息里
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public ResultBody updateByDto(VillageDto dto) {
         VillageDto one = query().eq("id", dto.getId()).one();
         if (one == null){
@@ -116,7 +124,7 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public ResultBody remove(long id) {
         VillageDto village = query().eq("id", id).one();
         if (village == null){
@@ -127,9 +135,14 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
         houseDeleteQuery
                 .eq("village_name", village.getName());
         for (BuildDto build : builds) {
-            houseDeleteQuery
-                    .eq("build_number",build.getName());
-            housingInformationService.remove(houseDeleteQuery);
+            List<HousingInformationDto> houses = housingInformationService.query().eq("build_number", build.getName()).list();
+            for (HousingInformationDto house : houses) {
+                QueryWrapper<PropertyOrderDto> propertyQuery = new QueryWrapper<>();
+                QueryWrapper<SharedFeeOrderDto> sharedQuery = new QueryWrapper<>();
+                propertyOrderService.remove(propertyQuery.eq("house_id",house.getId()));
+                sharedFeeOrderService.remove(sharedQuery.eq("house_id",house.getId()));
+                housingInformationService.removeById(house.getId());
+            }
         }
         QueryWrapper<BuildDto> buildDeleteQuery = new QueryWrapper<>();
         buildService.remove(buildDeleteQuery.eq("village_id",id));
