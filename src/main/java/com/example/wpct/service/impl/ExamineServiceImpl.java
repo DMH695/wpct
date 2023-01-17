@@ -51,10 +51,12 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
     HousingInformationMapper housingInformationMapper;
     @Override
     public ResultBody addExamine(String openid,String examineContent,int hid) {
-        QueryWrapper queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("openid", openid);
-        WechatUser wechatUser = wechatUserMapper.selectOne(queryWrapper);
-        if (wechatUser == null) {
+        List<WechatUser> list = wechatUserMapper.getByOpenid(openid);
+        Set set = new HashSet();
+        for (WechatUser wechatUser : list){
+            set.add(wechatUser.getName());
+        }
+        if (set == null || set.size() == 0) {
             return ResultBody.ok("用户不存在");
         } else {
             ExamineDto examineDto = new ExamineDto();
