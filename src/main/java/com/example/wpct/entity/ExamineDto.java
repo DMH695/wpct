@@ -45,35 +45,19 @@ public class ExamineDto implements Serializable {
      * 提交时间
      */
     private LocalDateTime commitTime;
-    /**
-     * 小区id (village_id)
-     */
-    private Integer vid;
 
-    /**
-     * 楼栋id (build_id)
-     */
-    private Integer bid;
-
-    /**
-     * 房号
-     */
-    private Integer rid;
+    private int hid;
+    @TableField(exist = false)
+    private String villageName;
+    @TableField(exist = false)
+    private String buildName;
+    @TableField(exist = false)
+    private String roomNum;
     /**
      * 微信用户具体信息
      */
     @TableField(exist = false)
     private WechatUser wechatUser;
-    /**
-     * 楼栋
-     */
-    @TableField(exist = false)
-    private BuildDto buildDto;
-    /**
-     * 小区
-     */
-    @TableField(exist = false)
-    private VillageDto villageDto;
 //    /**
 //     * 房号
 //     */

@@ -2,10 +2,7 @@ package com.example.wpct.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.wpct.entity.ExamineDto;
-import com.example.wpct.entity.SysUser;
-import com.example.wpct.entity.VillageDto;
-import com.example.wpct.entity.WechatUser;
+import com.example.wpct.entity.*;
 import com.example.wpct.mapper.*;
 import com.example.wpct.service.ExamineService;
 import com.example.wpct.utils.ResultBody;
@@ -47,8 +44,11 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
 //    RoomMapper roomMapper;
     @Autowired
     BuildMapper buildMapper;
+
+    @Autowired
+    HousingInformationMapper housingInformationMapper;
     @Override
-    public ResultBody addExamine(String openid,String examineContent,int vid,int bid,int rid) {
+    public ResultBody addExamine(String openid,String examineContent,int hid) {
         QueryWrapper queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("openid", openid);
         WechatUser wechatUser = wechatUserMapper.selectOne(queryWrapper);
@@ -60,9 +60,7 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
             examineDto.setCommitTime(LocalDateTime.now());
             examineDto.setExamineContent(examineContent);
             examineDto.setApprovalStatus("否");
-            examineDto.setBid(bid);
-            examineDto.setVid(vid);
-            examineDto.setRid(rid);
+            examineDto.setHid(hid);
             baseMapper.insert(examineDto);
             return ResultBody.ok("新增成功");
         }
@@ -95,16 +93,21 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
             ExamineDto examineDto = res.get(i);
             QueryWrapper queryWrapper = new QueryWrapper<>();
             queryWrapper.in("openid", examineDto.getOpenid());
-            QueryWrapper queryWrapper1 = new QueryWrapper<>();
+           /* QueryWrapper queryWrapper1 = new QueryWrapper<>();
             queryWrapper1.in("id", examineDto.getBid());
             QueryWrapper queryWrapper2 = new QueryWrapper<>();
             queryWrapper2.in("id", examineDto.getRid());
             QueryWrapper queryWrapper3 = new QueryWrapper<>();
-            queryWrapper3.in("id", examineDto.getVid());
+            queryWrapper3.in("id", examineDto.getVid());*/
+            int hid = examineDto.getHid();
+            QueryWrapper queryWrapper1 = new QueryWrapper<>();
+            queryWrapper1.eq("id",hid);
+            HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
             examineDto.setWechatUser(wechatUserMapper.selectOne(queryWrapper));
-            examineDto.setBuildDto(buildMapper.selectOne(queryWrapper1));
-            examineDto.setVillageDto(villageMapper.selectOne(queryWrapper3));
-//            examineDto.setRoomDto(roomMapper.selectOne(queryWrapper2));
+            examineDto.setVillageName(housingInformationDto.getVillageName());
+            examineDto.setBuildName(housingInformationDto.getBuildNumber());
+            examineDto.setRoomNum(housingInformationDto.getHouseNo());
+   //         examineDto.setRoomDto(roomMapper.selectOne(queryWrapper2));
         }
         return new PageInfo<>(res);
     }

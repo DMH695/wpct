@@ -20,10 +20,9 @@ public class ExamineController {
     @PostMapping("/add")
     public ResultBody addExamine(@RequestParam String openid,
                                  @RequestParam String examineContent,
-                                 @RequestParam int vid,
-                                 @RequestParam int bid,
-                                 @RequestParam int rid ) {
-        return examineService.addExamine(openid,examineContent,vid,bid,rid);
+                                 @RequestParam int hid
+                                 ) {
+        return examineService.addExamine(openid,examineContent,hid);
     }
     @ApiOperation("后台处理（意见,审批）列表")
     @GetMapping("/list")
