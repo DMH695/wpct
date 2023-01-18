@@ -256,7 +256,8 @@ public class HousingInformationDto implements Serializable {
 	 * 公摊费余额
 	 */
 	@JSONField(name ="poolBalance")
-	@ExcelProperty("公摊费余额")
+//	@ExcelProperty("公摊费余额")
+	@ExcelIgnore
 	private double poolBalance;
 
 
@@ -264,7 +265,8 @@ public class HousingInformationDto implements Serializable {
 	 * 物业费余额
 	 */
 	@JSONField(name ="propertyFee")
-	@ExcelProperty("物业费余额")
+//	@ExcelProperty("物业费余额")
+	@ExcelIgnore
 	private double propertyFee;
 
 
@@ -280,7 +282,8 @@ public class HousingInformationDto implements Serializable {
 	 * 绑定微信用户
 	 */
 	@JSONField(name ="bindWechatUser")
-	@ExcelProperty("微信绑定用户")
+//	@ExcelProperty("微信绑定用户")
+	@ExcelIgnore
 	private String bindWechatUser;
 
 
@@ -288,7 +291,8 @@ public class HousingInformationDto implements Serializable {
 	 * 缴交日期
 	 */
 	@JSONField(name ="dueDate")
-	@ExcelProperty("缴交日期")
+//	@ExcelProperty("缴交日期")
+	@ExcelIgnore
 	private String dueDate;
 
 }
