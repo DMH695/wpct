@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.wpct.mapper.SharedFeeOrderMapper">
+    <update id="updateDate">UPDATE shared_fee_order SET payment_status=true,pay_time=#{date} WHERE order_no=#{order_no}</update>
+</mapper>

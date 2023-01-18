@@ -194,10 +194,10 @@ public class WeChatApi {
     }
     @ApiOperation("缴交物业费")
     @PostMapping("/property/pay")
-    public Object wechatPay(@RequestParam String openid, @RequestParam List<String> orderNos) throws Exception {
+    public Object wechatPay(@RequestParam String openid, @RequestParam List<String> propertyOrderNos,@RequestParam List<String> sharedOrderNos) throws Exception {
 
         //List<String> orderNos1 = Arrays.asList(orderNos);
-        String resultJson = wechatPayService.jsapiPay(openid, orderNos);
+        String resultJson = wechatPayService.jsapiPay(openid,propertyOrderNos,sharedOrderNos);
         System.out.println(resultJson);
         return ResultBody.ok(resultJson);
     }
@@ -315,6 +315,8 @@ public class WeChatApi {
             jsonObject.put("villageName",housingInformationDto.getVillageName());
             jsonObject.put("buildName",housingInformationDto.getBuildNumber());
             jsonObject.put("roomNum",housingInformationDto.getHouseNo());
+            jsonObject.put("name",housingInformationDto.getName());
+            jsonObject.put("telephone",housingInformationDto.getPhone());
             res.add(jsonObject);
         }
         return res;
@@ -340,4 +342,10 @@ public class WeChatApi {
     public Object sendHasten(@RequestParam int hid){
 
     }*/
+    @ApiOperation("测试")
+    @RequestMapping(value = "/test",method = RequestMethod.GET)
+    public Object test(){
+        wechatPayService.test();
+        return null;
+    }
 }
