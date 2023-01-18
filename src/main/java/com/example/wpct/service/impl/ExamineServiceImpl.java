@@ -107,7 +107,17 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
             QueryWrapper queryWrapper1 = new QueryWrapper<>();
             queryWrapper1.eq("id",hid);
             HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
-            examineDto.setWechatUser(wechatUserMapper.selectOne(queryWrapper));
+            //examineDto.setWechatUser(wechatUserMapper.selectOne(queryWrapper));
+            List<WechatUser> list = wechatUserMapper.getByOpenid(examineDto.getOpenid());
+            if (list == null){
+                examineDto.setWechatUser(null);
+            }else {
+                Set<WechatUser> set = new HashSet();
+                for (WechatUser wechatUser : list){
+                    set.add(wechatUser);
+                }
+                examineDto.setWechatUser((WechatUser) set.toArray()[0]);
+            }
             examineDto.setVillageName(housingInformationDto.getVillageName());
             examineDto.setBuildName(housingInformationDto.getBuildNumber());
             examineDto.setRoomNum(housingInformationDto.getHouseNo());
