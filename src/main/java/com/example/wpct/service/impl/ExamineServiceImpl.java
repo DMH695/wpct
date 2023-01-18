@@ -51,10 +51,12 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
     HousingInformationMapper housingInformationMapper;
     @Override
     public ResultBody addExamine(String openid,String examineContent,int hid) {
-        QueryWrapper queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("openid", openid);
-        WechatUser wechatUser = wechatUserMapper.selectOne(queryWrapper);
-        if (wechatUser == null) {
+        List<WechatUser> list = wechatUserMapper.getByOpenid(openid);
+        Set set = new HashSet();
+        for (WechatUser wechatUser : list){
+            set.add(wechatUser.getName());
+        }
+        if (set == null || set.size() == 0) {
             return ResultBody.ok("用户不存在");
         } else {
             ExamineDto examineDto = new ExamineDto();
@@ -105,7 +107,17 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
             QueryWrapper queryWrapper1 = new QueryWrapper<>();
             queryWrapper1.eq("id",hid);
             HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
-            examineDto.setWechatUser(wechatUserMapper.selectOne(queryWrapper));
+            //examineDto.setWechatUser(wechatUserMapper.selectOne(queryWrapper));
+            List<WechatUser> list = wechatUserMapper.getByOpenid(examineDto.getOpenid());
+            if (list == null){
+                examineDto.setWechatUser(null);
+            }else {
+                Set<WechatUser> set = new HashSet();
+                for (WechatUser wechatUser : list){
+                    set.add(wechatUser);
+                }
+                examineDto.setWechatUser((WechatUser) set.toArray()[0]);
+            }
             examineDto.setVillageName(housingInformationDto.getVillageName());
             examineDto.setBuildName(housingInformationDto.getBuildNumber());
             examineDto.setRoomNum(housingInformationDto.getHouseNo());
