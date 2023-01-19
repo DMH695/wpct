@@ -82,17 +82,21 @@ public class WechatServiceImpl implements WechatPayService {
     public String jsapiPay(String openid, List<String> propertyOrderNos,List<String> sharedOrderNos) throws Exception {
         double total = 0;
         //遍历累加计算总金额
-        for(String orderId : propertyOrderNos){
-            QueryWrapper queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("order_no",Long.parseLong(orderId));
-            PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
-            total = total + propertyOrderDto.getCost();
+        if (propertyOrderNos != null){
+            for(String orderId : propertyOrderNos){
+                QueryWrapper queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("order_no",Long.parseLong(orderId));
+                PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
+                total = total + propertyOrderDto.getCost();
+            }
         }
-        for (String orderId : sharedOrderNos){
-            QueryWrapper queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("order_no",Long.parseLong(orderId));
-            SharedFeeOrderDto sharedFeeOrderDto = sharedFeeOrderMapper.selectOne(queryWrapper);
-            total = total + sharedFeeOrderDto.getCost();
+        if (sharedOrderNos != null){
+            for (String orderId : sharedOrderNos){
+                QueryWrapper queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("order_no",Long.parseLong(orderId));
+                SharedFeeOrderDto sharedFeeOrderDto = sharedFeeOrderMapper.selectOne(queryWrapper);
+                total = total + sharedFeeOrderDto.getCost();
+            }
         }
         log.warn("调用统一下单api");
         HttpPost httpPost = new HttpPost(wxPayConfig.getDomain().concat("/v3/pay/transactions/jsapi"));
@@ -493,7 +497,7 @@ public class WechatServiceImpl implements WechatPayService {
             int statusCode = response.getStatusLine().getStatusCode();//响应状态码
             if (statusCode == 200) { //处理成功
                 log.info("成功, 返回结果 = " + bodyAsString);
-                //processOrder(bodyAsString,openid);
+                processNotify(bodyAsString);
             } else if (statusCode == 204) { //处理成功，无返回Body
                 log.info("成功");
             } else {
