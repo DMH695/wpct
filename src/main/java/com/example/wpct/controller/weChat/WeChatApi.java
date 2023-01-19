@@ -22,6 +22,7 @@ import com.wechat.pay.contrib.apache.httpclient.exception.HttpCodeException;
 import com.wechat.pay.contrib.apache.httpclient.exception.NotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +35,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Api(tags = "微信相关API")
+@Slf4j
 @RestController
 @RequestMapping("/weixin")
 public class WeChatApi {
@@ -114,6 +116,8 @@ public class WeChatApi {
 
         // String userRes = WeiXinUtil.httpRequest(userUrl, "GET", null);
         String userRes = HttpUtil.get(userUrl);
+        log.info("userUrl:" + userUrl);
+        log.info("userRes:" + userRes);
 
         //将openid返回给前端  10-19
         Gson gson = new Gson();
@@ -194,8 +198,10 @@ public class WeChatApi {
     }
     @ApiOperation("缴交物业费")
     @PostMapping("/property/pay")
-    public Object wechatPay(@RequestParam String openid, @RequestParam List<String> propertyOrderNos,@RequestParam List<String> sharedOrderNos) throws Exception {
-
+    public Object wechatPay(@RequestParam String openid, @RequestParam(required = false) List<String> propertyOrderNos,@RequestParam(required = false) List<String> sharedOrderNos) throws Exception {
+        if (propertyOrderNos == null && sharedOrderNos == null){
+            return ResultBody.fail("请选择订单");
+        }
         //List<String> orderNos1 = Arrays.asList(orderNos);
         String resultJson = wechatPayService.jsapiPay(openid,propertyOrderNos,sharedOrderNos);
         System.out.println(resultJson);
