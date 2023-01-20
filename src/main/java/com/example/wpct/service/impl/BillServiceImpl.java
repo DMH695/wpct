@@ -117,13 +117,6 @@ public class BillServiceImpl implements BillService {
         return ResultBody.ok(ImageTools.imgToBase64(certificateImage));
     }
 
-//    private void drawString(Graphics2D g,int x,int y,String str){
-//
-//        FontMetrics fm = g.getFontMetrics(font);
-//        int textWidth = fm.stringWidth(str);
-//        int textHeight = fm.getHeight();
-//        int widthX = ()
-//    }
 
     private PageInfo<?> getPage(PageRequest pageRequest,String villageName,String buildName,String roomNum) {
         int pageNum = pageRequest.getPageNum();
