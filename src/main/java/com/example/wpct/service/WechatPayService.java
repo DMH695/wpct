@@ -12,7 +12,7 @@ import java.security.GeneralSecurityException;
 import java.util.List;
 
 public interface WechatPayService {
-    String  jsapiPay(String openid, List<String> orderIds) throws Exception;
+    String  jsapiPay(String openid, List<String> propertyOrderNos,List<String> sharedOrderNos) throws Exception;
     String  investProperty(String openid, int money,int hid) throws Exception;
     String  investShare(String openid, int money,int hid) throws Exception;
     List<WechatUser> getByOpenid(String openid);
@@ -21,4 +21,5 @@ public interface WechatPayService {
     String payNotify(HttpServletRequest request, HttpServletResponse response) throws GeneralSecurityException, NotFoundException, IOException, HttpCodeException;
     WechatUser checkBind(String openid,int hid);
     String queryOrder(Long orderNo,String openid) throws IOException;
+    String test();
 }

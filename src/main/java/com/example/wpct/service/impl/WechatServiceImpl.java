@@ -36,6 +36,7 @@ import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -63,6 +64,9 @@ public class WechatServiceImpl implements WechatPayService {
 
     @Autowired
     BuildMapper buildMapper;
+
+    @Autowired
+    SharedFeeOrderMapper sharedFeeOrderMapper;
     @Resource
     private final StringRedisTemplate stringRedisTemplate;
 
@@ -75,15 +79,24 @@ public class WechatServiceImpl implements WechatPayService {
      * 微信用户缴费后，需要修改property_order表中的status和housing表中的due_date 并生成账单
      */
     @Override
-    public String jsapiPay(String openid, List<String> orderIds) throws Exception {
+    public String jsapiPay(String openid, List<String> propertyOrderNos,List<String> sharedOrderNos) throws Exception {
         double total = 0;
-        //List<Long> orderIds1 = Arrays.stream(orderIds).boxed().collect(Collectors.toList());
         //遍历累加计算总金额
-        for(String orderId : orderIds){
-            QueryWrapper queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("order_no",Long.parseLong(orderId));
-            PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
-            total = total + propertyOrderDto.getCost();
+        if (propertyOrderNos != null){
+            for(String orderId : propertyOrderNos){
+                QueryWrapper queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("order_no",Long.parseLong(orderId));
+                PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
+                total = total + propertyOrderDto.getCost();
+            }
+        }
+        if (sharedOrderNos != null){
+            for (String orderId : sharedOrderNos){
+                QueryWrapper queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("order_no",Long.parseLong(orderId));
+                SharedFeeOrderDto sharedFeeOrderDto = sharedFeeOrderMapper.selectOne(queryWrapper);
+                total = total + sharedFeeOrderDto.getCost();
+            }
         }
         log.warn("调用统一下单api");
         HttpPost httpPost = new HttpPost(wxPayConfig.getDomain().concat("/v3/pay/transactions/jsapi"));
@@ -94,11 +107,16 @@ public class WechatServiceImpl implements WechatPayService {
         paramsMap.put("appid", wxPayConfig.getAppid());
         paramsMap.put("mchid", wxPayConfig.getMchId());
         String no = String.valueOf(System.currentTimeMillis());
+        System.out.println(no);
         paramsMap.put("description", "武平城投-缴交物业费");
         paramsMap.put("out_trade_no", no);   //test
         //将no和对应的订单号、openid存入redis
-        orderIds.add(openid);
-        stringRedisTemplate.opsForValue().set(no,orderIds.toString(), 60 * 10,
+        JSONObject jsonObject1 = new JSONObject();
+        propertyOrderNos.add(openid);
+        jsonObject1.put("property",propertyOrderNos);
+        sharedOrderNos.add(openid);
+        jsonObject1.put("shared",sharedOrderNos);
+        stringRedisTemplate.opsForValue().set(no,jsonObject1.toString(), 60 * 10,
                 TimeUnit.SECONDS);
         paramsMap.put("notify_url", "http://wpct.x597.com/weixin/jsapi/notify");  //test
         Map amountMap = new HashMap();
@@ -479,7 +497,7 @@ public class WechatServiceImpl implements WechatPayService {
             int statusCode = response.getStatusLine().getStatusCode();//响应状态码
             if (statusCode == 200) { //处理成功
                 log.info("成功, 返回结果 = " + bodyAsString);
-                //processOrder(bodyAsString,openid);
+                processNotify(bodyAsString);
             } else if (statusCode == 204) { //处理成功，无返回Body
                 log.info("成功");
             } else {
@@ -491,6 +509,18 @@ public class WechatServiceImpl implements WechatPayService {
         } finally {
             response.close();
         }
+    }
+
+    @Override
+    public String test() {
+        String str = "{\"mchid\":\"1558950191\",\"appid\":\"wx74862e0dfcf69954\",\n" +
+                "              \"out_trade_no\":\"1674019989031\",\"transaction_id\":\"4200001569202210040857712725\",\n" +
+                "              \"trade_type\":\"NATIVE\",\"trade_state\":\"SUCCESS\",\"trade_state_desc\":\"支付成功\",\n" +
+                "              \"bank_type\":\"OTHERS\",\"attach\":\"\",\"success_time\":\"2022-10-04T13:25:40+08:00\",\n" +
+                "              payer\":{\"openid\":\"oXXFD6gTkRajlHDiSIxE1PpMMvek\"},\n" +
+                "              \"amount\":{\"total\":1,\"payer_total\":1,\"currency\":\"CNY\",\"payer_currency\":\"CNY\"}}";
+        processNotify(str);
+        return "666";
     }
 
     public void processOrder(String plainText,String openid) {
@@ -540,41 +570,85 @@ public class WechatServiceImpl implements WechatPayService {
         //拿到map格式
         Map<String, Object> plainTextMap = gson.fromJson(plainText, HashMap.class);
         String out_trade_no = (String) plainTextMap.get("out_trade_no");
-        String orderIds = stringRedisTemplate.opsForValue().get(out_trade_no);
-        orderIds = orderIds.replaceAll("\\[", "").replaceAll("\\]", "");
-        List<Long> ids = new ArrayList<>();
-        String[] strings = orderIds.split(",");
-        String openid = strings[strings.length - 1].trim();
-        log.info("openid为"  + openid);
-        List<String> list = new ArrayList<>(Arrays.asList(strings));
-        log.info("当前数组为" + list);
-        list.remove(strings.length - 1);
-        for(String s : list){
-            QueryWrapper queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("order_no",Long.parseLong(s.trim()));
-            PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
-            //修改property_order表中的payment_status
-            propertyOrderMapper.updateStatus(Long.parseLong(s.trim()));
-            //修改housing中的due_date
-            housingInformationMapper.updateDate(propertyOrderDto.getHouseId());
-            //生成账单
-            Bill bill = new Bill();
-            bill.setPay(propertyOrderDto.getCost());
-            bill.setDetail(propertyOrderDto.getCostDetail());
-            bill.setOpenid(openid);
-            QueryWrapper queryWrapper1 = new QueryWrapper<>();
-            queryWrapper1.eq("id",propertyOrderDto.getHouseId());
-            HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
-            bill.setVillageName(housingInformationDto.getVillageName());
-            bill.setBuildName(housingInformationDto.getBuildNumber());
-            bill.setRoomNum(housingInformationDto.getHouseNo());
-            bill.setType("物业费");
-            bill.setLocation("微信");
-            String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
-            bill.setDate(date);
-            billMapper.insert(bill);
+        String res = stringRedisTemplate.opsForValue().get(out_trade_no);
+        JSONObject jsonObject = JSONObject.parseObject(res);
+        String propertyOrders = jsonObject.getString("property");
+        String sharedOrders = jsonObject.getString("shared");
+        log.info("从redis中获取的数据：" + res);
+        log.info("物业费:" + propertyOrders);
+        log.info("公摊费" + sharedOrders);
+        //物业费处理
+        if (propertyOrders != null) {
+            propertyOrders = propertyOrders.replaceAll("\\[", "").replaceAll("\\]", "");
+            List<Long> ids = new ArrayList<>();
+            String[] strings = propertyOrders.split(",");
+            String openid = strings[strings.length - 1].trim();
+            //log.info("openid为"  + openid);
+            List<String> list = new ArrayList<>(Arrays.asList(strings));
+            //log.info("当前数组为" + list);
+            list.remove(strings.length - 1);
+            for (String s : list) {
+                QueryWrapper queryWrapper = new QueryWrapper<>();
+                s = s.replaceAll("\"","");
+                queryWrapper.eq("order_no", Long.parseLong(s.trim()));
+                PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
+                //修改property_order表中的payment_status
+                propertyOrderMapper.updateStatus(Long.parseLong(s.trim()));
+                //修改housing中的due_date
+                housingInformationMapper.updateDate(propertyOrderDto.getHouseId());
+                //生成账单
+                Bill bill = new Bill();
+                bill.setPay(propertyOrderDto.getCost());
+                bill.setDetail(propertyOrderDto.getCostDetail());
+                bill.setOpenid(openid);
+                QueryWrapper queryWrapper1 = new QueryWrapper<>();
+                queryWrapper1.eq("id", propertyOrderDto.getHouseId());
+                HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
+                bill.setVillageName(housingInformationDto.getVillageName());
+                bill.setBuildName(housingInformationDto.getBuildNumber());
+                bill.setRoomNum(housingInformationDto.getHouseNo());
+                bill.setType("物业费");
+                bill.setLocation("微信");
+                String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
+                bill.setDate(date);
+                billMapper.insert(bill);
+            }
         }
-
+        //公摊费处理
+            if (sharedOrders != null){
+                sharedOrders = sharedOrders.replaceAll("\\[", "").replaceAll("\\]", "");
+                List<Long> ids = new ArrayList<>();
+                String[] strings = sharedOrders.split(",");
+                String openid = strings[strings.length - 1].trim();
+                //log.info("openid为"  + openid);
+                List<String> list = new ArrayList<>(Arrays.asList(strings));
+                //log.info("当前数组为" + list);
+                list.remove(strings.length - 1);
+                for (String s : list) {
+                    s = s.replaceAll("\"","");
+                    QueryWrapper queryWrapper = new QueryWrapper<>();
+                    queryWrapper.eq("order_no", Long.parseLong(s.trim()));
+                    SharedFeeOrderDto sharedFeeOrderDto = sharedFeeOrderMapper.selectOne(queryWrapper);
+                    //修改shared_fee_order中的payment_status
+                    String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
+                    sharedFeeOrderMapper.updateDate(Long.parseLong(s.trim()),date);
+                    //生成账单
+                    Bill bill = new Bill();
+                    bill.setPay(sharedFeeOrderDto.getCost());
+                    bill.setDetail(sharedFeeOrderDto.getCostDetail());
+                    bill.setOpenid(openid);
+                    QueryWrapper queryWrapper1 = new QueryWrapper<>();
+                    queryWrapper1.eq("id", sharedFeeOrderDto.getHouseId());
+                    HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
+                    bill.setVillageName(housingInformationDto.getVillageName());
+                    bill.setBuildName(housingInformationDto.getBuildNumber());
+                    bill.setRoomNum(housingInformationDto.getHouseNo());
+                    bill.setType("公摊费");
+                    bill.setLocation("微信");
+                    bill.setDate(date);
+                    billMapper.insert(bill);
+                }
+            }
     }
 
     public static String replace(String s){
