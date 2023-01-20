@@ -11,4 +11,5 @@ public interface BillMapper {
     void insert(@Param("bill")Bill bill);
     List<Bill> getAll(String villageName,String buildName,String roomNum);
     void delete(int id);
+    Bill selectById(int id);
 }

@@ -20,4 +20,5 @@
         </trim>
     </select>
     <delete id="delete">DELETE FROM bill WHERE id=#{id}</delete>
+    <select id="selectById" resultType="Bill">SELECT * FROM bill WHERE id=#{id}</select>
 </mapper>
