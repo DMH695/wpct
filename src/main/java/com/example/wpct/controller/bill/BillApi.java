@@ -40,6 +40,11 @@ public class BillApi {
         return billService.getReceiptCertificate(id);
     }
 
+    @ApiOperation("微信用户获取历史账单")
+    @GetMapping("/wx/get")
+    public Object getByOpenid(@RequestParam String openid){
+        return billService.getByOpenid(openid);
+    }
 
 
 }

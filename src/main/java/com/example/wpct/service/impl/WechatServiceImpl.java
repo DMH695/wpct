@@ -640,6 +640,9 @@ public class WechatServiceImpl implements WechatPayService {
                 bill.setRoomNum(housingInformationDto.getHouseNo());
                 bill.setType("物业费");
                 bill.setLocation("微信");
+                bill.setBeginDate(propertyOrderDto.getBeginDate());
+                bill.setEndDate(propertyOrderDto.getEndDate());
+                bill.setOrderNo(propertyOrderDto.getOrderNo().toString());
                 String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
                 bill.setDate(date);
                 billMapper.insert(bill);
@@ -677,6 +680,9 @@ public class WechatServiceImpl implements WechatPayService {
                     bill.setType("公摊费");
                     bill.setLocation("微信");
                     bill.setDate(date);
+                    bill.setBeginDate(java.sql.Date.valueOf(sharedFeeOrderDto.getBeginDate()));
+                    bill.setEndDate(java.sql.Date.valueOf(sharedFeeOrderDto.getEndDate()));
+                    bill.setOrderNo(String.valueOf(sharedFeeOrderDto.getOrderNo()));
                     billMapper.insert(bill);
                 }
             }

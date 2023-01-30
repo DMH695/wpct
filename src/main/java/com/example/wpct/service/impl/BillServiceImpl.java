@@ -26,6 +26,7 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.List;
 
 @Service
 public class BillServiceImpl implements BillService {
@@ -115,6 +116,11 @@ public class BillServiceImpl implements BillService {
         g.drawString(BILLER,190,630+fixH);
         g.dispose();
         return ResultBody.ok(ImageTools.imgToBase64(certificateImage));
+    }
+
+    @Override
+    public List<Bill> getByOpenid(String openid) {
+        return billMapper.getByOpenid(openid);
     }
 
 
