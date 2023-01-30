@@ -2,12 +2,15 @@ package com.example.wpct.service.impl;
 
 import cn.hutool.core.lang.Snowflake;
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.BuildDto;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.VillageDto;
+import com.example.wpct.entity.WechatUser;
 import com.example.wpct.entity.vo.HousingInformationVo;
 import com.example.wpct.mapper.HousingInformationMapper;
+import com.example.wpct.mapper.WechatUserMapper;
 import com.example.wpct.service.HousingInformationService;
 import com.example.wpct.utils.ResultBody;
 import com.example.wpct.utils.StringUtils;
@@ -40,6 +43,9 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     @Lazy
     private BuildServiceImpl buildService;
 
+    @Autowired
+    WechatUserMapper wechatUserMapper;
+
 
     @Override
     public PageInfo<HousingInformationDto> listByVo(HousingInformationVo vo) {
@@ -50,6 +56,16 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .like(StringUtils.isNotEmpty(vo.getVillageName()), "village_name", vo.getVillageName())
                 .eq(StringUtils.isNotEmpty(vo.getBuildNumber()), "build_number", vo.getBuildNumber())
                 .eq(StringUtils.isNotEmpty(vo.getHouseNo()), "house_no", vo.getHouseNo()).list();
+        for(HousingInformationDto housingInformationDto : res){
+            QueryWrapper queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("hid",housingInformationDto.getId());
+            List<WechatUser> wechatUsers = wechatUserMapper.selectList(queryWrapper);
+            if (wechatUsers == null || wechatUsers.size() == 0){
+                housingInformationDto.setBind(false);
+            }else {
+                housingInformationDto.setBind(true);
+            }
+        }
         return new PageInfo<>(res);
     }
 

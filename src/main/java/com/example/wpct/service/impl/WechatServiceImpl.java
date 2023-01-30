@@ -1,6 +1,7 @@
 package com.example.wpct.service.impl;
 
 import cn.hutool.core.util.RandomUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.wpct.config.WxPayConfig;
@@ -9,6 +10,7 @@ import com.example.wpct.mapper.*;
 import com.example.wpct.service.WechatPayService;
 import com.example.wpct.utils.HttpUtils;
 import com.example.wpct.utils.ResultBody;
+import com.example.wpct.utils.WxSendMsgUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.wechat.pay.contrib.apache.httpclient.exception.HttpCodeException;
@@ -16,6 +18,7 @@ import com.wechat.pay.contrib.apache.httpclient.exception.NotFoundException;
 import com.wechat.pay.contrib.apache.httpclient.notification.Notification;
 import com.wechat.pay.contrib.apache.httpclient.notification.NotificationHandler;
 import com.wechat.pay.contrib.apache.httpclient.notification.NotificationRequest;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -25,12 +28,17 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
@@ -41,6 +49,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class WechatServiceImpl implements WechatPayService {
+
+    @Resource
+    private RestTemplate restTemplate;
+
     @Resource
     WxPayConfig wxPayConfig;
 
@@ -67,6 +79,9 @@ public class WechatServiceImpl implements WechatPayService {
 
     @Autowired
     SharedFeeOrderMapper sharedFeeOrderMapper;
+
+    @Autowired
+    WxSendMsgUtil wxSendMsgUtil;
     @Resource
     private final StringRedisTemplate stringRedisTemplate;
 
@@ -564,6 +579,7 @@ public class WechatServiceImpl implements WechatPayService {
     /**
      * 结果通知后的也出逻辑处理
      */
+    @SneakyThrows
     public void processNotify(String plainText) {
         log.info("处理订单");
         Gson gson = new Gson();
@@ -595,6 +611,22 @@ public class WechatServiceImpl implements WechatPayService {
                 //修改property_order表中的payment_status
                 propertyOrderMapper.updateStatus(Long.parseLong(s.trim()));
                 //修改housing中的due_date
+                HousingInformationDto housingInformationDto = housingInformationMapper.selectById(propertyOrderDto.getHouseId());
+                String due_date = housingInformationDto.getDueDate();
+                if (due_date == null){
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.add(Calendar.MONTH,1);
+                    String date1 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(calendar.getTime());
+                    housingInformationMapper.updateDate(propertyOrderDto.getHouseId());
+                }else {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                    Date date = sdf.parse(due_date);
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(date);
+                    calendar.add(Calendar.MONTH,1);
+                    String date1 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(calendar.getTime());
+                    housingInformationMapper.updateDate(propertyOrderDto.getHouseId());
+                }
                 housingInformationMapper.updateDate(propertyOrderDto.getHouseId());
                 //生成账单
                 Bill bill = new Bill();
@@ -603,7 +635,6 @@ public class WechatServiceImpl implements WechatPayService {
                 bill.setOpenid(openid);
                 QueryWrapper queryWrapper1 = new QueryWrapper<>();
                 queryWrapper1.eq("id", propertyOrderDto.getHouseId());
-                HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
                 bill.setVillageName(housingInformationDto.getVillageName());
                 bill.setBuildName(housingInformationDto.getBuildNumber());
                 bill.setRoomNum(housingInformationDto.getHouseNo());
@@ -658,6 +689,77 @@ public class WechatServiceImpl implements WechatPayService {
         }
         return s;
     }
+
+    public ResultBody sendMsg(int hid,String name,String cost,String openid) throws Exception{
+        WxMsgConfig requestData = this.getMsgConfig(hid,name,cost,openid);
+
+        log.info("推送消息请求参数：{}", JSON.toJSONString(requestData));
+
+        String url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + wxSendMsgUtil.getAccessToken();
+        log.info("推送消息请求地址：{}", url);
+        JSONObject responseData = postData(url, requestData);
+        log.info("推送消息返回参数：{}", JSON.toJSONString(responseData));
+
+        Integer errorCode = responseData.getInteger("errcode");
+        String errorMessage = responseData.getString("errmsg");
+        if (errorCode == 0) {
+            log.info("推送消息发送成功");
+            return    ResultBody.ok(responseData);
+        } else {
+            log.info("推送消息发送失败,errcode：{},errorMessage：{}", errorCode, errorMessage);
+        }
+        return ResultBody.ok(errorCode.toString());
+    }
+
+    @SneakyThrows
+    public WxMsgConfig getMsgConfig(int hid, String name,String cost,String openid) {
+        QueryWrapper queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id",hid);
+        HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper);
+        String villageName = housingInformationDto.getVillageName();
+        String buildName = housingInformationDto.getBuildNumber();
+        String roomNum = housingInformationDto.getHouseNo();
+        WxMsgTemplateHasten wxMsgTemplateHasten = new WxMsgTemplateHasten();
+        wxMsgTemplateHasten.setFirst(villageName + "-"
+                + buildName + "-"
+                + roomNum +
+                "缴费提醒");
+        /*房屋号*/
+        wxMsgTemplateHasten.setKeyword1(villageName + "-"
+                + buildName + "-"
+                + roomNum);
+        /*缴费人*/
+        wxMsgTemplateHasten.setKeyword2(name);
+        /*缴费类型*/
+        wxMsgTemplateHasten.setKeyword3("合计金额");
+        /*缴费状态*/
+        wxMsgTemplateHasten.setKeyword4("未缴费");
+        /*合计金额*/
+
+        //BigDecimal bigDecimal = new BigDecimal(100);
+        wxMsgTemplateHasten.setKeyword5(cost);
+        wxMsgTemplateHasten.setRemark("请及时缴交费用~");
+        /*消息推送配置参数拼接*/
+        WxMsgConfig wxMsgConfig = new WxMsgConfig();
+        wxMsgConfig.setTouser(openid);
+        wxMsgConfig.setTemplate_id("QgLoZpp1KWNskam2jclpxXmmSu4nhVZkv8bPU9wEqS4");
+        wxMsgConfig.setData(wxMsgTemplateHasten);
+        return wxMsgConfig;
+    }
+
+
+    /**
+     * 发送请求
+     */
+    public JSONObject postData(String url, WxMsgConfig param) {
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(type);
+        HttpEntity<WxMsgConfig> httpEntity = new HttpEntity<>(param, headers);
+        JSONObject jsonResult = restTemplate.postForObject(url, httpEntity, JSONObject.class);
+        return jsonResult;
+    }
+
     @Override
     public WechatUser checkBind(String openid, int hid) {
         return wechatUserMapper.checkBind(openid, hid);
