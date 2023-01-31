@@ -5,6 +5,7 @@ import java.math.BigInteger;
 
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
 import lombok.Data;
@@ -285,7 +286,12 @@ public class HousingInformationDto implements Serializable {
 //	@ExcelProperty("微信绑定用户")
 	@ExcelIgnore
 	private String bindWechatUser;
-
+	/**
+	 * 是否绑定微信用户
+	 */
+	@ExcelIgnore
+	@TableField(exist = false)
+	private boolean isBind;
 
 	/**
 	 * 缴交日期

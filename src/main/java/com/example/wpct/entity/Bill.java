@@ -18,4 +18,7 @@ public class Bill {
     private String type;//缴交方式
     private String location;//从哪里扣钱
     private String date;//缴交日期
+    private java.sql.Date beginDate;
+    private java.sql.Date endDate;
+    private String orderNo;
 }

@@ -43,6 +43,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     @Lazy
     private BuildServiceImpl buildService;
 
+
     @Autowired
     private WechatUserMapper wechatUserMapper;
 
@@ -56,6 +57,16 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .like(StringUtils.isNotEmpty(vo.getVillageName()), "village_name", vo.getVillageName())
                 .eq(StringUtils.isNotEmpty(vo.getBuildNumber()), "build_number", vo.getBuildNumber())
                 .eq(StringUtils.isNotEmpty(vo.getHouseNo()), "house_no", vo.getHouseNo()).list();
+        for(HousingInformationDto housingInformationDto : res){
+            QueryWrapper queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("hid",housingInformationDto.getId());
+            List<WechatUser> wechatUsers = wechatUserMapper.selectList(queryWrapper);
+            if (wechatUsers == null || wechatUsers.size() == 0){
+                housingInformationDto.setBind(false);
+            }else {
+                housingInformationDto.setBind(true);
+            }
+        }
         return new PageInfo<>(res);
     }
 

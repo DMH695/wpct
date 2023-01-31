@@ -12,4 +12,5 @@ public interface BillMapper {
     List<Bill> getAll(String villageName,String buildName,String roomNum);
     void delete(int id);
     Bill selectById(int id);
+    List<Bill> getByOpenid(String openid);
 }

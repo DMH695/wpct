@@ -156,6 +156,7 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
     @Override
     public ResultBody userExamineList(String openid) {
         QueryWrapper<ExamineDto> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like("approval_status","是");
         queryWrapper.eq("openid",openid);
         List<ExamineDto> examineDto = baseMapper.selectList(queryWrapper);
         for (ExamineDto examineDto1 : examineDto){
