@@ -7,6 +7,7 @@ import com.example.wpct.service.impl.HousingInformationServiceImpl;
 import com.example.wpct.utils.ResultBody;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +34,12 @@ public class HousingInformationController {
     @ApiOperation("删除指定id的房屋信息")
     public ResultBody delete(@RequestParam Integer id) {
         return ResultBody.ok(housingInformationService.removeById(id));
+    }
+
+    @DeleteMapping("/wechat/delete")
+    @ApiOperation("手机端删除房屋信息")
+    public ResultBody deleteByWechat(String openId, Integer houseId){
+        return housingInformationService.deleteByWechat(openId, houseId);
     }
 
     @PostMapping("/update")

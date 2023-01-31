@@ -7,6 +7,7 @@ import com.example.wpct.entity.VillageDto;
 import com.example.wpct.entity.vo.HousingInformationVo;
 import com.example.wpct.utils.ResultBody;
 import com.github.pagehelper.PageInfo;
+import io.swagger.models.auth.In;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -36,5 +37,7 @@ public interface HousingInformationService extends IService<HousingInformationDt
     List<HousingInformationDto> listByVillageName(String villageName);
 
     List<HousingInformationDto> listByBuildNumber(String buildNumber);
+
+    ResultBody deleteByWechat(String openId, Integer houseId);
 
 }

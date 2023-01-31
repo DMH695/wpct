@@ -2,12 +2,15 @@ package com.example.wpct.service.impl;
 
 import cn.hutool.core.lang.Snowflake;
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.BuildDto;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.VillageDto;
+import com.example.wpct.entity.WechatUser;
 import com.example.wpct.entity.vo.HousingInformationVo;
 import com.example.wpct.mapper.HousingInformationMapper;
+import com.example.wpct.mapper.WechatUserMapper;
 import com.example.wpct.service.HousingInformationService;
 import com.example.wpct.utils.ResultBody;
 import com.example.wpct.utils.StringUtils;
@@ -39,6 +42,9 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     @Autowired
     @Lazy
     private BuildServiceImpl buildService;
+
+    @Autowired
+    private WechatUserMapper wechatUserMapper;
 
 
     @Override
@@ -176,6 +182,13 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         String villageName = village.getName();
         String buildName = build.getName();
         return query().eq("village_name", villageName).eq("build_number", buildName).list();
+    }
+
+    @Override
+    public ResultBody deleteByWechat(String openId, Integer houseId) {
+        QueryWrapper<WechatUser> deleteQuery = new QueryWrapper<>();
+        deleteQuery.eq("openid",openId).eq("hid",houseId);
+        return ResultBody.ok(wechatUserMapper.delete(deleteQuery));
     }
 
 
