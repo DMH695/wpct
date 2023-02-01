@@ -219,7 +219,7 @@ public class WechatServiceImpl implements WechatPayService {
     }
 
     @Override
-    public String investProperty(String openid, int money,int hid) throws Exception {
+    public String investProperty(String openid, int property,int shared,int hid) throws Exception {
         HttpPost httpPost = new HttpPost(wxPayConfig.getDomain().concat("/v3/pay/transactions/jsapi"));
         //请求body参数
         //设置gson不转码
@@ -233,7 +233,7 @@ public class WechatServiceImpl implements WechatPayService {
         paramsMap.put("notify_url", "http://wpct.x597.com/weixin/jsapi/notify");  //test
 
         Map amountMap = new HashMap();
-        amountMap.put("total", money);
+        amountMap.put("total", property + shared);
         amountMap.put("currency", "CNY");
 
         Map payerMap = new HashMap();
@@ -286,10 +286,15 @@ public class WechatServiceImpl implements WechatPayService {
             resultMap.put("paySign", Sign);
             String resultJson = gson.toJson(resultMap);
             //修改housing_information中的property_fee
-            String str = String.valueOf(money);
+            String str = String.valueOf(property);
             Double property_fee1 = Double.parseDouble(str);
             Double property_fee = property_fee1/100;
             housingInformationMapper.investProperty(property_fee,hid);
+            //修改housing_information中的property_fee
+            String str1 = String.valueOf(shared);
+            Double poolBanlance1 = Double.parseDouble(str1);
+            Double poolBanlance = poolBanlance1/100;
+            housingInformationMapper.investShare(poolBanlance,hid);
             //生成账单
             Bill bill = new Bill();
             QueryWrapper queryWrapper1 = new QueryWrapper<>();
@@ -302,8 +307,8 @@ public class WechatServiceImpl implements WechatPayService {
             bill.setDate(date);
             bill.setOpenid(openid);
             bill.setLocation("微信");
-            bill.setPay(property_fee);
-            bill.setDetail("物业费余额充值");
+            bill.setPay(property_fee + poolBanlance);
+            bill.setDetail("物业费、公摊费余额充值");
             bill.setType("余额充值");
             billMapper.insert(bill);
             return resultJson;

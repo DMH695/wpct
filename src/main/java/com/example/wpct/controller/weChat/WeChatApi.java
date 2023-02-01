@@ -211,24 +211,24 @@ public class WeChatApi {
     /**
      *
      * @param openid
-     * @param money  单位为分
+     * 单位为分
      * @param hid
      * @return
      * @throws Exception
      */
-    @ApiOperation("物业费余额充值")
+    @ApiOperation("物业费、公摊费余额充值")
     @RequestMapping(value = "/property/balance/pay",method =RequestMethod.POST)
-    public Object investProperty(@RequestParam String openid,@RequestParam int money,@RequestParam int hid) throws Exception {
-        String resultJson = wechatPayService.investProperty(openid, money,hid);
+    public Object investProperty(@RequestParam String openid,@RequestParam int property,@RequestParam int shared,@RequestParam int hid) throws Exception {
+        String resultJson = wechatPayService.investProperty(openid,property,shared,hid);
         return ResultBody.ok(resultJson);
     }
 
-    @ApiOperation("公摊费余额充值")
+    /*@ApiOperation("公摊费余额充值")
     @RequestMapping(value = "/share/balance/pay",method = RequestMethod.POST)
     public Object investShare(@RequestParam String openid,@RequestParam int money,@RequestParam int hid) throws Exception {
         String resultJson = wechatPayService.investShare(openid, money,hid);
         return ResultBody.ok(resultJson);
-    }
+    }*/
 
     /**
      * 需要传入：nickname、openid、name、telephone、villageName、buildName、roomNum、relation
