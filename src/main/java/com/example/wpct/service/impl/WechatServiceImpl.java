@@ -228,11 +228,12 @@ public class WechatServiceImpl implements WechatPayService {
         paramsMap.put("appid", wxPayConfig.getAppid());
         paramsMap.put("mchid", wxPayConfig.getMchId());
         paramsMap.put("description","物业费余额充值");
-        paramsMap.put("out_trade_no", hid);   //test
+        String no = String.valueOf(System.currentTimeMillis());
+        paramsMap.put("out_trade_no",no);
         paramsMap.put("notify_url", "http://wpct.x597.com/weixin/jsapi/notify");  //test
 
         Map amountMap = new HashMap();
-        amountMap.put("total", money * 100);
+        amountMap.put("total", money);
         amountMap.put("currency", "CNY");
 
         Map payerMap = new HashMap();
@@ -254,6 +255,7 @@ public class WechatServiceImpl implements WechatPayService {
 
         try {
             String bodyAsString = EntityUtils.toString(response.getEntity());
+            System.out.println(bodyAsString);
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 200) { //处理成功
             } else if (statusCode == 204) { //处理成功，无返回Body
@@ -285,7 +287,8 @@ public class WechatServiceImpl implements WechatPayService {
             String resultJson = gson.toJson(resultMap);
             //修改housing_information中的property_fee
             String str = String.valueOf(money);
-            Double property_fee = Double.parseDouble(str);
+            Double property_fee1 = Double.parseDouble(str);
+            Double property_fee = property_fee1/100;
             housingInformationMapper.investProperty(property_fee,hid);
             //生成账单
             Bill bill = new Bill();
@@ -301,6 +304,7 @@ public class WechatServiceImpl implements WechatPayService {
             bill.setLocation("微信");
             bill.setPay(property_fee);
             bill.setDetail("物业费余额充值");
+            bill.setType("余额充值");
             billMapper.insert(bill);
             return resultJson;
         } finally {
@@ -318,11 +322,12 @@ public class WechatServiceImpl implements WechatPayService {
         paramsMap.put("appid", wxPayConfig.getAppid());
         paramsMap.put("mchid", wxPayConfig.getMchId());
         paramsMap.put("description","公摊费余额充值");
-        paramsMap.put("out_trade_no", hid);   //test
+        String no = String.valueOf(System.currentTimeMillis());
+        paramsMap.put("out_trade_no",no);  //test
         paramsMap.put("notify_url", "http://wpct.x597.com/weixin/jsapi/notify");  //test
 
         Map amountMap = new HashMap();
-        amountMap.put("total", money * 100);
+        amountMap.put("total", money);
         amountMap.put("currency", "CNY");
 
         Map payerMap = new HashMap();
@@ -374,7 +379,8 @@ public class WechatServiceImpl implements WechatPayService {
             String resultJson = gson.toJson(resultMap);
             //修改housing_information中的property_fee
             String str = String.valueOf(money);
-            Double poolBanlance = Double.parseDouble(str);
+            Double poolBanlance1 = Double.parseDouble(str);
+            Double poolBanlance = poolBanlance1/100;
             housingInformationMapper.investShare(poolBanlance,hid);
             //生成账单
             Bill bill = new Bill();
@@ -390,6 +396,7 @@ public class WechatServiceImpl implements WechatPayService {
             bill.setLocation("微信");
             bill.setPay(poolBanlance);
             bill.setDetail("公摊费余额充值");
+            bill.setType("余额充值");
             billMapper.insert(bill);
             return resultJson;
         } finally {

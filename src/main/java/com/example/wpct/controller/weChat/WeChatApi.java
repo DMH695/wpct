@@ -208,12 +208,20 @@ public class WeChatApi {
         return ResultBody.ok(resultJson);
     }
 
-    /*@ApiOperation("物业费余额充值")
+    /**
+     *
+     * @param openid
+     * @param money  单位为分
+     * @param hid
+     * @return
+     * @throws Exception
+     */
+    @ApiOperation("物业费余额充值")
     @RequestMapping(value = "/property/balance/pay",method =RequestMethod.POST)
     public Object investProperty(@RequestParam String openid,@RequestParam int money,@RequestParam int hid) throws Exception {
         String resultJson = wechatPayService.investProperty(openid, money,hid);
         return ResultBody.ok(resultJson);
-    }*/
+    }
 
     @ApiOperation("公摊费余额充值")
     @RequestMapping(value = "/share/balance/pay",method = RequestMethod.POST)
