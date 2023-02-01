@@ -1,5 +1,6 @@
 package com.example.wpct.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.example.wpct.entity.Bill;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.mapper.BillMapper;
@@ -103,8 +104,14 @@ public class BillServiceImpl implements BillService {
                 ,house.getName()
         );
         g.drawString(paymentUnit,95,120+fixH);
-        //收款项目
-        g.drawString(bill.getType(),30,215+fixH);
+
+        if (bill.getType().equals("物业费")){
+            String tmp = bill.getDetail();
+            JSONObject detailJSON = JSONObject.parseObject(tmp);
+
+        }else if (bill.getType().equals("公摊费")){
+
+        }
         //金额
         g.drawString(bill.getPay().toString(),505,215+fixH);
         //价税合计

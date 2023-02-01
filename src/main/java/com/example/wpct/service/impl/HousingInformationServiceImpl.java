@@ -43,8 +43,9 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     @Lazy
     private BuildServiceImpl buildService;
 
+
     @Autowired
-    WechatUserMapper wechatUserMapper;
+    private WechatUserMapper wechatUserMapper;
 
 
     @Override
@@ -192,6 +193,13 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         String villageName = village.getName();
         String buildName = build.getName();
         return query().eq("village_name", villageName).eq("build_number", buildName).list();
+    }
+
+    @Override
+    public ResultBody deleteByWechat(String openId, Integer houseId) {
+        QueryWrapper<WechatUser> deleteQuery = new QueryWrapper<>();
+        deleteQuery.eq("openid",openId).eq("hid",houseId);
+        return ResultBody.ok(wechatUserMapper.delete(deleteQuery));
     }
 
 

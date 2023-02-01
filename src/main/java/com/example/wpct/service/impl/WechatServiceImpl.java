@@ -60,22 +60,22 @@ public class WechatServiceImpl implements WechatPayService {
     private CloseableHttpClient httpClient;
 
     @Autowired
-    PropertyOrderMapper propertyOrderMapper;
+    private PropertyOrderMapper propertyOrderMapper;
 
     @Autowired
-    HousingInformationMapper housingInformationMapper;
+    private HousingInformationMapper housingInformationMapper;
 
     @Autowired
-    BillMapper billMapper;
+    private BillMapper billMapper;
 
     @Autowired
-    WechatUserMapper wechatUserMapper;
+    private WechatUserMapper wechatUserMapper;
 
     @Autowired
-    VillageMapper villageMapper;
+    private VillageMapper villageMapper;
 
     @Autowired
-    BuildMapper buildMapper;
+    private BuildMapper buildMapper;
 
     @Autowired
     SharedFeeOrderMapper sharedFeeOrderMapper;
@@ -476,7 +476,7 @@ public class WechatServiceImpl implements WechatPayService {
               payer":{"openid":"oHwsHuCj4_t6OMpypikZIQ1r-FXY"},
               "amount":{"total":1,"payer_total":1,"currency":"CNY","payer_currency":"CNY"}}
              */
-            
+
             //成功应答
             response.setStatus(200);
             map.put("code", "SUCCESS");
