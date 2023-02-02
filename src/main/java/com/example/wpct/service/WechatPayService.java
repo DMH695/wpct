@@ -21,5 +21,6 @@ public interface WechatPayService {
     String payNotify(HttpServletRequest request, HttpServletResponse response) throws GeneralSecurityException, NotFoundException, IOException, HttpCodeException;
     WechatUser checkBind(String openid,int hid);
     String queryOrder(Long orderNo,String openid) throws IOException;
+    String queryOrder1(Long orderNo) throws IOException;
     String test();
 }

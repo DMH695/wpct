@@ -223,6 +223,17 @@ public class WeChatApi {
         return ResultBody.ok(resultJson);
     }
 
+    /**
+     * 查询订单
+     */
+    @ApiOperation("查询余额充值后的订单")
+    @GetMapping("/invest/query")
+    public Object queryOrder1(@RequestParam String orderNo) throws IOException {
+        String bodyAsString = wechatPayService.queryOrder1(Long.parseLong(orderNo));
+        return ResultBody.ok(bodyAsString);
+    }
+
+
     /*@ApiOperation("公摊费余额充值")
     @RequestMapping(value = "/share/balance/pay",method = RequestMethod.POST)
     public Object investShare(@RequestParam String openid,@RequestParam int money,@RequestParam int hid) throws Exception {
