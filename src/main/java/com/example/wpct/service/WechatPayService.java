@@ -13,7 +13,7 @@ import java.util.List;
 
 public interface WechatPayService {
     String  jsapiPay(String openid, List<String> propertyOrderNos,List<String> sharedOrderNos) throws Exception;
-    String  investProperty(String openid, int money,int hid) throws Exception;
+    String  investProperty(String openid, int property,int shared,int hid) throws Exception;
     String  investShare(String openid, int money,int hid) throws Exception;
     List<WechatUser> getByOpenid(String openid);
     void bind(WechatUser wechatUser);
@@ -21,5 +21,6 @@ public interface WechatPayService {
     String payNotify(HttpServletRequest request, HttpServletResponse response) throws GeneralSecurityException, NotFoundException, IOException, HttpCodeException;
     WechatUser checkBind(String openid,int hid);
     String queryOrder(Long orderNo,String openid) throws IOException;
+    String queryOrder1(Long orderNo) throws IOException;
     String test();
 }
