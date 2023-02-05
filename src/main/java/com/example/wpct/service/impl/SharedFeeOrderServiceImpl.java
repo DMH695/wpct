@@ -110,6 +110,8 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
                 costDetail.put("公摊电梯费", sharedFeeOrderImportModel.getLiftFee());
                 costDetail.put("公摊水费", sharedFeeOrderImportModel.getWaterFee());
                 costDetail.put("公摊电费", sharedFeeOrderImportModel.getEleFee());
+                if (sharedFeeOrderImportModel.getBeginDate() == null || sharedFeeOrderImportModel.getEndDate() == null)
+                    continue;
                 SharedFeeOrderDto order = SharedFeeOrderDto.builder()
                         .orderNo(snowflake.nextId()).houseId(house.getId()).cost(cost).paymentStatus(0)
                         .costDetail(costDetail.toJSONString()).beginDate(sharedFeeOrderImportModel.getBeginDate())
