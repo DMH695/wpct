@@ -43,8 +43,8 @@ public class SysUserServiceImpl implements SysUserService {
         int pageSize = pageRequest.getPageSize();
         //设置分页数据
         page = PageHelper.startPage(pageNum,pageSize);
-        List<SysUser> res = new ArrayList<>();
-        for (SysUser user : sysUserMapper.getAll()){
+        List<SysUser> res = sysUserMapper.getAll();
+        for (SysUser user : res){
             user.setRoleName(roleMapper.getById(user.getRole()).getName());
         }
         return new PageInfo<>(res);
