@@ -63,6 +63,8 @@ public class ExamineController {
             if (roleService.getById(user.getRole()).getPermission().contains("意见管理:审批")){
                 examineService.approval(id);
                 return ResultBody.ok(null);
+            }else {
+                return ResultBody.fail("权限不足");
             }
         }
         return ResultBody.ok(null);
