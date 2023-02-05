@@ -64,6 +64,7 @@ public class LoginApi {
             res.put("id",sysUserService.getByUserName(username).getId());
             res.put("name",sysUserService.getByUserName(username).getName());
             res.put("username",sysUserService.getByUserName(username).getUsername());
+            res.put("permission",roleService.getById(sysUserService.getByUserName(username).getRole()).getPermission());
         } catch (UnknownAccountException e) {
             log.error("用户名不存在！", e);
             return ResultBody.fail("用户名不存在");
