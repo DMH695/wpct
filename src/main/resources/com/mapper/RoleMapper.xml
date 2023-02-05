@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.wpct.mapper.RoleMapper">
+    <select id="getById" resultType="Role">SELECT * FROM role WHERE id=#{id}</select>
+    <select id="all" resultType="Role">SELECT * FROM role</select>
+    <insert id="insert">INSERT INTO role(name,permission) VALUES (#{name},#{permission})</insert>
+    <update id="update">UPDATE role SET name=#{name},permission=#{permission} WHERE id=#{id}</update>
+    <delete id="delete">DELETE FROM role WHERE id=#{id}</delete>
+</mapper>

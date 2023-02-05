@@ -49,6 +49,9 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
 
     @Autowired
     HousingInformationMapper housingInformationMapper;
+
+    @Autowired
+    RoleMapper roleMapper;
     @Override
     public ResultBody addExamine(String openid,String examineContent,int hid) {
         List<WechatUser> list = wechatUserMapper.getByOpenid(openid);
@@ -86,7 +89,7 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         int pageSize = pageRequest.getPageSize();
         //设置分页数据
         page = PageHelper.startPage(pageNum, pageSize);
-        if (user.getRole().equals("超级管理员")) {
+        if (roleMapper.getById(user.getRole()).getName().equals("超级管理员")) {
             /*QueryWrapper queryWrapper = new QueryWrapper<>();
             queryWrapper.isNotNull("uname");*/
             res = baseMapper.selectList(null);
@@ -185,7 +188,7 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         if (user == null){
             throw new Exception("请先登录");
         }
-        if(user.getRole().equals("超级管理员")){
+        if(roleMapper.getById(user.getRole()).getName().equals("超级管理员")){
             return ResultBody.ok(approval(id));
         }else{
             return ResultBody.ok(soluExamine(id,resolveMsg));

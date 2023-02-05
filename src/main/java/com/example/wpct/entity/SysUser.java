@@ -14,5 +14,6 @@ public class SysUser implements Serializable {
     private String username;
     private String name;
     private String password;
-    private String role;
+    private int role;
+    private String roleName;
 }

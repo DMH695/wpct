@@ -1,6 +1,7 @@
 package com.example.wpct.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.example.wpct.mapper.RoleMapper;
 import com.example.wpct.mapper.SysUserMapper;
 import com.example.wpct.entity.SysUser;
 import com.example.wpct.service.SysUserService;
@@ -14,11 +15,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class SysUserServiceImpl implements SysUserService {
     @Autowired
     SysUserMapper sysUserMapper;
+
+    @Autowired
+    RoleMapper roleMapper;
 
     public static Page page;
 
@@ -37,7 +43,11 @@ public class SysUserServiceImpl implements SysUserService {
         int pageSize = pageRequest.getPageSize();
         //设置分页数据
         page = PageHelper.startPage(pageNum,pageSize);
-        return new PageInfo<>(sysUserMapper.getAll());
+        List<SysUser> res = new ArrayList<>();
+        for (SysUser user : sysUserMapper.getAll()){
+            user.setRoleName(roleMapper.getById(user.getRole()).getName());
+        }
+        return new PageInfo<>(res);
     }
 
 
@@ -58,6 +68,8 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public SysUser getById(int id) {
-        return sysUserMapper.getById(id);
+        SysUser user = sysUserMapper.getById(id);
+        user.setRoleName(roleMapper.getById(user.getRole()).getName());
+        return user;
     }
 }
