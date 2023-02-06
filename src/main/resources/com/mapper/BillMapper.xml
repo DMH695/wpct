@@ -18,7 +18,6 @@
                 and roomNum=#{roomNum}
             </if>
         </trim>
-        WHERE   type="物业费" OR type="公摊费"
         ORDER BY date DESC
     </select>
     <delete id="delete">DELETE FROM bill WHERE id=#{id}</delete>

@@ -1,10 +1,14 @@
 package com.example.wpct.controller;
 import com.example.wpct.entity.ExamineDto;
+import com.example.wpct.entity.SysUser;
+import com.example.wpct.service.RoleService;
 import com.example.wpct.service.impl.ExamineServiceImpl;
 import com.example.wpct.utils.ResultBody;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +19,8 @@ import org.springframework.web.bind.annotation.*;
 public class ExamineController {
     @Autowired
     private ExamineServiceImpl examineService;
-
+    @Autowired
+    RoleService roleService;
 
     @ApiOperation("新增处理（审批）")
     @PostMapping("/add")
@@ -52,7 +57,16 @@ public class ExamineController {
     @PostMapping("/approve")
     //@RequiresRoles("超级管理员")
     public ResultBody approve(@RequestParam Integer id) {
-        examineService.approval(id);
+        Subject subject = SecurityUtils.getSubject();
+        SysUser user = (SysUser)subject.getPrincipal();
+        if (user != null){
+            if (roleService.getById(user.getRole()).getPermission().contains("意见管理:审批")){
+                examineService.approval(id);
+                return ResultBody.ok(null);
+            }else {
+                return ResultBody.fail("权限不足");
+            }
+        }
         return ResultBody.ok(null);
     }
 }

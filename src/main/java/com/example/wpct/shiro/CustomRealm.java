@@ -2,6 +2,7 @@ package com.example.wpct.shiro;
 
 import com.example.wpct.entity.SysUser;
 import com.example.wpct.entity.UserToken;
+import com.example.wpct.mapper.RoleMapper;
 import com.example.wpct.service.SysUserService;
 import lombok.SneakyThrows;
 import org.apache.shiro.authc.*;
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CustomRealm extends AuthorizingRealm {
     @Autowired
     SysUserService sysUserService;
+    @Autowired
+    RoleMapper roleMapper;
 
     /**
      * 在controller中添加注解的时候会调用该方法
@@ -26,7 +29,8 @@ public class CustomRealm extends AuthorizingRealm {
         SysUser user = (SysUser) principalCollection.getPrimaryPrincipal();
         //添加角色和权限，SimpleAuthorizationInfo：授权信息
         SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo();
-        simpleAuthorizationInfo.addRole(user.getRole());
+
+        simpleAuthorizationInfo.addRole(roleMapper.getById(user.getRole()).getName());
         //simpleAuthorizationInfo.addRole(null);
         return simpleAuthorizationInfo;
     }

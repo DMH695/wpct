@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.example.wpct.entity.LoginType;
 import com.example.wpct.entity.SysUser;
 import com.example.wpct.entity.UserToken;
+import com.example.wpct.service.RoleService;
 import com.example.wpct.service.SysUserService;
 import com.example.wpct.utils.ResultBody;
 import io.swagger.annotations.Api;
@@ -33,6 +34,9 @@ public class LoginApi {
     @Autowired
     SysUserService sysUserService;
 
+    @Autowired
+    RoleService roleService;
+
     @ApiOperation("系统用户登录")
     @RequestMapping(value = "/login",method = RequestMethod.POST)
     public Object login(@RequestParam String username,
@@ -56,10 +60,11 @@ public class LoginApi {
             subject.login(token);
             String JSESSIONID = (String) subject.getSession().getId();
             res.put("JSESSIONID",JSESSIONID);
-            res.put("role",sysUserService.getByUserName(username).getRole());
+            res.put("role",roleService.getById(sysUserService.getByUserName(username).getRole()).getName());
             res.put("id",sysUserService.getByUserName(username).getId());
             res.put("name",sysUserService.getByUserName(username).getName());
             res.put("username",sysUserService.getByUserName(username).getUsername());
+            res.put("permission",roleService.getById(sysUserService.getByUserName(username).getRole()).getPermission());
         } catch (UnknownAccountException e) {
             log.error("用户名不存在！", e);
             return ResultBody.fail("用户名不存在");
