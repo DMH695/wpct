@@ -42,7 +42,7 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
      */
     @Override
     public ResultBody insert(VillageDto dto) {
-        if (query().eq("name",dto.getName()).list().size() > 0) {
+        if (query().eq("name", dto.getName()).list().size() > 0) {
             return ResultBody.fail("Village name already exists");
         }
         return ResultBody.ok(save(dto));
@@ -50,18 +50,19 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
 
     /**
      * 获取树形结构
+     *
      * @param pageSize 页面大小
-     * @param pageNum 当前页面
+     * @param pageNum  当前页面
      */
     @Override
     public ResultBody getTree(int pageSize, int pageNum) {
         PageInfo<VillageDto> pageInfo = null;
         List<VillageDto> villages;
-        if (pageSize != -1){
-            PageHelper.startPage(pageNum,pageSize);
+        if (pageSize != -1) {
+            PageHelper.startPage(pageNum, pageSize);
             villages = baseMapper.selectList(null);
-            pageInfo = new PageInfo<>(villages,pageSize);
-        }else {
+            pageInfo = new PageInfo<>(villages, pageSize);
+        } else {
             villages = baseMapper.selectList(null);
         }
 
@@ -79,22 +80,22 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
                 JSONArray houses = new JSONArray();
                 for (HousingInformationDto dto : houseList) {
                     JSONObject tmp = new JSONObject();
-                    tmp.put("name",dto.getHouseNo());
-                    tmp.put("id",dto.getId());
-                    tmp.put("village_id",village.getString("id"));
-                    tmp.put("build_id",build.getString("id"));
-                    tmp.put("village_name",dto.getVillageName());
-                    tmp.put("build_number",dto.getBuildNumber());
+                    tmp.put("name", dto.getHouseNo());
+                    tmp.put("id", dto.getId());
+                    tmp.put("village_id", village.getString("id"));
+                    tmp.put("build_id", build.getString("id"));
+                    tmp.put("village_name", dto.getVillageName());
+                    tmp.put("build_number", dto.getBuildNumber());
                     houses.add(tmp);
                 }
-                build.put("children",houses);
+                build.put("children", houses);
             }
-            village.put("children",builds);
+            village.put("children", builds);
         }
         JSONObject res = new JSONObject();
-        res.put("tree",tree);
-        if (pageSize != -1){
-            res.put("pageInfo",pageInfo);
+        res.put("tree", tree);
+        if (pageSize != -1) {
+            res.put("pageInfo", pageInfo);
         }
         return ResultBody.ok(res);
     }
@@ -106,18 +107,18 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public ResultBody updateByDto(VillageDto dto) {
         VillageDto one = query().eq("id", dto.getId()).one();
-        if (one == null){
+        if (one == null) {
             return ResultBody.fail("unknown id");
-        }else {
+        } else {
             VillageDto name = query().eq("name", dto.getName()).one();
-            if (name == null){
+            if (name == null) {
                 List<HousingInformationDto> houseList = housingInformationService.query().eq("village_name", one.getName()).list();
                 for (HousingInformationDto houseDto : houseList) {
                     houseDto.setVillageName(dto.getName());
                 }
                 housingInformationService.updateBatchById(houseList);
                 return ResultBody.ok(updateById(dto));
-            }else {
+            } else {
                 return ResultBody.fail("same name or already exists");
             }
         }
@@ -127,25 +128,22 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public ResultBody remove(long id) {
         VillageDto village = query().eq("id", id).one();
-        if (village == null){
+        if (village == null) {
             return ResultBody.fail("unknown id");
         }
-        List<BuildDto> builds = buildService.query().eq("village_id", id).list();
         QueryWrapper<HousingInformationDto> houseDeleteQuery = new QueryWrapper<>();
         houseDeleteQuery
                 .eq("village_name", village.getName());
-        for (BuildDto build : builds) {
-            List<HousingInformationDto> houses = housingInformationService.query().eq("build_number", build.getName()).list();
-            for (HousingInformationDto house : houses) {
-                QueryWrapper<PropertyOrderDto> propertyQuery = new QueryWrapper<>();
-                QueryWrapper<SharedFeeOrderDto> sharedQuery = new QueryWrapper<>();
-                propertyOrderService.remove(propertyQuery.eq("house_id",house.getId()));
-                sharedFeeOrderService.remove(sharedQuery.eq("house_id",house.getId()));
-                housingInformationService.removeById(house.getId());
-            }
+        List<HousingInformationDto> houses = housingInformationService.list(houseDeleteQuery);
+        for (HousingInformationDto house : houses) {
+            QueryWrapper<PropertyOrderDto> propertyQuery = new QueryWrapper<>();
+            QueryWrapper<SharedFeeOrderDto> sharedQuery = new QueryWrapper<>();
+            propertyOrderService.remove(propertyQuery.eq("house_id", house.getId()));
+            sharedFeeOrderService.remove(sharedQuery.eq("house_id", house.getId()));
+            housingInformationService.removeById(house.getId());
         }
         QueryWrapper<BuildDto> buildDeleteQuery = new QueryWrapper<>();
-        buildService.remove(buildDeleteQuery.eq("village_id",id));
+        buildService.remove(buildDeleteQuery.eq("village_id", id));
         getBaseMapper().deleteById(id);
         return ResultBody.ok("All building numbers and houses under village have been deleted");
     }
