@@ -42,18 +42,18 @@ public class ReportServiceImpl implements ReportService {
         List<VillageDto> villages = villageMapper.selectList(null);
         for (VillageDto village : villages) {
             QueryWrapper<BuildDto> buildQuery = new QueryWrapper<>();
-            buildQuery.eq("village_id",village.getId());
+            buildQuery.eq("village_id", village.getId());
             List<BuildDto> builds = buildMapper.selectList(buildQuery);
             for (BuildDto build : builds) {
                 List<Long> houseIds = housingInformationService.getIdsByHouseInfo(village.getName(), build.getName(), null);
                 // 天 周 月 毫秒数
-                long[] lessMs = new long[]{86400000L,604800000L,2592000000L};
+                long[] lessMs = new long[]{86400000L, 604800000L, 2592000000L};
                 for (long lm : lessMs) {
                     List<PropertyOrderDto> property = propertyOrderService.query()
-                            .in("house_id", houseIds)
+                            .in(houseIds.size() > 0, "house_id", houseIds)
                             .between("end_date", new Date(System.currentTimeMillis() - lm), new Date(System.currentTimeMillis())).list();
                     List<SharedFeeOrderDto> sharedFee = sharedFeeOrderService.query()
-                            .in("house_id", houseIds)
+                            .in(houseIds.size() > 0, "house_id", houseIds)
                             .between("end_date", new Date(System.currentTimeMillis() - lm), new Date(System.currentTimeMillis())).list();
                     double receivable = 0;
                     double received = 0;
@@ -74,7 +74,7 @@ public class ReportServiceImpl implements ReportService {
                                     .startDate(new Date(System.currentTimeMillis() - lm))
                                     .endDate(new Date(System.currentTimeMillis()))
                                     .receivable(receivable).received(received)
-                                    .rate(payed/(float) (property.size() + sharedFee.size()))
+                                    .rate(payed / (float) (property.size() + sharedFee.size()))
                                     .build()
                     );
                 }
