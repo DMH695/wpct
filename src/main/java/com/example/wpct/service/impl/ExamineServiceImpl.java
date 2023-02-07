@@ -52,6 +52,9 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
 
     @Autowired
     RoleMapper roleMapper;
+
+    @Autowired
+    ExamineMapper examineMapper;
     @Override
     public ResultBody addExamine(String openid,String examineContent,int hid) {
         List<WechatUser> list = wechatUserMapper.getByOpenid(openid);
@@ -79,23 +82,21 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
     }
     @SneakyThrows
     private PageInfo<?> getPageInfo(PageRequest pageRequest) {
+        int pageNum = pageRequest.getPageNum();
+        int pageSize = pageRequest.getPageSize();
+        //设置分页数据
+        page = PageHelper.startPage(pageNum, pageSize);
         List<ExamineDto> res;
         Subject subject = SecurityUtils.getSubject();
         SysUser user = (SysUser) subject.getPrincipal();
         if (user == null){
             throw new Exception("请先登录");
         }
-        int pageNum = pageRequest.getPageNum();
-        int pageSize = pageRequest.getPageSize();
-        //设置分页数据
-        page = PageHelper.startPage(pageNum, pageSize);
-        if (roleMapper.getById(user.getRole()).getName().equals("超级管理员")) {
-            /*QueryWrapper queryWrapper = new QueryWrapper<>();
-            queryWrapper.isNotNull("uname");*/
-            res = baseMapper.selectList(null);
-        } else {
-            res = baseMapper.selectList(null);
-        }
+        QueryWrapper queryWrapper2 = new QueryWrapper();
+        queryWrapper2.select();
+        res = examineMapper.selectList(queryWrapper2);
+
+        //res = baseMapper.selectList(null);
         for (int i = 0; i < res.size(); i++) {
             ExamineDto examineDto = res.get(i);
             QueryWrapper queryWrapper = new QueryWrapper<>();
@@ -121,9 +122,11 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
                 }
                 examineDto.setWechatUser((WechatUser) set.toArray()[0]);
             }
-            examineDto.setVillageName(housingInformationDto.getVillageName());
-            examineDto.setBuildName(housingInformationDto.getBuildNumber());
-            examineDto.setRoomNum(housingInformationDto.getHouseNo());
+            if (housingInformationDto != null){
+                examineDto.setVillageName(housingInformationDto.getVillageName());
+                examineDto.setBuildName(housingInformationDto.getBuildNumber());
+                examineDto.setRoomNum(housingInformationDto.getHouseNo());
+            }
    //         examineDto.setRoomDto(roomMapper.selectOne(queryWrapper2));
         }
         return new PageInfo<>(res);
