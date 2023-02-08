@@ -3,6 +3,7 @@ package com.example.wpct.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.wpct.annotation.SysLogAnnotation;
 import com.example.wpct.entity.*;
 import com.example.wpct.entity.vo.HousingInformationVo;
 import com.example.wpct.mapper.PropertyOrderMapper;
@@ -72,6 +73,7 @@ public class HousingInformationController {
 
     @GetMapping("/list")
     @ApiOperation("条件查询房屋信息")
+    @SysLogAnnotation(opModel = "房屋管理", opType = "查询", opDesc = "查询房屋列表")
     public ResultBody selectByVo(HousingInformationVo vo){
         return ResultBody.ok(housingInformationService.listByVo(vo));
     }

@@ -56,6 +56,7 @@ public class SharedFeeController {
         return sharedFeeService.importSharedFee(file);
     }
 
+    @ApiOperation("微信用户获取公摊费")
     @GetMapping("/wechat/user/get")
     public ResultBody listByUser(@RequestParam("openid") String openid){
         return sharedFeeService.listByUser(openid);

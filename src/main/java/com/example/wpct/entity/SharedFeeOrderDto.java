@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import com.alibaba.fastjson.annotation.JSONField;
 
+import javax.validation.constraints.Min;
+
 
 @Data
 @NoArgsConstructor
@@ -47,6 +49,7 @@ public class SharedFeeOrderDto implements Serializable {
 	 * 缴交费用
 	 */
 	@JSONField(name ="cost")
+	@Min(0)
 	private double cost;
 
 

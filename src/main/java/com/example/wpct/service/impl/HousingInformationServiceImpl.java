@@ -207,11 +207,11 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         String villageName = dto.getVillageName();
         String buildNumber = dto.getBuildNumber();
         VillageDto village = villageService.query().eq("name", villageName).one();
-        BuildDto build = buildService.query().eq("name", buildNumber).one();
         if (village == null) {
             village = VillageDto.builder().name(villageName).build();
             villageService.save(village);
         }
+        BuildDto build = buildService.query().eq("village_id",village.getId()).eq("name", buildNumber).one();
         if (build == null) {
             build = BuildDto.builder().villageId(village.getId()).name(buildNumber).build();
             buildService.save(build);
