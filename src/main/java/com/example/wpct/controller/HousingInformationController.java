@@ -1,6 +1,7 @@
 package com.example.wpct.controller;
 
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.wpct.annotation.SysLogAnnotation;
@@ -60,7 +61,7 @@ public class HousingInformationController {
     }
 
     @DeleteMapping("/wechat/delete")
-    @ApiOperation("手机端删除房屋信息")
+    @ApiOperation("手机端解绑")
     public ResultBody deleteByWechat(String openId, Integer houseId){
         return housingInformationService.deleteByWechat(openId, houseId);
     }
@@ -141,9 +142,57 @@ public class HousingInformationController {
         return ResultBody.ok(res);
     }
 
+    @ApiOperation("预览")
+    @RequestMapping(value = "/preview",method = RequestMethod.GET)
+    public Object preview(@RequestParam int id){
+        Double property = 0.0;
+        Double shared = 0.0;
+        Double total = 0.0;
+        //物业费
+        QueryWrapper queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("payment_status",0);
+        queryWrapper.eq("house_id",id);
+        List<PropertyOrderDto> propertyOrderDtoList = propertyOrderMapper.selectList(queryWrapper);
+        QueryWrapper queryWrapper1 = new QueryWrapper<>();
+        queryWrapper1.eq("payment_status",0);
+        queryWrapper1.eq("house_id",id);
+        List<SharedFeeOrderDto> sharedFeeOrderDtoList = sharedFeeOrderMapper.selectList(queryWrapper1);
+        if (propertyOrderDtoList == null && sharedFeeOrderDtoList == null){
+            return ResultBody.fail("没有生成订单，无法催缴");
+        }
+        for (PropertyOrderDto propertyOrderDto : propertyOrderDtoList){
+            property = property + propertyOrderDto.getCost();
+        }
+        //公摊费
+        for (SharedFeeOrderDto sharedFeeOrderDto : sharedFeeOrderDtoList){
+            shared = shared + sharedFeeOrderDto.getCost();
+        }
+        total = shared + property;
+        if (total == 0){
+            return ResultBody.fail("当前账户不存在欠钱行为，无需催缴");
+        }
+        HousingInformationDto housingInformationDto = housingInformationService.getById(id);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("title","物业缴费提醒");
+        jsonObject.put("tableHead",housingInformationDto.getVillageName() + "-" + housingInformationDto.getBuildNumber() + "-" + housingInformationDto.getHouseNo() + "缴费提醒");
+        jsonObject.put("house",housingInformationDto.getVillageName() + "-" + housingInformationDto.getBuildNumber() + "-" + housingInformationDto.getHouseNo());
+        jsonObject.put("name",housingInformationDto.getName());
+        jsonObject.put("type","合计金额");
+        jsonObject.put("status","未缴费");
+        jsonObject.put("total",total);
+        jsonObject.put("remark","请即时缴交费用");
+        return ResultBody.ok(jsonObject);
+    }
 
-
-
+    @ApiOperation("获取公摊余额")
+    @RequestMapping(value = "/getPoolBalance",method = RequestMethod.GET)
+    public Object getPoolBalance(@RequestParam int hid){
+        QueryWrapper queryWrapper = new QueryWrapper();
+        Double poolBalance = housingInformationService.getById(hid).getPoolBalance();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("poolBalance",poolBalance);
+        return ResultBody.ok(poolBalance);
+    }
 
 
 
