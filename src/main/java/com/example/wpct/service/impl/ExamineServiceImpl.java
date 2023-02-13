@@ -69,7 +69,8 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
             examineDto.setOpenid(openid);
             examineDto.setCommitTime(LocalDateTime.now());
             examineDto.setExamineContent(examineContent);
-            examineDto.setApprovalStatus("否");
+            examineDto.setApprovalStatus("");
+            examineDto.setResolveHandle("");
             examineDto.setHid(hid);
             baseMapper.insert(examineDto);
             return ResultBody.ok("新增成功");
@@ -155,6 +156,16 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         updateWrapper.eq("id",id);
         ExamineDto examineDto = baseMapper.selectOne(updateWrapper);
         examineDto.setApprovalStatus("是");
+        baseMapper.update(examineDto,updateWrapper);
+        return examineDto.getExamineContent();
+    }
+
+    public String noPass(Integer id) {
+        UpdateWrapper<ExamineDto> updateWrapper = new UpdateWrapper<>();
+        //根据openid和id锁定处理的信息
+        updateWrapper.eq("id",id);
+        ExamineDto examineDto = baseMapper.selectOne(updateWrapper);
+        examineDto.setApprovalStatus("不通过");
         baseMapper.update(examineDto,updateWrapper);
         return examineDto.getExamineContent();
     }
