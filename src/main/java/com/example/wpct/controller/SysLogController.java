@@ -24,6 +24,7 @@ public class SysLogController {
     }
 
     @GetMapping("/list")
+    @ApiOperation("获取日志列表")
     public ResultBody list(@RequestBody LogVo vo){
         return sysLogService.list(vo);
     }

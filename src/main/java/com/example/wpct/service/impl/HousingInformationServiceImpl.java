@@ -56,16 +56,15 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         List<HousingInformationDto> res = query()
                 .like(StringUtils.isNotEmpty(vo.getVillageName()), "village_name", vo.getVillageName())
                 .eq(StringUtils.isNotEmpty(vo.getBuildNumber()), "build_number", vo.getBuildNumber())
-                .eq(StringUtils.isNotEmpty(vo.getHouseNo()), "house_no", vo.getHouseNo()).list();
+                .eq(StringUtils.isNotEmpty(vo.getHouseNo()), "house_no", vo.getHouseNo())
+                .list();
         for(HousingInformationDto housingInformationDto : res){
-            QueryWrapper queryWrapper = new QueryWrapper<>();
+            QueryWrapper<WechatUser> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("hid",housingInformationDto.getId());
             List<WechatUser> wechatUsers = wechatUserMapper.selectList(queryWrapper);
-            if (wechatUsers == null || wechatUsers.size() == 0){
-                housingInformationDto.setBind(false);
-            }else {
-                housingInformationDto.setBind(true);
-            }
+            housingInformationDto.setBind(wechatUsers != null && wechatUsers.size() != 0);
+            if (!housingInformationDto.isBind() && vo.getBound() != null)
+                res.remove(housingInformationDto);
         }
         return new PageInfo<>(res);
     }
