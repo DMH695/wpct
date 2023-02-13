@@ -1,6 +1,7 @@
 package com.example.wpct.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.PropertyOrderDto;
 import com.example.wpct.entity.vo.PropertyOrderVo;
 import com.example.wpct.utils.ResultBody;
@@ -26,5 +27,7 @@ public interface PropertyOrderService extends IService<PropertyOrderDto> {
     ResultBody listByUser(String openid);
 
     ResultBody insert(PropertyOrderDto dto);
+
+    double calcCost(HousingInformationDto dto);
 
 }

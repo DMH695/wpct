@@ -37,6 +37,15 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
 
     @Autowired
     @Lazy
+    private PropertyOrderServiceImpl propertyOrderService;
+
+    @Autowired
+    @Lazy
+    private HousingInformationServiceImpl housingInformationService;
+
+
+    @Autowired
+    @Lazy
     private VillageServiceImpl villageService;
 
     @Autowired
@@ -199,6 +208,18 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         QueryWrapper<WechatUser> deleteQuery = new QueryWrapper<>();
         deleteQuery.eq("openid",openId).eq("hid",houseId);
         return ResultBody.ok(wechatUserMapper.delete(deleteQuery));
+    }
+
+    @Override
+    public ResultBody getCostEstimate(Long hid) {
+        HousingInformationDto dto = housingInformationService.query().eq("id", hid).one();
+        if (dto == null){
+            return ResultBody.fail("unknown hid");
+        }
+        if (dto.getPropertyFee() > 0){
+            return ResultBody.ok(dto.getPropertyFee()/ propertyOrderService.calcCost(dto));
+        }
+        return ResultBody.ok(0);
     }
 
 

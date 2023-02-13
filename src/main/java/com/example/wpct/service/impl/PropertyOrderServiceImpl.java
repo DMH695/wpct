@@ -56,9 +56,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
         List<PropertyOrderDto> propertyOrderDtoList = new ArrayList<>();
         Snowflake snowflake = new Snowflake();
         for (HousingInformationDto dto : housingInformationDtoList) {
-            double cost = dto.getArea() * dto.getAreaUnitPrice() + dto.getExceedArea() * dto.getExceedAreaUnitPrice() +
-                    dto.getCarFee() + dto.getOtherFee() + dto.getRecycleFee() + dto.getRecycleRent() + dto.getCalculateRent() +
-                    dto.getCalculateFee() + dto.getDiscount();
+            double cost = calcCost(dto);
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new java.util.Date());
             calendar.add(Calendar.MONTH, 1);
@@ -177,7 +175,16 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
         Snowflake snowflake = new Snowflake();
         dto.setUpdateTime(new Timestamp(System.currentTimeMillis()).toString());
         dto.setOrderNo(snowflake.nextId());
+        dto.setEndDate(new Date(System.currentTimeMillis()));
+        dto.setBeginDate(new Date(System.currentTimeMillis() - 3600L * 1000L * 24L * 30L));
         return ResultBody.ok(save(dto));
+    }
+
+    @Override
+    public double calcCost(HousingInformationDto dto) {
+        return dto.getArea() * dto.getAreaUnitPrice() + dto.getExceedArea() * dto.getExceedAreaUnitPrice() +
+                dto.getCarFee() + dto.getOtherFee() + dto.getRecycleFee() + dto.getRecycleRent() + dto.getCalculateRent() +
+                dto.getCalculateFee() + dto.getDiscount();
     }
 
 

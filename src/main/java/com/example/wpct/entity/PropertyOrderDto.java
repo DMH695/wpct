@@ -70,7 +70,7 @@ public class PropertyOrderDto implements Serializable {
 	 * 开始日期
 	 */
 	@JSONField(name ="beginDate")
-	@ApiModelProperty(value = "开始日期，格式2020-04-27")
+	@ApiModelProperty(value = "开始日期，格式2020-04-27", hidden = true)
 	private java.sql.Date beginDate;
 
 
@@ -78,7 +78,7 @@ public class PropertyOrderDto implements Serializable {
 	 * 结束日期
 	 */
 	@JSONField(name ="endDate")
-	@ApiModelProperty(value = "结束日期，格式2020-04-27")
+	@ApiModelProperty(value = "结束日期，格式2020-04-27", hidden = true)
 	private java.sql.Date endDate;
 
 

@@ -40,4 +40,6 @@ public interface HousingInformationService extends IService<HousingInformationDt
 
     ResultBody deleteByWechat(String openId, Integer houseId);
 
+    ResultBody getCostEstimate(Long hid);
+
 }

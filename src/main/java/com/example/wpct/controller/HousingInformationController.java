@@ -194,6 +194,12 @@ public class HousingInformationController {
         return ResultBody.ok(poolBalance);
     }
 
+    @GetMapping("/get/cost/estimate")
+    @ApiOperation("预计能缴费到什么时间")
+    public ResultBody getCostEstimate(Long hid){
+        return housingInformationService.getCostEstimate(hid);
+    }
+
 
 
 
