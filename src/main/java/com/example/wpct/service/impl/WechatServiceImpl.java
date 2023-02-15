@@ -732,7 +732,9 @@ public class WechatServiceImpl implements WechatPayService {
         bill.setOpenid(openid);
         bill.setLocation("微信");
         bill.setPay(property_fee + poolBanlance);
-        bill.setDetail("物业费、公摊费余额充值");
+        String detail;
+        detail = "物业费充值:" + property_fee + "(元),"+"公摊费充值:" + poolBanlance + "(元)";
+        bill.setDetail(detail);
         bill.setType("余额充值");
         billMapper.insert(bill);
     }

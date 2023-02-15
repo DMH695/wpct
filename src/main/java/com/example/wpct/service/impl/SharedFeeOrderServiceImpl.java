@@ -45,6 +45,8 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
         Snowflake snowflake = new Snowflake();
         dto.setUpdateDate(new Timestamp(System.currentTimeMillis()).toString());
         dto.setOrderNo(snowflake.nextId());
+        dto.setEndDate(new Date(System.currentTimeMillis()).toString());
+        dto.setBeginDate(new Date(System.currentTimeMillis() - 3600L * 1000L * 24L * 30L).toString());
         return ResultBody.ok(save(dto));
     }
 

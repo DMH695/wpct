@@ -184,13 +184,15 @@ public class HousingInformationController {
         return ResultBody.ok(jsonObject);
     }
 
-    @ApiOperation("获取公摊余额")
+    @ApiOperation("获取物业费、公摊费余额")
     @RequestMapping(value = "/getPoolBalance",method = RequestMethod.GET)
     public Object getPoolBalance(@RequestParam int hid){
         QueryWrapper queryWrapper = new QueryWrapper();
         Double poolBalance = housingInformationService.getById(hid).getPoolBalance();
+        Double propertyFee = housingInformationService.getById(hid).getPropertyFee();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("poolBalance",poolBalance);
+        jsonObject.put("propertyFee",propertyFee);
         return ResultBody.ok(poolBalance);
     }
 
