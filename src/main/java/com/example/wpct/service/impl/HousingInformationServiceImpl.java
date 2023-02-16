@@ -41,6 +41,10 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
 
     @Autowired
     @Lazy
+    private SharedFeeOrderServiceImpl sharedFeeOrderService;
+
+    @Autowired
+    @Lazy
     private HousingInformationServiceImpl housingInformationService;
 
 
@@ -61,20 +65,28 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     public PageInfo<HousingInformationDto> listByVo(HousingInformationVo vo) {
         int pageNum = vo.getPageNum();
         int pageSize = vo.getPageSize();
-        PageHelper.startPage(pageNum, pageSize);
-        List<HousingInformationDto> res = query()
-                .like(StringUtils.isNotEmpty(vo.getVillageName()), "village_name", vo.getVillageName())
-                .eq(StringUtils.isNotEmpty(vo.getBuildNumber()), "build_number", vo.getBuildNumber())
-                .eq(StringUtils.isNotEmpty(vo.getHouseNo()), "house_no", vo.getHouseNo())
-                .list();
-        List<HousingInformationDto> cpRes = new ArrayList<>(res);
-        for(HousingInformationDto housingInformationDto : res){
-            QueryWrapper<WechatUser> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("hid",housingInformationDto.getId());
-            List<WechatUser> wechatUsers = wechatUserMapper.selectList(queryWrapper);
-            housingInformationDto.setBind(wechatUsers != null && wechatUsers.size() != 0);
-            if (!housingInformationDto.isBind() && vo.getBound() != null)
-                cpRes.remove(housingInformationDto);
+        List<HousingInformationDto> cpRes = new ArrayList<>();
+        while (cpRes.size() < 10){
+            PageHelper.startPage(pageNum++, pageSize);
+            List<HousingInformationDto> res = query()
+                    .like(StringUtils.isNotEmpty(vo.getVillageName()), "village_name", vo.getVillageName())
+                    .eq(StringUtils.isNotEmpty(vo.getBuildNumber()), "build_number", vo.getBuildNumber())
+                    .eq(StringUtils.isNotEmpty(vo.getHouseNo()), "house_no", vo.getHouseNo())
+                    .list();
+
+            for(HousingInformationDto housingInformationDto : res){
+                QueryWrapper<WechatUser> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("hid",housingInformationDto.getId());
+                List<WechatUser> wechatUsers = wechatUserMapper.selectList(queryWrapper);
+                housingInformationDto.setBind(wechatUsers != null && wechatUsers.size() != 0);
+                if (vo.getBound() != null && vo.getBound() == housingInformationDto.isBind())
+                    cpRes.add(housingInformationDto);
+            }
+        }
+        cpRes = cpRes.subList(0,10);
+        for (HousingInformationDto dto : cpRes) {
+            long hid = dto.getId();
+            dto.setResidualPayment(propertyOrderService.houseCount(hid) + sharedFeeOrderService.houseCount(hid));
         }
         return new PageInfo<>(cpRes);
     }

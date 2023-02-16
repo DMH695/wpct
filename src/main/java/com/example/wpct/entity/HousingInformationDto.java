@@ -6,6 +6,7 @@ import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -316,5 +317,14 @@ public class HousingInformationDto implements Serializable {
 //	@ExcelProperty("缴交日期")
 	@ExcelIgnore
 	private String dueDate;
+
+
+	/**
+	 * 剩余合计代缴
+	 */
+	@ExcelIgnore
+	@ApiModelProperty(hidden = true)
+	@TableField(exist = false)
+	private double residualPayment;
 
 }

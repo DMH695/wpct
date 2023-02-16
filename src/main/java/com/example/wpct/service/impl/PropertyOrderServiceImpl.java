@@ -187,6 +187,16 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
                 dto.getCalculateFee() + dto.getDiscount();
     }
 
+    @Override
+    public double houseCount(long hid) {
+        List<PropertyOrderDto> propertyOrders = this.query().eq("house_id", hid).list();
+        double count = 0;
+        for (PropertyOrderDto propertyOrder : propertyOrders) {
+            count+= propertyOrder.getCost();
+        }
+        return count;
+    }
+
 
     /**
      * 获取房屋的物业费详细json

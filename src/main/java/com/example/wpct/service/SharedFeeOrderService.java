@@ -21,4 +21,6 @@ public interface SharedFeeOrderService extends IService<SharedFeeOrderDto> {
     ResultBody executeDeduction();
 
     ResultBody updateByDto(SharedFeeOrderDto dto);
+
+    double houseCount(long hid);
 }

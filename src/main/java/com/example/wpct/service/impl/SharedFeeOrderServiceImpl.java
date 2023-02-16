@@ -161,4 +161,14 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
         dto.setUpdateDate(new Date(System.currentTimeMillis()).toString());
         return ResultBody.ok(updateById(dto));
     }
+
+    @Override
+    public double houseCount(long hid) {
+        List<SharedFeeOrderDto> sharedFeeOrders = this.query().eq("house_id", hid).list();
+        double count = 0;
+        for (SharedFeeOrderDto sharedFeeOrder : sharedFeeOrders) {
+            count += sharedFeeOrder.getCost();
+        }
+        return count;
+    }
 }

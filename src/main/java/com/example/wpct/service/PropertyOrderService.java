@@ -30,4 +30,6 @@ public interface PropertyOrderService extends IService<PropertyOrderDto> {
 
     double calcCost(HousingInformationDto dto);
 
+    double houseCount(long hid);
+
 }
