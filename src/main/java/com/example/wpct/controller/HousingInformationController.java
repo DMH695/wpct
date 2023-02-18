@@ -193,7 +193,7 @@ public class HousingInformationController {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("poolBalance",poolBalance);
         jsonObject.put("propertyFee",propertyFee);
-        return ResultBody.ok(poolBalance);
+        return ResultBody.ok(jsonObject);
     }
 
     @GetMapping("/get/cost/estimate")
