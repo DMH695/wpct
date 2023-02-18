@@ -12,6 +12,7 @@ import com.example.wpct.entity.vo.HousingInformationVo;
 import com.example.wpct.mapper.HousingInformationMapper;
 import com.example.wpct.mapper.WechatUserMapper;
 import com.example.wpct.service.HousingInformationService;
+import com.example.wpct.utils.DateThis;
 import com.example.wpct.utils.ResultBody;
 import com.example.wpct.utils.StringUtils;
 import com.github.pagehelper.PageHelper;
@@ -25,9 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.IntFunction;
 
 @Service
 public class HousingInformationServiceImpl extends ServiceImpl<HousingInformationMapper, HousingInformationDto> implements HousingInformationService {
@@ -229,10 +231,13 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         if (dto == null){
             return ResultBody.fail("unknown hid");
         }
-        if (dto.getPropertyFee() > 0){
-            return ResultBody.ok(dto.getPropertyFee()/ propertyOrderService.calcCost(dto));
-        }
-        return ResultBody.ok(0);
+        int month = (int) (dto.getPropertyFee() / propertyOrderService.calcCost(dto));
+        int[] monthEnd = Arrays.stream(new DateThis().thisMonthEnd().split("-")).mapToInt(Integer::parseInt).toArray();
+        Calendar calendar = Calendar.getInstance();
+        //noinspection MagicConstant
+        calendar.set(monthEnd[0],monthEnd[1]-1,monthEnd[2]);
+        calendar.add(Calendar.MONTH,month);
+        return ResultBody.ok(new Date(calendar.getTimeInMillis()).toString());
     }
 
 

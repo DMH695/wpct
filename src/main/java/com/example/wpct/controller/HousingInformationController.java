@@ -12,12 +12,14 @@ import com.example.wpct.mapper.SharedFeeOrderMapper;
 import com.example.wpct.mapper.WechatUserMapper;
 import com.example.wpct.service.PropertyOrderService;
 import com.example.wpct.service.impl.HousingInformationServiceImpl;
+import com.example.wpct.service.impl.SharedFeeOrderServiceImpl;
 import com.example.wpct.service.impl.WechatServiceImpl;
 import com.example.wpct.utils.ResultBody;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,6 +43,10 @@ public class HousingInformationController {
 
     @Autowired
     SharedFeeOrderMapper sharedFeeOrderMapper;
+
+    @Autowired
+    @Lazy
+    SharedFeeOrderServiceImpl sharedFeeOrderService;
 
     @Autowired
     WechatServiceImpl wechatService;
@@ -89,6 +95,13 @@ public class HousingInformationController {
     @ApiOperation("通过EXCEL导入房屋信息")
     public ResultBody importHousingInfo(MultipartFile file){
         return housingInformationService.importHousingInformation(file);
+    }
+
+
+    @GetMapping("/get/count")
+    @ApiOperation("获取房屋的合计代缴")
+    public ResultBody getHouseCount(long hid){
+        return ResultBody.ok(propertyOrderService.houseCount(hid)+sharedFeeOrderService.houseCount(hid));
     }
 
     @SneakyThrows
