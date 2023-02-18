@@ -104,7 +104,13 @@ public class SysLogAspect {
             ResultBody resultBody = (ResultBody) result;  //返回值信息
             //需要先判断返回值是不是Map <String, Object>，如果不是會拋異常，需要控制层的接口返回数据格式统一
             //如果嫌返回格式统一太麻烦建议日志保存时去掉操作结果
-            sysLogDto.setResult(JSONObject.toJSONString(resultBody)); //獲取方法返回值中的msg，如果上面的類型錯誤就拿不到msg就會拋異常
+            String resultStr = JSONObject.toJSONString(resultBody);
+            JSONObject object = JSONObject.parseObject(resultStr);
+            if (resultStr.length() > 100){
+                object.put("body","too long");
+                resultStr = object.toJSONString();
+            }
+            sysLogDto.setResult(resultStr); //獲取方法返回值中的msg，如果上面的類型錯誤就拿不到msg就會拋異常
 
             //保存日志
             logMapper.insert(sysLogDto);

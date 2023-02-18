@@ -68,7 +68,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         int pageNum = vo.getPageNum();
         int pageSize = vo.getPageSize();
         List<HousingInformationDto> cpRes = new ArrayList<>();
-        while (cpRes.size() <= 10){
+        while (cpRes.size() < pageSize){
             PageHelper.startPage(pageNum++, pageSize);
             List<HousingInformationDto> res = query()
                     .like(StringUtils.isNotEmpty(vo.getVillageName()), "village_name", vo.getVillageName())
@@ -83,9 +83,11 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 housingInformationDto.setBind(wechatUsers != null && wechatUsers.size() != 0);
                 if (vo.getBound() != null && vo.getBound() == housingInformationDto.isBind())
                     cpRes.add(housingInformationDto);
+                else if (vo.getBound() == null)
+                    cpRes.add(housingInformationDto);
             }
         }
-        cpRes = cpRes.subList(0,10);
+        cpRes = cpRes.subList(0,pageSize);
         for (HousingInformationDto dto : cpRes) {
             long hid = dto.getId();
             dto.setResidualPayment(propertyOrderService.houseCount(hid) + sharedFeeOrderService.houseCount(hid));
