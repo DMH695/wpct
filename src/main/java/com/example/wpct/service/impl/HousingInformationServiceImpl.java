@@ -66,7 +66,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         int pageNum = vo.getPageNum();
         int pageSize = vo.getPageSize();
         List<HousingInformationDto> cpRes = new ArrayList<>();
-        while (cpRes.size() < 10){
+        while (cpRes.size() <= 10){
             PageHelper.startPage(pageNum++, pageSize);
             List<HousingInformationDto> res = query()
                     .like(StringUtils.isNotEmpty(vo.getVillageName()), "village_name", vo.getVillageName())
