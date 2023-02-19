@@ -1,5 +1,6 @@
 package com.example.wpct.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.PropertyOrderDto;
@@ -32,4 +33,5 @@ public interface PropertyOrderService extends IService<PropertyOrderDto> {
 
     double houseCount(long hid);
 
+    JSONObject getCostDetail(HousingInformationDto dto);
 }

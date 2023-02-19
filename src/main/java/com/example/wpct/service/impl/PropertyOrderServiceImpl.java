@@ -204,7 +204,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
      * @param dto 房屋信息
      * @return json
      */
-    private JSONObject getCostDetail(HousingInformationDto dto) {
+    public JSONObject getCostDetail(HousingInformationDto dto) {
         JSONObject res = new JSONObject();
         res.put("基础面积费用", dto.getArea() * dto.getAreaUnitPrice());
         res.put("超出面积费用", dto.getExceedArea() * dto.getExceedAreaUnitPrice());

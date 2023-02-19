@@ -4,10 +4,7 @@ import cn.hutool.core.lang.Snowflake;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.wpct.entity.BuildDto;
-import com.example.wpct.entity.HousingInformationDto;
-import com.example.wpct.entity.VillageDto;
-import com.example.wpct.entity.WechatUser;
+import com.example.wpct.entity.*;
 import com.example.wpct.entity.vo.HousingInformationVo;
 import com.example.wpct.mapper.HousingInformationMapper;
 import com.example.wpct.mapper.WechatUserMapper;
@@ -29,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
 @Service
@@ -67,32 +65,18 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     public PageInfo<HousingInformationDto> listByVo(HousingInformationVo vo) {
         int pageNum = vo.getPageNum();
         int pageSize = vo.getPageSize();
-        List<HousingInformationDto> cpRes = new ArrayList<>();
-        while (cpRes.size() < pageSize){
-            PageHelper.startPage(pageNum++, pageSize);
-            List<HousingInformationDto> res = query()
-                    .like(StringUtils.isNotEmpty(vo.getVillageName()), "village_name", vo.getVillageName())
-                    .eq(StringUtils.isNotEmpty(vo.getBuildNumber()), "build_number", vo.getBuildNumber())
-                    .eq(StringUtils.isNotEmpty(vo.getHouseNo()), "house_no", vo.getHouseNo())
-                    .list();
-
-            for(HousingInformationDto housingInformationDto : res){
-                QueryWrapper<WechatUser> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("hid",housingInformationDto.getId());
-                List<WechatUser> wechatUsers = wechatUserMapper.selectList(queryWrapper);
-                housingInformationDto.setBind(wechatUsers != null && wechatUsers.size() != 0);
-                if (vo.getBound() != null && vo.getBound() == housingInformationDto.isBind())
-                    cpRes.add(housingInformationDto);
-                else if (vo.getBound() == null)
-                    cpRes.add(housingInformationDto);
-            }
-        }
-        cpRes = cpRes.subList(0,pageSize);
-        for (HousingInformationDto dto : cpRes) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<HousingInformationDto> res = query()
+                .like(StringUtils.isNotEmpty(vo.getVillageName()), "village_name", vo.getVillageName())
+                .eq(StringUtils.isNotEmpty(vo.getBuildNumber()), "build_number", vo.getBuildNumber())
+                .eq(StringUtils.isNotEmpty(vo.getHouseNo()), "house_no", vo.getHouseNo())
+                .isNotNull(vo.getBound() != null && vo.getBound(),"bind_wechat_user")
+                .list();
+        for (HousingInformationDto dto : res) {
             long hid = dto.getId();
             dto.setResidualPayment(propertyOrderService.houseCount(hid) + sharedFeeOrderService.houseCount(hid));
         }
-        return new PageInfo<>(cpRes);
+        return new PageInfo<>(res);
     }
 
     @Override
@@ -152,8 +136,24 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         }
         saveBatch(saveList);
         updateBatchById(updateList);
+        List<PropertyOrderDto> propertyOrders = new ArrayList<>();
+        Snowflake snowflake = new Snowflake();
+        for (HousingInformationDto house : saveList) {
+            double cost = propertyOrderService.calcCost(house);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new java.util.Date());
+            calendar.add(Calendar.MONTH, 1);
+            PropertyOrderDto buildResult = PropertyOrderDto.builder()
+                    .orderNo(snowflake.nextId()).houseId(house.getId()).paymentStatus(0).cost(cost)
+                    .costDetail(propertyOrderService.getCostDetail(house).toJSONString()).beginDate(new Date(System.currentTimeMillis()))
+                    .endDate(new Date(calendar.getTimeInMillis())).updateTime(new Timestamp(System.currentTimeMillis()).toString()).build();
+            propertyOrders.add(buildResult);
+        }
+        propertyOrderService.saveBatch(propertyOrders);
         return ResultBody.ok("insert: " + saveList.size() + ",update: " + updateList.size());
     }
+
+
 
     @Override
     public HousingInformationDto getByVbr(String villageName, String buildName, String roomNum) {
