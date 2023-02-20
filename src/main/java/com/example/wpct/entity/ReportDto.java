@@ -22,12 +22,6 @@ public class ReportDto implements Serializable {
 
 
 	/**
-	 * 小区
-	 */
-	@JSONField(name ="villageName")
-	private String villageName;
-
-	/**
 	 * 楼栋号
 	 */
 	@JSONField(name ="buildNumber")
@@ -35,24 +29,38 @@ public class ReportDto implements Serializable {
 
 
 	/**
-	 * 开始日期
+	 * 小区
 	 */
-	@JSONField(name ="startDate")
-	private java.sql.Date startDate;
+	@JSONField(name ="houseName")
+	private String houseName;
 
 
 	/**
-	 * 截止日期
+	 * 姓名
 	 */
-	@JSONField(name ="endDate")
-	private java.sql.Date endDate;
+	@JSONField(name = "name")
+	private String name;
 
 
 	/**
-	 * 收账率
+	 * 电话
 	 */
-	@JSONField(name ="rate")
-	private double rate;
+	@JSONField(name = "phone")
+	private String phone;
+
+
+	/**
+	 * 物业费欠费余额
+	 */
+	@JSONField(name = "propertyOutstanding")
+	private double propertyOutstanding;
+
+
+	/**
+	 * 公摊费欠费余额
+	 */
+	@JSONField(name = "sharedOutstanding")
+	private double sharedOutstanding;
 
 
 	/**
@@ -67,5 +75,12 @@ public class ReportDto implements Serializable {
 	 */
 	@JSONField(name ="received")
 	private double received;
+
+
+	/**
+	 * 截止日期
+	 */
+	@JSONField(name = "deadline")
+	private String deadline;
 
 }

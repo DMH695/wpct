@@ -23,7 +23,7 @@ public class DateThis {
     private int x;                  // 日期属性：年
     private int y;                  // 日期属性：月
     private int z;                  // 日期属性：日
-    private final Calendar localTime;     // 当前日期
+    private Calendar localTime;     // 当前日期
     public DateThis() {
         localTime = Calendar.getInstance();
     }
@@ -165,5 +165,9 @@ public class DateThis {
         }
         else leap = false;
         return leap;
+    }
+
+    public void setLocalTime(Calendar localTime){
+        this.localTime = localTime;
     }
 }

@@ -21,7 +21,7 @@ public class ReportController {
 
     @GetMapping("/get")
     @ApiOperation("获取报表")
-    public ResultBody getReport(){
-        return reportService.getReport();
+    public ResultBody getReport(String startDate, String endDate, String villageName){
+        return reportService.getReport(startDate, endDate, villageName);
     }
 }
