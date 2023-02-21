@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.wpct.entity.*;
 import com.example.wpct.service.ReportService;
 import com.example.wpct.utils.DateThis;
+import com.example.wpct.utils.DecimalUtils;
 import com.example.wpct.utils.ResultBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -40,14 +41,14 @@ public class ReportServiceImpl implements ReportService {
         DateThis dateThis = new DateThis();
         Calendar calendar = Calendar.getInstance();
         //noinspection MagicConstant
-        calendar.set(end[0],end[1]-1,end[2]);
+        calendar.set(end[0], end[1] - 1, end[2]);
         dateThis.setLocalTime(calendar);
         String deadline = dateThis.thisMonthEnd();
         for (HousingInformationDto house : houses) {
-            List<PropertyOrderDto> propertyOrders = propertyOrderService.query().eq("house_id",house.getId())
-                    .between("end_date",startDate,endDate).list();
+            List<PropertyOrderDto> propertyOrders = propertyOrderService.query().eq("house_id", house.getId())
+                    .between("end_date", startDate, endDate).list();
             List<SharedFeeOrderDto> sharedFeeOrders = sharedFeeOrderService.query().eq("house_id", house.getId())
-                    .between("end_date",startDate,endDate).list();
+                    .between("end_date", startDate, endDate).list();
             double pReceivable = 0;
             double sReceivable = 0;
             double pReceived = 0;
@@ -61,8 +62,10 @@ public class ReportServiceImpl implements ReportService {
                 sReceivable += dto.getCost();
                 sReceived += dto.getPaymentStatus() == 1 ? dto.getCost() : 0;
             }
-            po = pReceivable != pReceived && house.getPropertyFee() < pReceivable - pReceived ? (pReceivable - pReceived) - house.getPropertyFee() : 0;
-            so = sReceivable != sReceived && house.getPoolBalance() < sReceivable - sReceived ? (sReceivable - sReceived) - house.getPoolBalance() : 0;
+            double subP = DecimalUtils.subDouble(pReceivable, pReceived);
+            double subS = DecimalUtils.subDouble(sReceivable, sReceived);
+            po = pReceivable != pReceived && house.getPropertyFee() < subP ? DecimalUtils.subDouble(subP, house.getPropertyFee()) : 0;
+            so = sReceivable != sReceived && house.getPoolBalance() < subS ? DecimalUtils.subDouble(subS, house.getPoolBalance()) : 0;
             reportList.add(
                     ReportDto.builder()
                             .buildNumber(house.getBuildNumber())
