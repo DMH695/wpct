@@ -96,22 +96,37 @@ public class WechatServiceImpl implements WechatPayService {
     @Override
     public String jsapiPay(String openid, List<String> propertyOrderNos, List<String> sharedOrderNos) throws Exception {
         double total = 0;
+        HousingInformationDto housingInformationDto = new HousingInformationDto();
+        JSONObject jsonObject1 = new JSONObject();
         //遍历累加计算总金额
         if (propertyOrderNos != null) {
             for (String orderId : propertyOrderNos) {
                 QueryWrapper queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("order_no", Long.parseLong(orderId));
                 PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
+                housingInformationDto = housingInformationMapper.selectById(propertyOrderDto.getHouseId());
                 total = total + propertyOrderDto.getCost();
             }
+            double propertyFee =  housingInformationDto.getPropertyFee();
+            total = total - propertyFee;
+            System.out.println(total);
+            System.out.println(propertyFee);
+            jsonObject1.put("propertyFee",propertyFee);
         }
         if (sharedOrderNos != null) {
             for (String orderId : sharedOrderNos) {
                 QueryWrapper queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("order_no", Long.parseLong(orderId));
                 SharedFeeOrderDto sharedFeeOrderDto = sharedFeeOrderMapper.selectOne(queryWrapper);
+                housingInformationDto = housingInformationMapper.selectById(sharedFeeOrderDto.getHouseId());
                 total = total + sharedFeeOrderDto.getCost();
             }
+            double sharedFee = housingInformationDto.getPoolBalance();
+            total = total - sharedFee;
+
+            System.out.println(total);
+            System.out.println(sharedFee);
+            jsonObject1.put("sharedFee",sharedFee);
         }
         log.warn("调用统一下单api");
         HttpPost httpPost = new HttpPost(wxPayConfig.getDomain().concat("/v3/pay/transactions/jsapi"));
@@ -126,7 +141,6 @@ public class WechatServiceImpl implements WechatPayService {
         paramsMap.put("description", "武平城投-缴交物业费");
         paramsMap.put("out_trade_no", no);   //test
         //将no和对应的订单号、openid存入redis
-        JSONObject jsonObject1 = new JSONObject();
         if (propertyOrderNos != null){
             propertyOrderNos.add(openid);
             jsonObject1.put("property", propertyOrderNos);
@@ -534,7 +548,7 @@ public class WechatServiceImpl implements WechatPayService {
     @Override
     public String test() {
         String str = "{\"mchid\":\"1558950191\",\"appid\":\"wx74862e0dfcf69954\",\n" +
-                "              \"out_trade_no\":\"1674019989031\",\"transaction_id\":\"4200001569202210040857712725\",\n" +
+                "              \"out_trade_no\":\"1677076750946\",\"transaction_id\":\"4200001569202210040857712725\",\n" +
                 "              \"trade_type\":\"NATIVE\",\"trade_state\":\"SUCCESS\",\"trade_state_desc\":\"支付成功\",\n" +
                 "              \"bank_type\":\"OTHERS\",\"attach\":\"\",\"success_time\":\"2022-10-04T13:25:40+08:00\",\n" +
                 "              payer\":{\"openid\":\"oXXFD6gTkRajlHDiSIxE1PpMMvek\"},\n" +
@@ -595,11 +609,16 @@ public class WechatServiceImpl implements WechatPayService {
         JSONObject jsonObject = JSONObject.parseObject(res);
         String propertyOrders = jsonObject.getString("property");
         String sharedOrders = jsonObject.getString("shared");
+        Double propertyFee = jsonObject.getDouble("propertyFee");
+        Double sharedFee = jsonObject.getDouble("sharedFee");
         log.info("从redis中获取的数据：" + res);
         log.info("物业费:" + propertyOrders);
         log.info("公摊费" + sharedOrders);
+        log.info("扣除物业费余额:" + propertyFee);
+        log.info("扣除公摊费余额:" + sharedFee);
         //物业费处理
         if (propertyOrders != null) {
+            HousingInformationDto housingInformationDto1 = new HousingInformationDto();
             propertyOrders = propertyOrders.replaceAll("\\[", "").replaceAll("\\]", "");
             List<Long> ids = new ArrayList<>();
             String[] strings = propertyOrders.split(",");
@@ -617,6 +636,7 @@ public class WechatServiceImpl implements WechatPayService {
                 propertyOrderMapper.updateStatus(Long.parseLong(s.trim()));
                 //修改housing中的due_date
                 HousingInformationDto housingInformationDto = housingInformationMapper.selectById(propertyOrderDto.getHouseId());
+                housingInformationDto1 = housingInformationDto;
                 String due_date = housingInformationDto.getDueDate();
                 if (due_date == null) {
                     Calendar calendar = Calendar.getInstance();
@@ -652,9 +672,14 @@ public class WechatServiceImpl implements WechatPayService {
                 bill.setDate(date);
                 billMapper.insert(bill);
             }
+            //修改housing中的余额
+            if (propertyFee != null){
+                housingInformationMapper.updatePropertyFee(housingInformationDto1.getId(),housingInformationDto1.getPropertyFee() - propertyFee);
+            }
         }
         //公摊费处理
         if (sharedOrders != null) {
+            HousingInformationDto housingInformationDto1 = new HousingInformationDto();
             sharedOrders = sharedOrders.replaceAll("\\[", "").replaceAll("\\]", "");
             List<Long> ids = new ArrayList<>();
             String[] strings = sharedOrders.split(",");
@@ -679,6 +704,7 @@ public class WechatServiceImpl implements WechatPayService {
                 QueryWrapper queryWrapper1 = new QueryWrapper<>();
                 queryWrapper1.eq("id", sharedFeeOrderDto.getHouseId());
                 HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper1);
+                housingInformationDto1 = housingInformationDto;
                 bill.setVillageName(housingInformationDto.getVillageName());
                 bill.setBuildName(housingInformationDto.getBuildNumber());
                 bill.setRoomNum(housingInformationDto.getHouseNo());
@@ -689,6 +715,10 @@ public class WechatServiceImpl implements WechatPayService {
                 bill.setEndDate(java.sql.Date.valueOf(sharedFeeOrderDto.getEndDate()));
                 bill.setOrderNo(String.valueOf(sharedFeeOrderDto.getOrderNo()));
                 billMapper.insert(bill);
+            }
+            //修改公摊费中的余额
+            if (sharedFee != null){
+                housingInformationMapper.updateSharedFee(housingInformationDto1.getId(),housingInformationDto1.getPoolBalance() - sharedFee);
             }
         }
     }

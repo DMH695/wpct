@@ -8,17 +8,14 @@ import javax.annotation.Resource;
 
 @SpringBootTest
 class WpctApplicationTests {
-    @Resource
-    private final StringRedisTemplate stringRedisTemplate;
 
 
-    WpctApplicationTests(StringRedisTemplate stringRedisTemplate) {
-        this.stringRedisTemplate = stringRedisTemplate;
-    }
 
     @Test
     void contextLoads() {
-        System.out.println(stringRedisTemplate.opsForValue().get("1673871410898"));
+        String bindCount = "";
+        Integer count = Integer.parseUnsignedInt(bindCount) + 1;
+        System.out.println(count);
     }
 
 }

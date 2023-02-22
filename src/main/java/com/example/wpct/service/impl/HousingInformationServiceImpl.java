@@ -211,8 +211,9 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     @Override
     public List<HousingInformationDto> listByBuildNumber(String buildNumber) {
         BuildDto build = buildService.query().eq("name", buildNumber).one();
-        if (build == null)
+        if (build == null) {
             return new ArrayList<>();
+        }
         long villageId = build.getVillageId();
         VillageDto village = villageService.query().eq("id", villageId).one();
         String villageName = village.getName();
@@ -224,6 +225,16 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     public ResultBody deleteByWechat(String openId, Integer houseId) {
         QueryWrapper<WechatUser> deleteQuery = new QueryWrapper<>();
         deleteQuery.eq("openid",openId).eq("hid",houseId);
+        //将房屋表中的数据减1
+        String bindCount = housingInformationMapper.selectById(houseId).getBindWechatUser();
+        if (!" ".equals(bindCount) && !bindCount.isEmpty() ){
+            Integer count = Integer.parseInt(bindCount) - 1;
+            if (count.intValue() == 0){
+                housingInformationMapper.updateBindCount(houseId,"");
+            }else {
+                housingInformationMapper.updateBindCount(houseId,count.toString());
+            }
+        }
         return ResultBody.ok(wechatUserMapper.delete(deleteQuery));
     }
 
@@ -240,6 +251,11 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         calendar.set(monthEnd[0],monthEnd[1]-1,monthEnd[2]);
         calendar.add(Calendar.MONTH,month);
         return ResultBody.ok(new Date(calendar.getTimeInMillis()).toString());
+    }
+
+    @Override
+    public void updateBindCount(int hid, String count) {
+        housingInformationMapper.updateBindCount(hid, count);
     }
 
 

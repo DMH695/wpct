@@ -7,4 +7,7 @@
     <update id="investProperty">UPDATE housing_information SET property_fee = property_fee + #{property_fee} WHERE id=#{hid}</update>
     <update id="investShare">UPDATE housing_information SET pool_balance = housing_information.pool_balance + #{poolBanlance} WHERE id=#{hid}</update>
     <select id="getByVbr" resultType="HousingInformationDto">SELECT * FROM housing_information WHERE village_name=#{villageName} AND build_number=#{buildName} AND house_no=#{roomNum}</select>
+    <update id="updateBindCount">UPDATE housing_information SET bind_wechat_user=#{count} WHERE id=#{hid}</update>
+    <update id="updatePropertyFee">UPDATE housing_information SET property_fee=#{propertyFee} WHERE id=#{hid}</update>
+    <update id="updateSharedFee">UPDATE housing_information SET pool_balance=#{sharedFee} WHERE id=#{hid}</update>
 </mapper>
