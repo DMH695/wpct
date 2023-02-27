@@ -41,8 +41,8 @@ public class ExamineController {
 
     @ApiOperation("微信用户历史 记录处理（审批）")
     @PostMapping("/wxlist")
-    public ResultBody userExamine(@RequestParam String openid,@RequestParam int hid) {
-        return examineService.userExamineList(openid,hid);
+    public ResultBody userExamine(@RequestBody String openid) {
+        return examineService.userExamineList(openid);
     }
 
     @ApiOperation("微信用户根据id查看意见的具体信息")

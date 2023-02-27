@@ -11,5 +11,5 @@ public interface BillService {
     PageResult getAll(PageRequest pageRequest,String villageName,String buildName,String roomNum);
     void delete(int id);
     ResultBody getReceiptCertificate(int id);
-    List<Bill> getByOpenid(String openid);
+    List<Bill> getByOpenid(String openid,String villageName,String buildName,String roomNum);
 }
