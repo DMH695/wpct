@@ -253,18 +253,9 @@ public class WeChatApi {
             if (wechatPayService.checkBind(wechatUser.getOpenid(),hid) != null){
                 return ResultBody.fail("您已绑定过该房屋，请勿重复绑定");
             }
-            //改变房屋信息表中的绑定人数字段
-            String bindCount = housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildNumber(),wechatUser.getHouseNo()).getBindWechatUser();
-            String str = " ";
-            if (str.equals(bindCount) || "".equals(bindCount)){
-                Integer count = 1;
-                housingInformationService.updateBindCount(hid,count.toString());
-            }else {
-                Integer count = Integer.parseInt(bindCount) + 1;
-                housingInformationService.updateBindCount(hid,count.toString());
-            }
-            //微信用户表中添加用户信息
             wechatPayService.bind(wechatUser);
+            HousingInformationDto house = housingInformationService.query().eq("id", wechatUser.getHid()).one();
+            house.setBindWechatUser(house.getBindWechatUser() + 1);
         }else {
             return ResultBody.fail("房屋信息表中不存在该房屋");
         }
