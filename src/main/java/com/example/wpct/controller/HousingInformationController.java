@@ -18,6 +18,8 @@ import com.example.wpct.utils.ResultBody;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.SneakyThrows;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
@@ -57,6 +59,9 @@ public class HousingInformationController {
     @PostMapping("/insert")
     @ApiOperation("新增房屋信息")
     public ResultBody insert(@RequestBody HousingInformationDto body) {
+        Subject subject = SecurityUtils.getSubject();
+        SysUser sysUser = (SysUser) subject.getPrincipals();
+        body.setUpdateUser(sysUser.getUsername());
         return ResultBody.ok(housingInformationService.insert(body));
     }
 
@@ -75,6 +80,9 @@ public class HousingInformationController {
     @PostMapping("/update")
     @ApiOperation("更新房屋信息")
     public ResultBody update(@RequestBody HousingInformationDto body){
+        Subject subject = SecurityUtils.getSubject();
+        SysUser sysUser = (SysUser) subject.getPrincipals();
+        body.setUpdateUser(sysUser.getUsername());
         return ResultBody.ok(housingInformationService.updateByDto(body));
     }
 

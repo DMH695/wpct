@@ -70,11 +70,13 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .like(StringUtils.isNotEmpty(vo.getVillageName()), "village_name", vo.getVillageName())
                 .eq(StringUtils.isNotEmpty(vo.getBuildNumber()), "build_number", vo.getBuildNumber())
                 .eq(StringUtils.isNotEmpty(vo.getHouseNo()), "house_no", vo.getHouseNo())
-                .isNotNull(vo.getBound() != null && vo.getBound(),"bind_wechat_user")
+                .gt(vo.getBound(), "bind_wechat_user",0)
+                .eq(!vo.getBound(),"bind_wechat_user",0)
                 .list();
         for (HousingInformationDto dto : res) {
             long hid = dto.getId();
             dto.setResidualPayment(propertyOrderService.houseCount(hid) + sharedFeeOrderService.houseCount(hid));
+            dto.setBind(dto.getBindWechatUser() > 0);
         }
         return new PageInfo<>(res);
     }
@@ -104,7 +106,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .exceedArea(0).exceedAreaUnitPrice(10).areaUnitPrice(10).carFee(100).otherFee(10)
                 .stopNumberOne("123").stopNumberTwo("124").recycleFee(0).recycleRent(0).calculateRent(0)
                 .calculateFee(0).discount(0).remarks("测试数据").poolBalance(1500).propertyFee(1500)
-                .bindWechatUser("wechatUser").dueDate(new Timestamp(System.currentTimeMillis()).toString()).build();
+                .bindWechatUser(0).dueDate(new Timestamp(System.currentTimeMillis()).toString()).build();
         excelList.add(example);
         response.setHeader("Content-Disposition", "attachment;filename=" + snowflake.nextIdStr() + "template.xlsx");
         EasyExcel.write(response.getOutputStream())
@@ -122,9 +124,12 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         List<HousingInformationDto> saveList = new ArrayList<>();
         List<HousingInformationDto> updateList = new ArrayList<>();
         for (HousingInformationDto dto : housingInformationList) {
+            dto.setBindWechatUser(0);
             HousingInformationDto one = query().eq("village_name", dto.getVillageName())
                     .eq("build_number", dto.getBuildNumber())
                     .eq("house_no", dto.getHouseNo()).one();
+            dto.setUpdateUser("admin");
+            dto.setUpdated(new Timestamp(System.currentTimeMillis()).toString());
             if (one == null) {
                 saveList.add(dto);
                 saveParent(dto);
@@ -166,6 +171,8 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .eq("village_name", dto.getVillageName())
                 .eq("build_number", dto.getBuildNumber())
                 .eq("house_no", dto.getHouseNo()).one();
+        dto.setBindWechatUser(0);
+        dto.setUpdated(new Timestamp(System.currentTimeMillis()).toString());
         if (one == null) {
             saveParent(dto);
             return ResultBody.ok(save(dto));
@@ -180,6 +187,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .eq("village_name", dto.getVillageName())
                 .eq("build_number", dto.getBuildNumber())
                 .eq("house_no", dto.getHouseNo()).one();
+        dto.setUpdated(new Timestamp(System.currentTimeMillis()).toString());
         if (house == null || house.getId() == dto.getId()) {
             saveParent(dto);
             return ResultBody.ok(updateById(dto));
@@ -224,6 +232,10 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     public ResultBody deleteByWechat(String openId, Integer houseId) {
         QueryWrapper<WechatUser> deleteQuery = new QueryWrapper<>();
         deleteQuery.eq("openid",openId).eq("hid",houseId);
+        QueryWrapper<HousingInformationDto> houseQuery = new QueryWrapper<>();
+        HousingInformationDto house = housingInformationService.getOne(houseQuery.eq("id", houseId));
+        house.setBindWechatUser(Math.max(house.getBindWechatUser() - 1, 0));
+        housingInformationService.updateById(house);
         return ResultBody.ok(wechatUserMapper.delete(deleteQuery));
     }
 

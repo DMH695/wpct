@@ -119,7 +119,9 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
         List<PropertyOrderDto> orderList = this.query()
                 .in("house_id", houseIds)
                 .le(StringUtils.isNotEmpty(vo.getEndDate()), "end_date", vo.getEndDate())
-                .ge(StringUtils.isNotEmpty(vo.getBeginDate()), "begin_date", vo.getBeginDate()).list();
+                .ge(StringUtils.isNotEmpty(vo.getBeginDate()), "begin_date", vo.getBeginDate())
+                .eq(vo.getPaymentStatus() != null,"payment_status",vo.getPaymentStatus())
+                .list();
         for (PropertyOrderDto propertyOrderDto : orderList) {
             HousingInformationDto house = housingInformationService.query().eq("id", propertyOrderDto.getHouseId()).one();
             propertyOrderDto.setVillageName(house.getVillageName());

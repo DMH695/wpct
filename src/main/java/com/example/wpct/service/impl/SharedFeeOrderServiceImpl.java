@@ -61,6 +61,7 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
                 .eq(vo.getPaymentStatus() != null, "payment_status", vo.getPaymentStatus())
                 .le(vo.getPaymentStatus() != null && vo.getPay_time_end() != null, "pay_time", vo.getPay_time_end())
                 .ge(vo.getPaymentStatus() != null && vo.getPay_time_begin() != null, "pay_time", vo.getPay_time_begin())
+                .isNotNull(vo.getPay_time_begin() != null || vo.getPay_time_end() != null, "pay_time")
                 .list();
         for (SharedFeeOrderDto order : orderList) {
             HousingInformationDto house = housingInformationService.query().eq("id", order.getHouseId()).one();

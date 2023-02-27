@@ -84,6 +84,7 @@ public class WechatServiceImpl implements WechatPayService {
     WxSendMsgUtil wxSendMsgUtil;
     @Resource
     private final StringRedisTemplate stringRedisTemplate;
+    private QueryWrapper<HousingInformationDto> houseQuery;
 
     public WechatServiceImpl(StringRedisTemplate stringRedisTemplate) {
         this.stringRedisTemplate = stringRedisTemplate;
@@ -127,11 +128,11 @@ public class WechatServiceImpl implements WechatPayService {
         paramsMap.put("out_trade_no", no);   //test
         //将no和对应的订单号、openid存入redis
         JSONObject jsonObject1 = new JSONObject();
-        if (propertyOrderNos != null){
+        if (propertyOrderNos != null) {
             propertyOrderNos.add(openid);
             jsonObject1.put("property", propertyOrderNos);
         }
-        if(sharedOrderNos != null){
+        if (sharedOrderNos != null) {
             sharedOrderNos.add(openid);
             jsonObject1.put("shared", sharedOrderNos);
         }
@@ -262,7 +263,7 @@ public class WechatServiceImpl implements WechatPayService {
             resultMap.put("appId", wxPayConfig.getAppid());
             resultMap.put("signType", "RSA");
             resultMap.put("paySign", Sign);
-            resultMap.put("out_trade_no",no);
+            resultMap.put("out_trade_no", no);
             String resultJson = gson.toJson(resultMap);
             //将no、hid、propertyFee、poolBanlance存入redis  单位为分
             JSONObject jsonObject1 = new JSONObject();
@@ -377,6 +378,10 @@ public class WechatServiceImpl implements WechatPayService {
 
     @Override
     public void bind(WechatUser wechatUser) {
+        QueryWrapper<HousingInformationDto> houseQuery = new QueryWrapper<>();
+        HousingInformationDto house = housingInformationMapper.selectOne(houseQuery.eq("id", wechatUser.getHid()));
+        house.setBindWechatUser(house.getBindWechatUser() + 1);
+        housingInformationMapper.updateById(house);
         wechatUserMapper.bind(wechatUser);
     }
 
@@ -733,21 +738,22 @@ public class WechatServiceImpl implements WechatPayService {
         bill.setLocation("微信");
         bill.setPay(property_fee + poolBanlance);
         String detail;
-        detail = "物业费充值:" + property_fee + "(元),"+"公摊费充值:" + poolBanlance + "(元)";
+        detail = "物业费充值:" + property_fee + "(元)," + "公摊费充值:" + poolBanlance + "(元)";
         bill.setDetail(detail);
         bill.setType("余额充值");
         billMapper.insert(bill);
     }
-    public static String replace(String s){
-        if(null != s && s.indexOf(".") > 0){
+
+    public static String replace(String s) {
+        if (null != s && s.indexOf(".") > 0) {
             s = s.replaceAll("0+?$", "");//去掉多余的0
             s = s.replaceAll("[.]$", "");//如最后一位是.则去掉
         }
         return s;
     }
 
-    public ResultBody sendMsg(int hid,String name,String cost,String openid) throws Exception{
-        WxMsgConfig requestData = this.getMsgConfig(hid,name,cost,openid);
+    public ResultBody sendMsg(int hid, String name, String cost, String openid) throws Exception {
+        WxMsgConfig requestData = this.getMsgConfig(hid, name, cost, openid);
 
         log.info("推送消息请求参数：{}", JSON.toJSONString(requestData));
 
@@ -760,7 +766,7 @@ public class WechatServiceImpl implements WechatPayService {
         String errorMessage = responseData.getString("errmsg");
         if (errorCode == 0) {
             log.info("推送消息发送成功");
-            return    ResultBody.ok(responseData);
+            return ResultBody.ok(responseData);
         } else {
             log.info("推送消息发送失败,errcode：{},errorMessage：{}", errorCode, errorMessage);
         }
@@ -768,9 +774,9 @@ public class WechatServiceImpl implements WechatPayService {
     }
 
     @SneakyThrows
-    public WxMsgConfig getMsgConfig(int hid, String name,String cost,String openid) {
+    public WxMsgConfig getMsgConfig(int hid, String name, String cost, String openid) {
         QueryWrapper queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id",hid);
+        queryWrapper.eq("id", hid);
         HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper);
         String villageName = housingInformationDto.getVillageName();
         String buildName = housingInformationDto.getBuildNumber();

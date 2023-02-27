@@ -18,5 +18,6 @@ public class PropertyOrderVo extends PageVo{
     private String villageName;
     private String buildNumber;
     private String houseNo;
+    private Boolean paymentStatus;
 
 }

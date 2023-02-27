@@ -297,12 +297,12 @@ public class HousingInformationDto implements Serializable {
 
 
 	/**
-	 * 绑定微信用户
+	 * 绑定微信用户数量
 	 */
 	@JSONField(name ="bindWechatUser")
 //	@ExcelProperty("微信绑定用户")
 	@ExcelIgnore
-	private String bindWechatUser;
+	private Integer bindWechatUser;
 	/**
 	 * 是否绑定微信用户
 	 */
