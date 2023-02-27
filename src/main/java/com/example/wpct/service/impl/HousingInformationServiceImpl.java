@@ -254,6 +254,11 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         return ResultBody.ok(new Date(calendar.getTimeInMillis()).toString());
     }
 
+    @Override
+    public void updateBindCount(int hid, String count) {
+        housingInformationMapper.updateBindCount(hid, count);
+    }
+
 
     private void saveParent(HousingInformationDto dto) {
         String villageName = dto.getVillageName();

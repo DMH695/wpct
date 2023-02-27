@@ -21,8 +21,8 @@ spring:
 mybatis-plus:
   mapper-locations: classpath:com/mapper/*.xml
   type-aliases-package: com.example.wpct.entity
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  #configuration:
+    #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 pagehelper:
   helperDialect: mysql
   supportMethodsArguments: true

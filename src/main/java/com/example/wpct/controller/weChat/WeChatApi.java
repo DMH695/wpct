@@ -253,6 +253,17 @@ public class WeChatApi {
             if (wechatPayService.checkBind(wechatUser.getOpenid(),hid) != null){
                 return ResultBody.fail("您已绑定过该房屋，请勿重复绑定");
             }
+            //改变房屋信息表中的绑定人数字段
+            String bindCount = housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildNumber(),wechatUser.getHouseNo()).getBindWechatUser();
+            String str = " ";
+            if (str.equals(bindCount) || "".equals(bindCount)){
+                Integer count = 1;
+                housingInformationService.updateBindCount(hid,count.toString());
+            }else {
+                Integer count = Integer.parseInt(bindCount) + 1;
+                housingInformationService.updateBindCount(hid,count.toString());
+            }
+            //微信用户表中添加用户信息
             wechatPayService.bind(wechatUser);
         }else {
             return ResultBody.fail("房屋信息表中不存在该房屋");
@@ -360,6 +371,14 @@ public class WeChatApi {
         List<SharedFeeOrderDto> list1 =  sharedFeeOrderService.list(queryWrapper);
         res.put("property",list);
         res.put("shared",list1);
+        double total = 0.0;
+        for(PropertyOrderDto propertyOrderDto : list){
+            total = total + propertyOrderDto.getCost();
+        }
+        for (SharedFeeOrderDto sharedFeeOrderDto : list1){
+            total = total + sharedFeeOrderDto.getCost();
+        }
+        res.put("total",total);
         return ResultBody.ok(res);
     }
     /*@ApiOperation("根据hid进行催缴")

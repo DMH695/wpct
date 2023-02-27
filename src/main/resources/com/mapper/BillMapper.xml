@@ -23,4 +23,5 @@
     <delete id="delete">DELETE FROM bill WHERE id=#{id}</delete>
     <select id="selectById" resultType="Bill">SELECT * FROM bill WHERE id=#{id}</select>
     <select id="getByOpenid" resultType="Bill">SELECT * FROM bill WHERE openid=#{openid} ORDER BY date DESC</select>
+    <select id="getOne" resultType="Bill">SELECT * FROM bill WHERE openid=#{openid} AND villageName=#{villageName} AND buildName=#{buildName} AND roomNum=#{roomNum}</select>
 </mapper>

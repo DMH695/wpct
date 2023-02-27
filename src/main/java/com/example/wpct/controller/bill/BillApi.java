@@ -1,6 +1,9 @@
 package com.example.wpct.controller.bill;
 
+import com.example.wpct.entity.HousingInformationDto;
+import com.example.wpct.mapper.HousingInformationMapper;
 import com.example.wpct.service.BillService;
+import com.example.wpct.service.HousingInformationService;
 import com.example.wpct.utils.ResultBody;
 import com.example.wpct.utils.page.PageRequest;
 import io.swagger.annotations.Api;
@@ -15,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 public class BillApi {
     @Autowired
     BillService billService;
+    @Autowired
+    HousingInformationService housingInformationService;
 
     @ApiOperation("获取账单信息")
     @RequestMapping(value = "/all",method = RequestMethod.GET)
@@ -42,8 +47,16 @@ public class BillApi {
 
     @ApiOperation("微信用户获取历史账单")
     @GetMapping("/wx/get")
-    public Object getByOpenid(@RequestParam String openid){
-        return billService.getByOpenid(openid);
+    public Object getByOpenid(@RequestParam String openid,@RequestParam int hid){
+        HousingInformationDto housingInformationDto = housingInformationService.getById(hid);
+        if (housingInformationDto != null){
+            String villageName = housingInformationDto.getVillageName();
+            String buildName = housingInformationDto.getBuildNumber();
+            String roomNum = housingInformationDto.getHouseNo();
+            return billService.getByOpenid(openid,villageName,buildName,roomNum);
+        }else {
+            return ResultBody.fail("房屋信息表中不存在该房屋,请联系管理员");
+        }
     }
 
 

@@ -198,8 +198,8 @@ public class BillServiceImpl implements BillService {
     }
 
     @Override
-    public List<Bill> getByOpenid(String openid) {
-        return billMapper.getByOpenid(openid);
+    public List<Bill> getByOpenid(String openid,String villageName,String buildName,String roomNum) {
+        return billMapper.getOne(openid,villageName,buildName,roomNum);
     }
 
 
