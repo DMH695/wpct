@@ -18,6 +18,6 @@ public interface ExamineService extends IService<ExamineDto> {
     ResultBody addExamine(String openid,String examineContentString,int hid);
     PageResult listExamine(int pageNum, int pageSize);
     ResultBody examineHandle(Integer id,String resolveMsg);
-    ResultBody userExamineList(String openid);
+    ResultBody userExamineList(String openid,int hid);
 
 }

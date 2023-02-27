@@ -256,7 +256,7 @@ public class WeChatApi {
             //改变房屋信息表中的绑定人数字段
             String bindCount = housingInformationService.getByVbr(wechatUser.getVillageName(),wechatUser.getBuildNumber(),wechatUser.getHouseNo()).getBindWechatUser();
             String str = " ";
-            if (str.equals(bindCount)){
+            if (str.equals(bindCount) || "".equals(bindCount)){
                 Integer count = 1;
                 housingInformationService.updateBindCount(hid,count.toString());
             }else {
