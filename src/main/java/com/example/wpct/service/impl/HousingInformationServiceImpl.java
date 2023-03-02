@@ -149,7 +149,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
             calendar.setTime(new java.util.Date());
             calendar.add(Calendar.MONTH, 1);
             PropertyOrderDto buildResult = PropertyOrderDto.builder()
-                    .orderNo(snowflake.nextId()).houseId(house.getId()).paymentStatus(0).cost(cost)
+                    .houseId(house.getId()).orderNo(snowflake.nextId()).houseId(house.getId()).paymentStatus(0).cost(cost)
                     .costDetail(propertyOrderService.getCostDetail(house).toJSONString()).beginDate(new Date(System.currentTimeMillis()))
                     .endDate(new Date(calendar.getTimeInMillis())).updateTime(new Timestamp(System.currentTimeMillis()).toString()).build();
             propertyOrders.add(buildResult);
