@@ -5,10 +5,12 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.wpct.entity.Bill;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.PropertyOrderDto;
 import com.example.wpct.entity.WechatUser;
 import com.example.wpct.entity.vo.PropertyOrderVo;
+import com.example.wpct.mapper.BillMapper;
 import com.example.wpct.mapper.PropertyOrderMapper;
 import com.example.wpct.mapper.WechatUserMapper;
 import com.example.wpct.service.PropertyOrderService;
@@ -40,6 +42,9 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
 
     @Autowired
     private WechatUserMapper wechatUserMapper;
+
+    @Autowired
+    BillMapper billMapper;
 
 
 
@@ -100,6 +105,19 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
                 dto.setPaymentStatus(1);
                 dto.setUpdateTime(new Timestamp(System.currentTimeMillis()).toString());
                 afterUpdateOrderList.add(dto);
+                //添加账单
+                Bill bill = new Bill();
+                bill.setPay(dto.getCost());
+                bill.setDetail(dto.getCostDetail());
+                bill.setType("物业费");
+                bill.setLocation("余额");
+                bill.setVillageName(house.getVillageName());
+                bill.setBuildName(house.getBuildNumber());
+                bill.setRoomNum(house.getHouseNo());
+                bill.setDate(new Timestamp(System.currentTimeMillis()).toString());
+                bill.setBeginDate(dto.getBeginDate());
+                bill.setEndDate(dto.getEndDate());
+                billMapper.insert(bill);
             } else {
                 log.info("{}#{}#{}房屋自动缴费失败,余额不足"
                         , house.getVillageName(), house.getBuildNumber(), house.getHouseNo()

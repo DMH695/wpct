@@ -166,9 +166,9 @@ public class HousingInformationController {
     @ApiOperation("预览")
     @RequestMapping(value = "/preview",method = RequestMethod.GET)
     public Object preview(@RequestParam int id){
-        Double property = 0.0;
-        Double shared = 0.0;
-        Double total = 0.0;
+        double property = 0;
+        double shared = 0;
+        double total;
         //物业费
         QueryWrapper queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("payment_status",0);
@@ -188,7 +188,11 @@ public class HousingInformationController {
         for (SharedFeeOrderDto sharedFeeOrderDto : sharedFeeOrderDtoList){
             shared = shared + sharedFeeOrderDto.getCost();
         }
-        total = shared + property;
+        String  str = String.format("%.2f",property);
+        double property1 = Double.parseDouble(str);
+        String  str1 = String.format("%.2f",shared);
+        double shared1 = Double.parseDouble(str1);
+        total = shared1 + property1;
         if (total == 0){
             return ResultBody.fail("当前账户不存在欠钱行为，无需催缴");
         }

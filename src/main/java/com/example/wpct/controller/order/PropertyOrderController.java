@@ -36,7 +36,8 @@ public class PropertyOrderController {
 
     @ApiOperation("手动更新订单信息")
     @PostMapping("/update")
-    public ResultBody update(PropertyOrderDto dto){
+    public ResultBody update(PropertyOrderDto dto,long orderNo){
+        dto.setOrderNo(orderNo);
         return ResultBody.ok(propertyOrderService.updateById(dto));
     }
 
