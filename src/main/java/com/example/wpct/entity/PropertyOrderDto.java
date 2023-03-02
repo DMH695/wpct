@@ -31,7 +31,7 @@ public class PropertyOrderDto implements Serializable {
 	 * 订单编号
 	 */
 	@JSONField(name ="orderNo")
-	@ApiModelProperty(value = "订单号", hidden = true)
+	@ApiModelProperty(value = "订单号")
 	@TableId(value = "order_no")
 	@JsonSerialize(using= ToStringSerializer.class)
 	private Long orderNo;
