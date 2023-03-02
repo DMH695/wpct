@@ -12,6 +12,7 @@ import com.example.wpct.entity.vo.PropertyOrderVo;
 import com.example.wpct.mapper.PropertyOrderMapper;
 import com.example.wpct.mapper.WechatUserMapper;
 import com.example.wpct.service.PropertyOrderService;
+import com.example.wpct.utils.DecimalUtils;
 import com.example.wpct.utils.ResultBody;
 import com.example.wpct.utils.StringUtils;
 import com.github.pagehelper.PageHelper;
@@ -184,9 +185,9 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
 
     @Override
     public double calcCost(HousingInformationDto dto) {
-        return dto.getArea() * dto.getAreaUnitPrice() + dto.getExceedArea() * dto.getExceedAreaUnitPrice() +
-                dto.getCarFee() + dto.getOtherFee() + dto.getRecycleFee() + dto.getRecycleRent() + dto.getCalculateRent() +
-                dto.getCalculateFee() + dto.getDiscount();
+        return DecimalUtils.whileAdd(dto.getArea() * dto.getAreaUnitPrice(), dto.getExceedArea() * dto.getExceedAreaUnitPrice() +
+                dto.getCarFee(), dto.getOtherFee(), dto.getRecycleFee(), dto.getRecycleRent(), dto.getCalculateRent() +
+                dto.getCalculateFee(), dto.getDiscount());
     }
 
     @Override

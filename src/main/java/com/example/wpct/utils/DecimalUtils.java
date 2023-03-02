@@ -44,4 +44,17 @@ public class DecimalUtils {
         BigDecimal p2 = new BigDecimal(Double.toString(m2));
         return p1.divide(p2, scale, RoundingMode.HALF_UP).doubleValue();
     }
+
+    /**
+     * 多数相加
+     */
+    public static double whileAdd(double ... m){
+        double r = 0;
+        for (double n : m) {
+            BigDecimal p1 = new BigDecimal(Double.toString(r));
+            BigDecimal p2 = new BigDecimal(Double.toString(n));
+            r = p1.add(p2).doubleValue();
+        }
+        return r;
+    }
 }
