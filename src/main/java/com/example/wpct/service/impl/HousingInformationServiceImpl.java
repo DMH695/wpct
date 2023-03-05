@@ -144,6 +144,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
         List<PropertyOrderDto> propertyOrders = new ArrayList<>();
         Snowflake snowflake = new Snowflake();
         for (HousingInformationDto house : saveList) {
+            house = getByVbr(house.getVillageName(), house.getBuildNumber(), house.getHouseNo());
             double cost = propertyOrderService.calcCost(house);
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new java.util.Date());
