@@ -213,7 +213,9 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
         List<PropertyOrderDto> propertyOrders = this.query().eq("house_id", hid).list();
         double count = 0;
         for (PropertyOrderDto propertyOrder : propertyOrders) {
-            count+= propertyOrder.getCost();
+            if (propertyOrder.getPaymentStatus() == 0){
+                count+= propertyOrder.getCost();
+            }
         }
         return count;
     }

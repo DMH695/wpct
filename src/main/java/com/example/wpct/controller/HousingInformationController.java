@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -109,7 +110,7 @@ public class HousingInformationController {
     @GetMapping("/get/count")
     @ApiOperation("获取房屋的合计代缴")
     public ResultBody getHouseCount(long hid){
-        return ResultBody.ok(propertyOrderService.houseCount(hid)+sharedFeeOrderService.houseCount(hid));
+       return ResultBody.ok(propertyOrderService.houseCount(hid)+sharedFeeOrderService.houseCount(hid));
     }
 
     @SneakyThrows
