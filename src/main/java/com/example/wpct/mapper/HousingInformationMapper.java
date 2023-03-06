@@ -10,7 +10,7 @@ public interface HousingInformationMapper extends BaseMapper<HousingInformationD
     void investProperty(Double property_fee,int hid);
     void investShare(Double poolBanlance,int hid);
     HousingInformationDto getByVbr(String villageName,String buildName,String roomNum);
-    void updateBindCount(int hid,String count);
+    void updateBindCount(int hid,int count);
     void updatePropertyFee(long hid,double propertyFee);
     void updateSharedFee(long hid,double sharedFee);
 }

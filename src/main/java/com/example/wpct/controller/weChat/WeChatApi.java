@@ -254,8 +254,9 @@ public class WeChatApi {
                 return ResultBody.fail("您已绑定过该房屋，请勿重复绑定");
             }
             wechatPayService.bind(wechatUser);
-            HousingInformationDto house = housingInformationService.query().eq("id", wechatUser.getHid()).one();
+            HousingInformationDto house = housingInformationService.getBaseMapper().selectById(hid);
             house.setBindWechatUser(house.getBindWechatUser() + 1);
+            housingInformationService.updateBindCount(hid,house.getBindWechatUser());
         }else {
             return ResultBody.fail("房屋信息表中不存在该房屋");
         }

@@ -256,7 +256,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
     }
 
     @Override
-    public void updateBindCount(int hid, String count) {
+    public void updateBindCount(int hid, int count) {
         housingInformationMapper.updateBindCount(hid, count);
     }
 

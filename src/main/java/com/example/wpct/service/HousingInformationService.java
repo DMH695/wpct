@@ -42,6 +42,6 @@ public interface HousingInformationService extends IService<HousingInformationDt
 
     ResultBody getCostEstimate(Long hid);
 
-    void updateBindCount(int hid,String count);
+    void updateBindCount(int hid,int count);
 
 }
