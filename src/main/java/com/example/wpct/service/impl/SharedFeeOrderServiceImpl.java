@@ -12,6 +12,7 @@ import com.example.wpct.entity.vo.SharedFeeOrderVo;
 import com.example.wpct.mapper.SharedFeeOrderMapper;
 import com.example.wpct.service.SharedFeeOrderService;
 import com.example.wpct.utils.ResultBody;
+import com.example.wpct.utils.StringUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.SneakyThrows;
@@ -59,9 +60,8 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
         List<SharedFeeOrderDto> orderList = this.query()
                 .in("house_id", houseIds)
                 .eq(vo.getPaymentStatus() != null, "payment_status", vo.getPaymentStatus())
-                .le(vo.getPaymentStatus() != null && vo.getPay_time_end() != null, "pay_time", vo.getPay_time_end())
-                .ge(vo.getPaymentStatus() != null && vo.getPay_time_begin() != null, "pay_time", vo.getPay_time_begin())
-                .isNotNull(vo.getPay_time_begin() != null || vo.getPay_time_end() != null, "pay_time")
+                .le(StringUtils.isNotEmpty(vo.getPay_time_end()), "end_date", vo.getPay_time_end())
+                .ge(StringUtils.isNotEmpty(vo.getPay_time_begin()), "begin_date", vo.getPay_time_begin())
                 .list();
         for (SharedFeeOrderDto order : orderList) {
             HousingInformationDto house = housingInformationService.query().eq("id", order.getHouseId()).one();

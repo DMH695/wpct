@@ -16,8 +16,8 @@ public class SharedFeeOrderVo extends PageVo{
     private String houseNo;
     @ApiModelProperty(value = "缴交状态，0未缴，1已缴")
     private Boolean paymentStatus;
-    @ApiModelProperty(value = "缴交时间左区间，格式2023-01-15 06:16")
+    @ApiModelProperty(value = "缴交时间左区间，格式2023-01-15")
     private String pay_time_begin;
-    @ApiModelProperty(value = "缴交时间右区间，格式2023-01-15 06:16")
+    @ApiModelProperty(value = "缴交时间右区间，格式2023-01-15")
     private String pay_time_end;
 }
