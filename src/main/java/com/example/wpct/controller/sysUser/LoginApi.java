@@ -61,6 +61,7 @@ public class LoginApi {
             String JSESSIONID = (String) subject.getSession().getId();
             res.put("JSESSIONID",JSESSIONID);
             res.put("role",roleService.getById(sysUserService.getByUserName(username).getRole()).getName());
+            res.put("roleId",roleService.getById(sysUserService.getByUserName(username).getRole()).getId());
             res.put("id",sysUserService.getByUserName(username).getId());
             res.put("name",sysUserService.getByUserName(username).getName());
             res.put("username",sysUserService.getByUserName(username).getUsername());

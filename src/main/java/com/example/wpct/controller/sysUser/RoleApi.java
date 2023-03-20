@@ -63,11 +63,9 @@ public class RoleApi {
 
     @ApiOperation("授权数据")
     @RequestMapping(value = "/auth/data",method = RequestMethod.POST)
-    public Object authData(@RequestParam String[] villageNames){
-        Subject subject = SecurityUtils.getSubject();
-        SysUser sysUser = (SysUser) subject.getPrincipal();
+    public Object authData(@RequestParam String[] villageNames,@RequestParam int roleId){
         List<String> list = Arrays.stream(villageNames).collect(Collectors.toList());
-        roleService.authData(list.toString(),sysUser.getRole());
+        roleService.authData(list.toString(),roleId);
         return new ResultBody(true,200,null);
     }
 }
