@@ -384,4 +384,13 @@ public class WeChatApi {
         wechatPayService.test();
         return null;
     }
+
+    @ApiOperation("申请退款")
+    @PostMapping("/refunds")
+    public Object refunds(@RequestParam String out_trade_no, @RequestParam String reason, @RequestParam Integer refundFee)
+            throws Exception {
+        log.info("申请退款");
+        wechatPayService.refund(out_trade_no, reason,refundFee);
+        return ResultBody.ok(null);
+    }
 }

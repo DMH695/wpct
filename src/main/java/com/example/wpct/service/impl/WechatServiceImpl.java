@@ -32,6 +32,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -149,8 +150,7 @@ public class WechatServiceImpl implements WechatPayService {
             sharedOrderNos.add(openid);
             jsonObject1.put("shared", sharedOrderNos);
         }
-        stringRedisTemplate.opsForValue().set(no, jsonObject1.toString(), 60 * 10,
-                TimeUnit.SECONDS);
+        stringRedisTemplate.opsForValue().set(no, jsonObject1.toString());
         paramsMap.put("notify_url", "http://wpct.x597.com/weixin/jsapi/notify");  //test
         Map amountMap = new HashMap();
         //金额转化为分
@@ -284,8 +284,7 @@ public class WechatServiceImpl implements WechatPayService {
             jsonObject1.put("shared", shared);
             jsonObject1.put("openid", openid);
             jsonObject1.put("hid", hid);
-            stringRedisTemplate.opsForValue().set(no, jsonObject1.toString(), 60 * 10,
-                    TimeUnit.SECONDS);
+            stringRedisTemplate.opsForValue().set(no, jsonObject1.toString());
             return resultJson;
         } finally {
             response.close();
@@ -850,4 +849,72 @@ public class WechatServiceImpl implements WechatPayService {
     public WechatUser checkBind(String openid, int hid) {
         return wechatUserMapper.checkBind(openid, hid);
     }
+
+    /**
+     * 退款
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void refund(String out_trade_no, String reason, Integer refundFee) throws Exception {
+        log.info("===创建初始退款单记录===");
+
+        //根据订单编号创建退款单
+        //RefundInfo refundsInfo = refundsInfoService.createRefundByOrderNo(orderNo, reason, refundFee);
+
+
+        //调用统一退款API
+        String url = wxPayConfig.getDomain().concat(WxApiType.DOMESTIC_REFUNDS.getType());
+        HttpPost httpPost = new HttpPost(url);
+
+        // 请求body参数
+        Gson gson = new Gson();
+        Map paramsMap = new HashMap();
+        paramsMap.put("out_trade_no", out_trade_no);//订单编号
+        String refundNo = String.valueOf(System.currentTimeMillis());
+        paramsMap.put("out_refund_no", refundNo);//退款单编号
+        paramsMap.put("reason", reason);//退款原因
+        paramsMap.put("notify_url", "http://wpct.x597.com/wenxin/refunds/notify");//TODO 退款通知地址  改回公众号的
+
+        Map amountMap = new HashMap();
+        amountMap.put("refund", refundFee);//退款金额（分）
+        //去redis中寻找订单信息
+
+        amountMap.put("total", refundFee);//原订单金额（分）
+
+        amountMap.put("currency", "CNY");//退款币种
+        paramsMap.put("amount", amountMap);
+
+        //将参数转换成json字符串
+        String jsonParams = gson.toJson(paramsMap);
+        log.info("请求参数 ===>" + jsonParams);
+
+        StringEntity entity = new StringEntity(jsonParams, "utf-8");
+        entity.setContentType("application/json");//设置请求报文格式
+        httpPost.setEntity(entity);//将请求报文放入请求对象
+        httpPost.setHeader("Accept", "application/json");//设置响应报文格式
+
+        //完成签名并执行请求，并完成验签
+        CloseableHttpResponse response = httpClient.execute(httpPost);
+
+        try {
+            //解析响应结果
+            String bodyAsString = EntityUtils.toString(response.getEntity());
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode == 200) {
+                log.info("成功, 退款返回结果 = " + bodyAsString);
+            } else if (statusCode == 204) {
+                log.info("成功");
+            } else {
+                throw new RuntimeException("退款异常, 响应码 = " + statusCode + ", 退款返回结果 = " + bodyAsString);
+            }
+            //更新订单状态
+
+            //更新退款单
+
+        } finally {
+            response.close();
+        }
+    }
+
+
 }

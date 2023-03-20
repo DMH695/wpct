@@ -67,10 +67,10 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
     public ResultBody getTree(int pageSize, int pageNum) {
         PageInfo<VillageDto> pageInfo = null;
         List<VillageDto> villages = new ArrayList<>();
+        Subject subject = SecurityUtils.getSubject();
+        SysUser sysUser = (SysUser) subject.getPrincipal();
         if (pageSize != -1) {
             PageHelper.startPage(pageNum, pageSize);
-            Subject subject = SecurityUtils.getSubject();
-            SysUser sysUser = (SysUser) subject.getPrincipal();
             Role role = roleMapper.getById(sysUser.getRole());
             if (role.getData() == null ||  "".equals(role.getData())){
                 villages = baseMapper.selectList(null);
@@ -90,7 +90,23 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
             }
             pageInfo = new PageInfo<>(villages, pageSize);
         } else {
-            villages = baseMapper.selectList(null);
+            Role role = roleMapper.getById(sysUser.getRole());
+            if (role.getData() == null ||  "".equals(role.getData())){
+                villages = baseMapper.selectList(null);
+            }else {
+                //获取授权的数据
+                String data = role.getData().replaceAll("\\[|\\]", "");
+                List<String> list = Arrays.asList(data.split(","));
+                /*System.out.println(data);
+                List<String> dataList = Arrays.asList(data);
+                System.out.println(dataList);*/
+                for (String d : list){
+                    QueryWrapper queryWrapper = new QueryWrapper<VillageDto>();
+                    queryWrapper.eq("name",d.replace("\"","").replace("\"","").trim());
+                    villages.add(baseMapper.selectOne(queryWrapper));
+                }
+                //villages = baseMapper.selectList(null);
+            }
         }
 
         JSONArray tree = JSONArray.parseArray(JSON.toJSONString(villages));
