@@ -8,4 +8,5 @@
     <insert id="insert">INSERT INTO role(name,permission) VALUES (#{name},#{permission})</insert>
     <update id="update">UPDATE role SET name=#{name},permission=#{permission} WHERE id=#{id}</update>
     <delete id="delete">DELETE FROM role WHERE id=#{id}</delete>
+    <update id="authData">UPDATE role SET data=#{villageNames} WHERE id=#{role}</update>
 </mapper>

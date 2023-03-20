@@ -27,7 +27,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @Api(tags = "房屋信息管理模块")
@@ -210,6 +212,19 @@ public class HousingInformationController {
         return ResultBody.ok(jsonObject);
     }
 
+    /**
+     * 批量催缴
+     */
+    @ApiOperation("批量催缴")
+    @RequestMapping(value = "/sendHastens",method = RequestMethod.GET)
+    public Object sendHastens(@RequestParam int[] ids){
+        List<Integer> ids1 = Arrays.stream(ids).boxed().collect(Collectors.toList());
+        for (int id : ids1){
+            send(id);
+        }
+        return new ResultBody(true,200,null);
+    }
+
     @ApiOperation("获取物业费、公摊费余额")
     @RequestMapping(value = "/getPoolBalance",method = RequestMethod.GET)
     public Object getPoolBalance(@RequestParam int hid){
@@ -229,6 +244,49 @@ public class HousingInformationController {
     }
 
 
-
-
+    @SneakyThrows
+    public Object send(int id){
+        Double property = 0.0;
+        Double shared = 0.0;
+        Double total = 0.0;
+        //物业费
+        QueryWrapper queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("payment_status",0);
+        queryWrapper.eq("house_id",id);
+        List<PropertyOrderDto> propertyOrderDtoList = propertyOrderMapper.selectList(queryWrapper);
+        QueryWrapper queryWrapper1 = new QueryWrapper<>();
+        queryWrapper1.eq("payment_status",0);
+        queryWrapper1.eq("house_id",id);
+        List<SharedFeeOrderDto> sharedFeeOrderDtoList = sharedFeeOrderMapper.selectList(queryWrapper1);
+        if (propertyOrderDtoList == null && sharedFeeOrderDtoList == null){
+            return ResultBody.fail("没有生成订单，无法催缴");
+        }
+        for (PropertyOrderDto propertyOrderDto : propertyOrderDtoList){
+            property = property + propertyOrderDto.getCost();
+        }
+        //公摊费
+        for (SharedFeeOrderDto sharedFeeOrderDto : sharedFeeOrderDtoList){
+            shared = shared + sharedFeeOrderDto.getCost();
+        }
+        total = shared + property;
+        if (total == 0){
+            return ResultBody.fail("当前账户不存在欠钱行为，无需催缴");
+        }
+        //搜索微信用户,逐个催缴
+        QueryWrapper queryWrapper2 = new QueryWrapper<>();
+        queryWrapper2.eq("hid",id);
+        List<WechatUser> wechatUsers = wechatUserMapper.selectList(queryWrapper2);
+        HousingInformationDto housingInformationDto = housingInformationService.getById(id);
+        int v = 0;
+        int f = 0;
+        for (WechatUser wechatUser : wechatUsers){
+            ResultBody resultBody = wechatService.sendMsg(id,housingInformationDto.getName(),String.valueOf(total),wechatUser.getOpenid());
+            if (!"0".equals(resultBody.getBody())){
+                f = f + 1;
+            }else {
+                v = v + 1;
+            }
+        }
+        return total;
+    }
 }

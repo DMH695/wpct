@@ -13,4 +13,5 @@ public interface RoleMapper {
     void insert(String name,String permission);
     void update(int id,String name,String permission);
     void delete(int id);
+    void authData(String villageNames,int role);
 }

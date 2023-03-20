@@ -3,12 +3,19 @@ package com.example.wpct.controller.sysUser;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.example.wpct.entity.Role;
+import com.example.wpct.entity.SysUser;
 import com.example.wpct.service.RoleService;
 import com.example.wpct.utils.ResultBody;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/role")
@@ -52,5 +59,15 @@ public class RoleApi {
     public Object delete(@RequestParam int id){
         roleService.delete(id);
         return ResultBody.ok(null);
+    }
+
+    @ApiOperation("授权数据")
+    @RequestMapping(value = "/auth/data",method = RequestMethod.POST)
+    public Object authData(@RequestParam String[] villageNames){
+        Subject subject = SecurityUtils.getSubject();
+        SysUser sysUser = (SysUser) subject.getPrincipal();
+        List<String> list = Arrays.stream(villageNames).collect(Collectors.toList());
+        roleService.authData(list.toString(),sysUser.getRole());
+        return new ResultBody(true,200,null);
     }
 }

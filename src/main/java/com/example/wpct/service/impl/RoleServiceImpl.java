@@ -37,4 +37,9 @@ public class RoleServiceImpl implements RoleService {
     public void delete(int id) {
         roleMapper.delete(id);
     }
+
+    @Override
+    public void authData(String villageNames,int role) {
+        roleMapper.authData(villageNames,role);
+    }
 }

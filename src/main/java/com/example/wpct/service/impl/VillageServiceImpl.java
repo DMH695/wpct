@@ -6,17 +6,23 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.wpct.entity.*;
+import com.example.wpct.mapper.RoleMapper;
 import com.example.wpct.mapper.VillageMapper;
 import com.example.wpct.service.VillageService;
 import com.example.wpct.utils.ResultBody;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -28,6 +34,9 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
 
     @Autowired
     private HousingInformationServiceImpl housingInformationService;
+
+    @Autowired
+    private RoleMapper roleMapper;
 
     @Autowired
     @Lazy
@@ -57,10 +66,28 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
     @Override
     public ResultBody getTree(int pageSize, int pageNum) {
         PageInfo<VillageDto> pageInfo = null;
-        List<VillageDto> villages;
+        List<VillageDto> villages = new ArrayList<>();
         if (pageSize != -1) {
             PageHelper.startPage(pageNum, pageSize);
-            villages = baseMapper.selectList(null);
+            Subject subject = SecurityUtils.getSubject();
+            SysUser sysUser = (SysUser) subject.getPrincipal();
+            Role role = roleMapper.getById(sysUser.getRole());
+            if (role.getData() == null ||  "".equals(role.getData())){
+                villages = baseMapper.selectList(null);
+            }else {
+                //获取授权的数据
+                String data = role.getData().replaceAll("\\[|\\]", "");
+                List<String> list = Arrays.asList(data.split(","));
+                /*System.out.println(data);
+                List<String> dataList = Arrays.asList(data);
+                System.out.println(dataList);*/
+                for (String d : list){
+                    QueryWrapper queryWrapper = new QueryWrapper<VillageDto>();
+                    queryWrapper.eq("name",d.replace("\"","").replace("\"","").trim());
+                    villages.add(baseMapper.selectOne(queryWrapper));
+                }
+                //villages = baseMapper.selectList(null);
+            }
             pageInfo = new PageInfo<>(villages, pageSize);
         } else {
             villages = baseMapper.selectList(null);
