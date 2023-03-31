@@ -82,7 +82,7 @@ public class SysLogAspect {
             String user = (String)request.getSession().getAttribute("username");
             if (!StringUtils.isNotEmpty(user)) {
                 Subject subject = SecurityUtils.getSubject();
-                SysUser sysUser = (SysUser) subject.getPrincipals();
+                SysUser sysUser = (SysUser) subject.getPrincipal();
                 if (sysUser != null){
                     user = sysUser.getUsername();
                 }

@@ -63,7 +63,7 @@ public class HousingInformationController {
     @ApiOperation("新增房屋信息")
     public ResultBody insert(@RequestBody HousingInformationDto body) {
         Subject subject = SecurityUtils.getSubject();
-        SysUser sysUser = (SysUser) subject.getPrincipals();
+        SysUser sysUser = (SysUser) subject.getPrincipal();
         body.setUpdateUser(sysUser.getUsername());
         return ResultBody.ok(housingInformationService.insert(body));
     }
@@ -84,7 +84,7 @@ public class HousingInformationController {
     @ApiOperation("更新房屋信息")
     public ResultBody update(@RequestBody HousingInformationDto body){
         Subject subject = SecurityUtils.getSubject();
-        SysUser sysUser = (SysUser) subject.getPrincipals();
+        SysUser sysUser = (SysUser) subject.getPrincipal();
         body.setUpdateUser(sysUser.getUsername());
         return ResultBody.ok(housingInformationService.updateByDto(body));
     }
