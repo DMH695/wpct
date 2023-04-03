@@ -108,32 +108,34 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
                 //villages = baseMapper.selectList(null);
             }
         }
-
+        System.out.println(villages);
         JSONArray tree = JSONArray.parseArray(JSON.toJSONString(villages));
         for (Object o : tree) {
             JSONObject village = ((JSONObject) o);
-            JSONArray builds = JSONArray.parseArray(
-                    JSON.toJSONString(buildService.listByVillage(village.getInteger("id")))
-            );
-            for (Object o1 : builds) {
-                JSONObject build = ((JSONObject) o1);
-                List<HousingInformationDto> houseList = housingInformationService.query()
-                        .eq("village_name", village.getString("name"))
-                        .eq("build_number", build.getString("name")).list();
-                JSONArray houses = new JSONArray();
-                for (HousingInformationDto dto : houseList) {
-                    JSONObject tmp = new JSONObject();
-                    tmp.put("name", dto.getHouseNo());
-                    tmp.put("id", dto.getId());
-                    tmp.put("village_id", village.getString("id"));
-                    tmp.put("build_id", build.getString("id"));
-                    tmp.put("village_name", dto.getVillageName());
-                    tmp.put("build_number", dto.getBuildNumber());
-                    houses.add(tmp);
+            if (village != null){
+                JSONArray builds = JSONArray.parseArray(
+                        JSON.toJSONString(buildService.listByVillage(village.getInteger("id")))
+                );
+                for (Object o1 : builds) {
+                    JSONObject build = ((JSONObject) o1);
+                    List<HousingInformationDto> houseList = housingInformationService.query()
+                            .eq("village_name", village.getString("name"))
+                            .eq("build_number", build.getString("name")).list();
+                    JSONArray houses = new JSONArray();
+                    for (HousingInformationDto dto : houseList) {
+                        JSONObject tmp = new JSONObject();
+                        tmp.put("name", dto.getHouseNo());
+                        tmp.put("id", dto.getId());
+                        tmp.put("village_id", village.getString("id"));
+                        tmp.put("build_id", build.getString("id"));
+                        tmp.put("village_name", dto.getVillageName());
+                        tmp.put("build_number", dto.getBuildNumber());
+                        houses.add(tmp);
+                    }
+                    build.put("children", houses);
                 }
-                build.put("children", houses);
+                village.put("children", builds);
             }
-            village.put("children", builds);
         }
         JSONObject res = new JSONObject();
         res.put("tree", tree);
