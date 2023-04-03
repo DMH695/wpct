@@ -110,9 +110,9 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
         }
         System.out.println(villages);
         JSONArray tree = JSONArray.parseArray(JSON.toJSONString(villages));
+        JSONObject res = new JSONObject();
         for (Object o : tree) {
             JSONObject village = ((JSONObject) o);
-            if (village != null){
                 JSONArray builds = JSONArray.parseArray(
                         JSON.toJSONString(buildService.listByVillage(village.getInteger("id")))
                 );
@@ -135,10 +135,10 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
                     build.put("children", houses);
                 }
                 village.put("children", builds);
-            }
+            //JSONObject res = new JSONObject();
         }
-        JSONObject res = new JSONObject();
         res.put("tree", tree);
+        //JSONObject res = new JSONObject();
         if (pageSize != -1) {
             res.put("pageInfo", pageInfo);
         }
@@ -190,6 +190,25 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
         QueryWrapper<BuildDto> buildDeleteQuery = new QueryWrapper<>();
         buildService.remove(buildDeleteQuery.eq("village_id", id));
         getBaseMapper().deleteById(id);
+        //角色表中的授权数据删除
+        for (Role role : roleMapper.all()){
+            if (role.getData() != null) {
+                String data = role.getData().replaceAll("\\[|\\]", "");
+                List<String> list = Arrays.asList(data.split(","));
+                List<String> datas = new ArrayList<>();
+                int index = 0;
+                int i = 0;
+                for(String str : list){
+                    if (list.get(i).contains(village.getName())){
+                        index = i;
+                    }else {
+                        datas.add(list.get(i));
+                    }
+                    i++;
+                }
+                roleMapper.authData(datas.toString(),role.getId());
+            }
+        }
         return ResultBody.ok("All building numbers and houses under village have been deleted");
     }
 }
