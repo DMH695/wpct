@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.*;
@@ -70,12 +71,12 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .like(StringUtils.isNotEmpty(vo.getVillageName()), "village_name", vo.getVillageName())
                 .eq(StringUtils.isNotEmpty(vo.getBuildNumber()), "build_number", vo.getBuildNumber())
                 .eq(StringUtils.isNotEmpty(vo.getHouseNo()), "house_no", vo.getHouseNo())
-                .gt(vo.getBound(), "bind_wechat_user",0)
-                .eq(!vo.getBound(),"bind_wechat_user",0)
+                .gt(vo.getBound() != null && vo.getBound(), "bind_wechat_user",0)
+                .eq(vo.getBound() != null && !vo.getBound(),"bind_wechat_user",0)
                 .list();
         for (HousingInformationDto dto : res) {
             long hid = dto.getId();
-            dto.setResidualPayment(propertyOrderService.houseCount(hid) + sharedFeeOrderService.houseCount(hid));
+            dto.setResidualPayment(BigDecimal.valueOf(propertyOrderService.houseCount(hid)).add(BigDecimal.valueOf(sharedFeeOrderService.houseCount(hid))).doubleValue());
             dto.setBind(dto.getBindWechatUser() > 0);
         }
         return new PageInfo<>(res);
