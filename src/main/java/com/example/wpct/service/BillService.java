@@ -12,4 +12,5 @@ public interface BillService {
     void delete(int id);
     ResultBody getReceiptCertificate(int id);
     List<Bill> getByOpenid(String openid,String villageName,String buildName,String roomNum);
+    List<Bill> getByWid(String out_trade_no);
 }

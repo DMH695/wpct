@@ -23,6 +23,6 @@ public interface WechatPayService {
     String queryOrder(Long orderNo,String openid) throws IOException;
     String queryOrder1(Long orderNo) throws IOException;
     String test();
-    void refund(String out_trade_no, String reason,Integer refundFee) throws Exception;
+    void refund(String out_trade_no, String reason,Integer refundFee,String type) throws Exception;
 
 }

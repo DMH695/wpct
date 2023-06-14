@@ -4,4 +4,5 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.wpct.mapper.SharedFeeOrderMapper">
     <update id="updateDate">UPDATE shared_fee_order SET payment_status=true,pay_time=#{date} WHERE order_no=#{order_no}</update>
+    <update id="updateStatus">UPDATE shared_fee_order SET payment_status=false  WHERE order_no=#{order_no}</update>
 </mapper>

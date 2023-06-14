@@ -69,6 +69,12 @@ public class WeChatApi {
     @Autowired
     PropertyOrderService  propertyOrderService;
 
+    @Autowired
+    BillService billService;
+
+    static double fee = 0;
+
+
     @ApiOperation("获取openid和昵称")
     @RequestMapping(value = "/getOpenid",method = RequestMethod.GET)
     public Object get(HttpServletResponse response, HttpServletRequest request) throws IOException {
@@ -387,10 +393,20 @@ public class WeChatApi {
 
     @ApiOperation("申请退款")
     @PostMapping("/refunds")
-    public Object refunds(@RequestParam String out_trade_no, @RequestParam String reason, @RequestParam Integer refundFee)
+    public Object refunds(@RequestParam String out_trade_no, @RequestParam String reason, @RequestParam Integer refundFee,@RequestParam String type)
             throws Exception {
+        System.out.println(refundFee);
         log.info("申请退款");
-        wechatPayService.refund(out_trade_no, reason,refundFee);
+        //通过out_trade_no查询账单，将所有金额一起退回
+        for(Bill bill : billService.getByWid(out_trade_no)){
+            System.out.println(bill.getPay());
+            fee = fee + bill.getPay();
+        }
+        //String str = Double.toString(fee * 100);
+        //String  str = String.format("%.2f",fee * 100);
+        refundFee = (int)(fee * 100);
+        System.out.println(refundFee);
+        wechatPayService.refund(out_trade_no, reason,refundFee,type);
         return ResultBody.ok(null);
     }
 }

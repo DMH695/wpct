@@ -7,4 +7,5 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface PropertyOrderMapper extends BaseMapper<PropertyOrderDto> {
     void updateStatus(long orderNo);
+    void updateStatus1(long orderNo);
 }

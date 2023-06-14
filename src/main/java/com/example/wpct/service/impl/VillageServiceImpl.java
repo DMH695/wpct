@@ -70,25 +70,29 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
         Subject subject = SecurityUtils.getSubject();
         SysUser sysUser = (SysUser) subject.getPrincipal();
         if (pageSize != -1) {
-            PageHelper.startPage(pageNum, pageSize);
-            Role role = roleMapper.getById(sysUser.getRole());
-            if (role.getData() == null ||  "".equals(role.getData())){
-                villages = baseMapper.selectList(null);
-            }else {
-                //获取授权的数据
-                String data = role.getData().replaceAll("\\[|\\]", "");
-                List<String> list = Arrays.asList(data.split(","));
+            if (pageSize != -2){
+                PageHelper.startPage(pageNum, pageSize);
+                Role role = roleMapper.getById(sysUser.getRole());
+                if (role.getData() == null ||  "".equals(role.getData())){
+                    villages = baseMapper.selectList(null);
+                }else {
+                    //获取授权的数据
+                    String data = role.getData().replaceAll("\\[|\\]", "");
+                    List<String> list = Arrays.asList(data.split(","));
                 /*System.out.println(data);
                 List<String> dataList = Arrays.asList(data);
                 System.out.println(dataList);*/
-                for (String d : list){
-                    QueryWrapper queryWrapper = new QueryWrapper<VillageDto>();
-                    queryWrapper.eq("name",d.replace("\"","").replace("\"","").trim());
-                    villages.add(baseMapper.selectOne(queryWrapper));
+                    for (String d : list){
+                        QueryWrapper queryWrapper = new QueryWrapper<VillageDto>();
+                        queryWrapper.eq("name",d.replace("\"","").replace("\"","").trim());
+                        villages.add(baseMapper.selectOne(queryWrapper));
+                    }
+                    //villages = baseMapper.selectList(null);
                 }
-                //villages = baseMapper.selectList(null);
+                pageInfo = new PageInfo<>(villages, pageSize);
+            }else {
+                villages = baseMapper.selectList(null);
             }
-            pageInfo = new PageInfo<>(villages, pageSize);
         } else {
             Role role = roleMapper.getById(sysUser.getRole());
             if (role.getData() == null ||  "".equals(role.getData())){
@@ -139,7 +143,7 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
         }
         res.put("tree", tree);
         //JSONObject res = new JSONObject();
-        if (pageSize != -1) {
+        if (pageSize != -1 && pageSize != -2) {
             res.put("pageInfo", pageInfo);
         }
         return ResultBody.ok(res);

@@ -21,4 +21,6 @@ public class Bill {
     private java.sql.Date beginDate;
     private java.sql.Date endDate;
     private String orderNo;
+    private String outTradeNo;
+    private boolean isRefund;
 }

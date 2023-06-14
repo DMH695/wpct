@@ -13,5 +13,7 @@ public interface BillMapper {
     void delete(int id);
     Bill selectById(int id);
     List<Bill> getByOpenid(String openid);
+    List<Bill> getByWid(String out_trade_no);
     List<Bill> getOne(String openid,String villageName,String buildName,String roomNum);
+    void updateStatus(String out_trade_no);
 }

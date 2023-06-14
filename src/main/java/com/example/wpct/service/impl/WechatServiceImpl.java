@@ -39,13 +39,10 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -83,6 +80,10 @@ public class WechatServiceImpl implements WechatPayService {
 
     @Autowired
     WxSendMsgUtil wxSendMsgUtil;
+
+    @Autowired
+    RefundMapper refundMapper;
+
     @Resource
     private final StringRedisTemplate stringRedisTemplate;
 
@@ -150,6 +151,9 @@ public class WechatServiceImpl implements WechatPayService {
             sharedOrderNos.add(openid);
             jsonObject1.put("shared", sharedOrderNos);
         }
+        jsonObject1.put("openid",openid);
+        jsonObject1.put("hid",housingInformationDto.getId());
+        jsonObject1.put("cost",total);
         stringRedisTemplate.opsForValue().set(no, jsonObject1.toString());
         paramsMap.put("notify_url", "http://wpct.x597.com/weixin/jsapi/notify");  //test
         Map amountMap = new HashMap();
@@ -369,8 +373,9 @@ public class WechatServiceImpl implements WechatPayService {
             bill.setVillageName(housingInformationDto.getVillageName());
             bill.setBuildName(housingInformationDto.getBuildNumber());
             bill.setRoomNum(housingInformationDto.getHouseNo());
-            String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
+            String date = new SimpleDateFormat("yyyy-MM-dd HH:mmZ").format(Calendar.getInstance().getTime());
             bill.setDate(date);
+            openid = openid.replace("\"", "");
             bill.setOpenid(openid);
             bill.setLocation("微信");
             bill.setPay(poolBanlance);
@@ -546,13 +551,24 @@ public class WechatServiceImpl implements WechatPayService {
 
     @Override
     public String test() {
-        String str = "{\"mchid\":\"1558950191\",\"appid\":\"wx74862e0dfcf69954\",\n" +
-                "              \"out_trade_no\":\"1677076750946\",\"transaction_id\":\"4200001569202210040857712725\",\n" +
-                "              \"trade_type\":\"NATIVE\",\"trade_state\":\"SUCCESS\",\"trade_state_desc\":\"支付成功\",\n" +
-                "              \"bank_type\":\"OTHERS\",\"attach\":\"\",\"success_time\":\"2022-10-04T13:25:40+08:00\",\n" +
-                "              payer\":{\"openid\":\"oXXFD6gTkRajlHDiSIxE1PpMMvek\"},\n" +
-                "              \"amount\":{\"total\":1,\"payer_total\":1,\"currency\":\"CNY\",\"payer_currency\":\"CNY\"}}";
-        processNotify(str);
+        String res = stringRedisTemplate.opsForValue().get("1682322659352");
+        JSONObject jsonObject = JSONObject.parseObject(res);
+        System.out.println(jsonObject);
+        String propertyOrders = jsonObject.getString("property");
+        String sharedOrders = jsonObject.getString("shared");
+        Double propertyFee = jsonObject.getDouble("propertyFee");
+        Double sharedFee = jsonObject.getDouble("sharedFee");
+        String openid = jsonObject.getString("openid");
+        Integer hid = jsonObject.getInteger("hid");
+        Double cost = jsonObject.getDouble("cost");
+        log.info("从redis中获取的数据：" + res);
+        log.info("物业费:" + propertyOrders);
+        log.info("公摊费" + sharedOrders);
+        log.info("扣除物业费余额:" + propertyFee);
+        log.info("扣除公摊费余额:" + sharedFee);
+        log.info("openid:" + openid);
+        log.info("hid:" + hid);
+        log.info("cost:" + cost);
         return "666";
     }
 
@@ -578,6 +594,7 @@ public class WechatServiceImpl implements WechatPayService {
             Bill bill = new Bill();
             bill.setPay(propertyOrderDto.getCost());
             bill.setDetail(propertyOrderDto.getCostDetail());
+            openid = openid.replace("\"", "");
             bill.setOpenid(openid);
             QueryWrapper queryWrapper1 = new QueryWrapper<>();
             queryWrapper1.eq("id", propertyOrderDto.getHouseId());
@@ -585,9 +602,10 @@ public class WechatServiceImpl implements WechatPayService {
             bill.setVillageName(housingInformationDto.getVillageName());
             bill.setBuildName(housingInformationDto.getBuildNumber());
             bill.setRoomNum(housingInformationDto.getHouseNo());
+            bill.setOutTradeNo(out_trade_no);
             bill.setType("物业费");
             bill.setLocation("微信");
-            String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
+            String date = new SimpleDateFormat("yyyy-MM-dd HH:mmZ").format(Calendar.getInstance().getTime());
             bill.setDate(date);
             billMapper.insert(bill);
         }
@@ -656,6 +674,7 @@ public class WechatServiceImpl implements WechatPayService {
                 Bill bill = new Bill();
                 bill.setPay(propertyOrderDto.getCost());
                 bill.setDetail(propertyOrderDto.getCostDetail());
+                openid = openid.replace("\"", "");
                 bill.setOpenid(openid);
                 QueryWrapper queryWrapper1 = new QueryWrapper<>();
                 queryWrapper1.eq("id", propertyOrderDto.getHouseId());
@@ -664,10 +683,12 @@ public class WechatServiceImpl implements WechatPayService {
                 bill.setRoomNum(housingInformationDto.getHouseNo());
                 bill.setType("物业费");
                 bill.setLocation("微信");
+                bill.setOutTradeNo(out_trade_no);
+                bill.setRefund(true);
                 bill.setBeginDate(propertyOrderDto.getBeginDate());
                 bill.setEndDate(propertyOrderDto.getEndDate());
                 bill.setOrderNo(propertyOrderDto.getOrderNo().toString());
-                String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
+                String date = new SimpleDateFormat("yyyy-MM-dd HH:mmZ").format(Calendar.getInstance().getTime());
                 bill.setDate(date);
                 billMapper.insert(bill);
             }
@@ -693,12 +714,13 @@ public class WechatServiceImpl implements WechatPayService {
                 queryWrapper.eq("order_no", Long.parseLong(s.trim()));
                 SharedFeeOrderDto sharedFeeOrderDto = sharedFeeOrderMapper.selectOne(queryWrapper);
                 //修改shared_fee_order中的payment_status
-                String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
+                String date = new SimpleDateFormat("yyyy-MM-dd HH:mmZ").format(Calendar.getInstance().getTime());
                 sharedFeeOrderMapper.updateDate(Long.parseLong(s.trim()), date);
                 //生成账单
                 Bill bill = new Bill();
                 bill.setPay(sharedFeeOrderDto.getCost());
                 bill.setDetail(sharedFeeOrderDto.getCostDetail());
+                openid = openid.replace("\"", "");
                 bill.setOpenid(openid);
                 QueryWrapper queryWrapper1 = new QueryWrapper<>();
                 queryWrapper1.eq("id", sharedFeeOrderDto.getHouseId());
@@ -708,6 +730,8 @@ public class WechatServiceImpl implements WechatPayService {
                 bill.setBuildName(housingInformationDto.getBuildNumber());
                 bill.setRoomNum(housingInformationDto.getHouseNo());
                 bill.setType("公摊费");
+                bill.setRefund(true);
+                bill.setOutTradeNo(out_trade_no);
                 bill.setLocation("微信");
                 bill.setDate(date);
                 bill.setBeginDate(java.sql.Date.valueOf(sharedFeeOrderDto.getBeginDate()));
@@ -758,8 +782,11 @@ public class WechatServiceImpl implements WechatPayService {
         bill.setRoomNum(housingInformationDto.getHouseNo());
         String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
         bill.setDate(date);
+        openid = openid.replace("\"", "");
         bill.setOpenid(openid);
         bill.setLocation("微信");
+        bill.setOutTradeNo(out_trade_no);
+        bill.setRefund(true);
         bill.setPay(property_fee + poolBanlance);
         String detail;
         detail = "物业费充值:" + property_fee + "(元),"+"公摊费充值:" + poolBanlance + "(元)";
@@ -855,7 +882,7 @@ public class WechatServiceImpl implements WechatPayService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void refund(String out_trade_no, String reason, Integer refundFee) throws Exception {
+    public void refund(String out_trade_no, String reason, Integer refundFee,String type) throws Exception {
         log.info("===创建初始退款单记录===");
 
         //根据订单编号创建退款单
@@ -877,7 +904,6 @@ public class WechatServiceImpl implements WechatPayService {
 
         Map amountMap = new HashMap();
         amountMap.put("refund", refundFee);//退款金额（分）
-        //去redis中寻找订单信息
 
         amountMap.put("total", refundFee);//原订单金额（分）
 
@@ -908,13 +934,124 @@ public class WechatServiceImpl implements WechatPayService {
                 throw new RuntimeException("退款异常, 响应码 = " + statusCode + ", 退款返回结果 = " + bodyAsString);
             }
             //更新订单状态
-
-            //更新退款单
-
+            if ("余额充值".equals(type)){
+                refundProcess1(out_trade_no);
+            }else {
+                refundProcess(out_trade_no);
+            }
         } finally {
             response.close();
         }
     }
+    //缴费的退款
+    public void refundProcess(String out_trade_no){
+        String res = stringRedisTemplate.opsForValue().get(out_trade_no);
+        JSONObject jsonObject = JSONObject.parseObject(res);
+        String propertyOrders = jsonObject.getString("property");
+        String sharedOrders = jsonObject.getString("shared");
+        Double propertyFee = jsonObject.getDouble("propertyFee");
+        Double sharedFee = jsonObject.getDouble("sharedFee");
+        String openid = jsonObject.getString("openid");
+        Integer hid = jsonObject.getInteger("hid");
+        Double cost = jsonObject.getDouble("cost");
+        log.info("从redis中获取的数据：" + res);
+        log.info("物业费:" + propertyOrders);
+        log.info("公摊费" + sharedOrders);
+        log.info("扣除物业费余额:" + propertyFee);
+        log.info("扣除公摊费余额:" + sharedFee);
+        log.info("openid:" + openid);
+        log.info("hid:" + hid);
+        log.info("cost:" + cost);
+        //通过hid补齐余额、并对due_date减一个月
+        housingInformationMapper.reduceDate(hid);
+        housingInformationMapper.investProperty(propertyFee,hid);
+        housingInformationMapper.investShare(sharedFee,hid);
+        //遍历订单号，修改订单状态
+        //物业费订单
+        if (propertyOrders != null) {
+            propertyOrders = propertyOrders.replaceAll("\\[", "").replaceAll("\\]", "");
+            String[] strings = propertyOrders.split(",");
+            List<String> list = new ArrayList<>(Arrays.asList(strings));
+            list.remove(strings.length - 1);
+            for (String s : list) {
+                QueryWrapper queryWrapper = new QueryWrapper<>();
+                s = s.replaceAll("\"", "");
+                queryWrapper.eq("order_no", Long.parseLong(s.trim()));
+                PropertyOrderDto propertyOrderDto = propertyOrderMapper.selectOne(queryWrapper);
+                if (propertyOrderDto == null){
+                    continue;
+                }
+                //修改property_order表中的payment_status
+                propertyOrderMapper.updateStatus1(Long.parseLong(s.trim()));
+            }
+        }
+        //公摊费订单
+        if (sharedOrders != null) {
+            sharedOrders = sharedOrders.replaceAll("\\[", "").replaceAll("\\]", "");
+            String[] strings = sharedOrders.split(",");
+            List<String> list = new ArrayList<>(Arrays.asList(strings));
+            list.remove(strings.length - 1);
+            for (String s : list) {
+                QueryWrapper queryWrapper = new QueryWrapper<>();
+                s = s.replaceAll("\"", "");
+                queryWrapper.eq("order_no", Long.parseLong(s.trim()));
+                SharedFeeOrderDto sharedFeeOrderDto = sharedFeeOrderMapper.selectOne(queryWrapper);
+                if (sharedFeeOrderDto == null){
+                    continue;
+                }
+                //修改shared_order表中的payment_status
+                sharedFeeOrderMapper.updateStatus(Long.parseLong(s.trim()));
+            }
+        }
+        //根据out_trade_no修改bill的isRefund
+        billMapper.updateStatus(out_trade_no);
+        //生成退款记录
+        Refund refund = new Refund();
+        refund.setCost(cost);
+        refund.setHid(hid);
+        refund.setOpenid(openid);
+        String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
+        refund.setDate(date);
+        refundMapper.insert(refund);
+    }
 
+    //充值余额的退款
+    public void refundProcess1(String out_trade_no){
+        String res = stringRedisTemplate.opsForValue().get(out_trade_no);
+        JSONObject jsonObject = JSONObject.parseObject(res);
+        int property = jsonObject.getInteger("propertyFee");
+        int shared = jsonObject.getInteger("shared");
+        String openid = jsonObject.getString("openid");
+        int hid = jsonObject.getInteger("hid");
+        log.info("从redis中获取的数据：" + res);
+        log.info("物业费:" + property);
+        log.info("公摊费" + shared);
+        log.info("openid:" + openid);
+        log.info("hid:" + hid);
+        //补齐公摊费余额和物业费余额
+        HousingInformationDto housingInformationDto = housingInformationMapper.selectById(hid);
+        String str = String.valueOf(property);
+        Double property_fee1 = Double.parseDouble(str);
+        Double property_fee = property_fee1 / 100;
+        String str1 = String.valueOf(shared);
+        Double shared_fee1 = Double.parseDouble(str1);
+        Double shared_fee = shared_fee1 / 100;
+        log.info("housingInformationDto.getPoolBalance()" + housingInformationDto.getPoolBalance());
+        log.info("shared_fee" + shared_fee);
+        log.info("housingInformationDto.getPropertyFee()" + housingInformationDto.getPropertyFee());
+        log.info("property_fee" + property_fee);
+        housingInformationMapper.updateSharedFee(hid,housingInformationDto.getPoolBalance() - shared_fee);
+        housingInformationMapper.updatePropertyFee(hid,housingInformationDto.getPropertyFee() - property_fee);
+        billMapper.updateStatus(out_trade_no);
+        //生成退款记录
+        Refund refund = new Refund();
+        refund.setCost(property_fee + shared_fee);
+        refund.setHid(hid);
+        refund.setOpenid(openid);
+        String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
+        refund.setDate(date);
+        refundMapper.insert(refund);
+
+    }
 
 }

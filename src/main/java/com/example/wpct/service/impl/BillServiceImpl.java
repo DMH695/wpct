@@ -202,6 +202,11 @@ public class BillServiceImpl implements BillService {
         return billMapper.getOne(openid,villageName,buildName,roomNum);
     }
 
+    @Override
+    public List<Bill> getByWid(String out_trade_no) {
+        return billMapper.getByWid(out_trade_no);
+    }
+
 
     private PageInfo<?> getPage(PageRequest pageRequest, String villageName, String buildName, String roomNum) {
         int pageNum = pageRequest.getPageNum();
