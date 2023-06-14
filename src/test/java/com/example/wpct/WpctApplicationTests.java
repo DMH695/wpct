@@ -11,11 +11,6 @@ class WpctApplicationTests {
 
 
 
-    @Test
-    void contextLoads() {
-        String bindCount = "";
-        Integer count = Integer.parseUnsignedInt(bindCount) + 1;
-        System.out.println(count);
-    }
+
 
 }

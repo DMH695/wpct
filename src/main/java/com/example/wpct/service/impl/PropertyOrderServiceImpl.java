@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -46,7 +47,6 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
 
     @Autowired
     BillMapper billMapper;
-
 
 
     /**
@@ -90,8 +90,8 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
         List<PropertyOrderDto> afterUpdateOrderList = new ArrayList<>();
         for (PropertyOrderDto dto : notPayment) {
             HousingInformationDto house = housingInformationService.query().eq("id", dto.getHouseId()).one();
-            if (house == null){
-                log.info("房屋id"+dto.getHouseId()+"不存在,缴交失败");
+            if (house == null) {
+                log.info("房屋id" + dto.getHouseId() + "不存在,缴交失败");
                 continue;
             }
             if (house.getPropertyFee() >= dto.getCost()) {
@@ -134,12 +134,12 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
         List<Long> houseIds = housingInformationService.getIdsByHouseInfo(
                 vo.getVillageName(), vo.getBuildNumber(), vo.getHouseNo()
         );
-        PageHelper.startPage(vo.getPageNum(),vo.getPageSize());
+        PageHelper.startPage(vo.getPageNum(), vo.getPageSize());
         List<PropertyOrderDto> orderList = this.query()
                 .in("house_id", houseIds)
                 .le(StringUtils.isNotEmpty(vo.getEndDate()), "end_date", vo.getEndDate())
                 .ge(StringUtils.isNotEmpty(vo.getBeginDate()), "begin_date", vo.getBeginDate())
-                .eq(vo.getPaymentStatus() != null,"payment_status",vo.getPaymentStatus())
+                .eq(vo.getPaymentStatus() != null, "payment_status", vo.getPaymentStatus())
                 .list();
         for (PropertyOrderDto propertyOrderDto : orderList) {
             HousingInformationDto house = housingInformationService.query().eq("id", propertyOrderDto.getHouseId()).one();
@@ -147,7 +147,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
             propertyOrderDto.setBuildNumber(house.getBuildNumber());
             propertyOrderDto.setHouseNo(house.getHouseNo());
         }
-        PageInfo<PropertyOrderDto> pageInfo = new PageInfo<>(orderList,vo.getPageSize());
+        PageInfo<PropertyOrderDto> pageInfo = new PageInfo<>(orderList, vo.getPageSize());
         return ResultBody.ok(pageInfo);
     }
 
@@ -176,7 +176,7 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
     @Override
     public ResultBody listByUser(String openid) {
         QueryWrapper<WechatUser> query = new QueryWrapper<>();
-        query.eq("openid",openid);
+        query.eq("openid", openid);
         List<WechatUser> wechatUsers = wechatUserMapper.selectList(query);
         JSONArray res = new JSONArray();
         for (WechatUser wechatUser : wechatUsers) {
@@ -184,8 +184,8 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
             HousingInformationDto house = housingInformationService.query().eq("id", wechatUser.getHid()).one();
             if (house == null)
                 continue;
-            tmp.put("house",String.format("%s#%s#%s",house.getVillageName(),house.getBuildNumber(),house.getHouseNo()));
-            tmp.put("property_order",query().eq("house_id",house.getId()).list());
+            tmp.put("house", String.format("%s#%s#%s", house.getVillageName(), house.getBuildNumber(), house.getHouseNo()));
+            tmp.put("property_order", query().eq("house_id", house.getId()).list());
             res.add(tmp);
         }
         return ResultBody.ok(res);
@@ -213,8 +213,8 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
         List<PropertyOrderDto> propertyOrders = this.query().eq("house_id", hid).list();
         double count = 0;
         for (PropertyOrderDto propertyOrder : propertyOrders) {
-            if (propertyOrder.getPaymentStatus() == 0){
-                count+= propertyOrder.getCost();
+            if (propertyOrder.getPaymentStatus() == 0) {
+                count = BigDecimal.valueOf(count).add(BigDecimal.valueOf(propertyOrder.getCost())).doubleValue();
             }
         }
         return count;
