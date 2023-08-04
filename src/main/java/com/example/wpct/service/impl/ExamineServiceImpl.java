@@ -1,4 +1,6 @@
 package com.example.wpct.service.impl;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -6,6 +8,7 @@ import com.example.wpct.entity.*;
 import com.example.wpct.mapper.*;
 import com.example.wpct.service.ExamineService;
 import com.example.wpct.utils.ResultBody;
+import com.example.wpct.utils.WxSendMsgUtil;
 import com.example.wpct.utils.page.PageRequest;
 import com.example.wpct.utils.page.PageResult;
 import com.example.wpct.utils.page.PageUtil;
@@ -18,13 +21,16 @@ import org.apache.catalina.security.SecurityUtil;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -50,6 +56,12 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
     @Autowired
     HousingInformationMapper housingInformationMapper;
 
+    @Resource
+    private RestTemplate restTemplate;
+
+    @Autowired
+    WxSendMsgUtil wxSendMsgUtil;
+
     @Autowired
     RoleMapper roleMapper;
 
@@ -67,7 +79,7 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         } else {
             ExamineDto examineDto = new ExamineDto();
             examineDto.setOpenid(openid);
-            examineDto.setCommitTime(LocalDateTime.now());
+            examineDto.setCommitTime(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime()));
             examineDto.setExamineContent(examineContent);
             examineDto.setApprovalStatus("");
             examineDto.setResolveHandle("");
@@ -94,7 +106,7 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
             throw new Exception("请先登录");
         }
         QueryWrapper queryWrapper2 = new QueryWrapper();
-        queryWrapper2.select();
+        queryWrapper2.select().orderByDesc("commit_time");
         res = examineMapper.selectList(queryWrapper2);
 
         //res = baseMapper.selectList(null);
@@ -206,5 +218,70 @@ public class ExamineServiceImpl extends ServiceImpl<ExamineMapper, ExamineDto> i
         }else{
             return ResultBody.ok(soluExamine(id,resolveMsg));
         }
+    }
+
+    public ResultBody sendMsg(int hid,String status,String time,String content,String openid,String uname) throws Exception{
+        WxMsgConfig requestData = this.getMsgConfig(hid,status,time,content,openid,uname);
+
+        log.info("推送消息请求参数：{}", JSON.toJSONString(requestData));
+
+        String url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + wxSendMsgUtil.getAccessToken();
+        log.info("推送消息请求地址：{}", url);
+        JSONObject responseData = postData(url, requestData);
+        log.info("推送消息返回参数：{}", JSON.toJSONString(responseData));
+
+        Integer errorCode = responseData.getInteger("errcode");
+        String errorMessage = responseData.getString("errmsg");
+        if (errorCode == 0) {
+            log.info("推送消息发送成功");
+            return    ResultBody.ok(responseData);
+        } else {
+            log.info("推送消息发送失败,errcode：{},errorMessage：{}", errorCode, errorMessage);
+        }
+        return ResultBody.ok(errorCode.toString());
+    }
+
+    @SneakyThrows
+    public WxMsgConfig getMsgConfig(int hid,String status,String time,String content,String openid,String uname) {
+        QueryWrapper queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id",hid);
+        HousingInformationDto housingInformationDto = housingInformationMapper.selectOne(queryWrapper);
+        String villageName = housingInformationDto.getVillageName();
+        String buildName = housingInformationDto.getBuildNumber();
+        String roomNum = housingInformationDto.getHouseNo();
+        WxMsgTemplateHasten wxMsgTemplateHasten = new WxMsgTemplateHasten();
+        wxMsgTemplateHasten.setFirst(villageName + "-"
+                + buildName + "-"
+                + roomNum +
+                "反馈通知");
+        //处理人
+        wxMsgTemplateHasten.setKeyword1(uname);
+        /*处理时间*/
+        wxMsgTemplateHasten.setKeyword2(time);
+        /*处理结果*/
+        wxMsgTemplateHasten.setKeyword3(status);
+        //处理描述
+        wxMsgTemplateHasten.setKeyword4("已处理");
+
+        //BigDecimal bigDecimal = new BigDecimal(100);
+        //wxMsgTemplateHasten.setRemark(content);
+        /*消息推送配置参数拼接*/
+        WxMsgConfig wxMsgConfig = new WxMsgConfig();
+        wxMsgConfig.setTouser(openid);
+        wxMsgConfig.setTemplate_id("HGkWv87CQi5p0Ob6U6JOXuxNf0i8hErJf0-_UWPrplk");
+        wxMsgConfig.setData(wxMsgTemplateHasten);
+        return wxMsgConfig;
+    }
+
+    /**
+     * 发送请求
+     */
+    public JSONObject postData(String url, WxMsgConfig param) {
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(type);
+        HttpEntity<WxMsgConfig> httpEntity = new HttpEntity<>(param, headers);
+        JSONObject jsonResult = restTemplate.postForObject(url, httpEntity, JSONObject.class);
+        return jsonResult;
     }
 }

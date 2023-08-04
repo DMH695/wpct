@@ -48,6 +48,9 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
     @Autowired
     BillMapper billMapper;
 
+    @Autowired
+    PropertyOrderMapper propertyOrderMapper;
+
 
     /**
      * 生成物业费订单
@@ -135,12 +138,31 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
                 vo.getVillageName(), vo.getBuildNumber(), vo.getHouseNo()
         );
         PageHelper.startPage(vo.getPageNum(), vo.getPageSize());
-        List<PropertyOrderDto> orderList = this.query()
-                .in("house_id", houseIds)
-                .le(StringUtils.isNotEmpty(vo.getEndDate()), "end_date", vo.getEndDate())
-                .ge(StringUtils.isNotEmpty(vo.getBeginDate()), "begin_date", vo.getBeginDate())
-                .eq(vo.getPaymentStatus() != null, "payment_status", vo.getPaymentStatus())
-                .list();
+        List<PropertyOrderDto> orderList = new ArrayList<>();
+        if (vo.getCheck() == null || "".equals(vo.getCheck())){
+            orderList = this.query()
+                    .in("house_id", houseIds)
+                    .le(StringUtils.isNotEmpty(vo.getEndDate()), "end_date", vo.getEndDate())
+                    .ge(StringUtils.isNotEmpty(vo.getBeginDate()), "begin_date", vo.getBeginDate())
+                    .eq(vo.getPaymentStatus() != null, "payment_status", vo.getPaymentStatus())
+                    .list();
+        }else if("已审批".equals(vo.getCheck())){
+            orderList = this.query()
+                    .in("house_id", houseIds)
+                    .isNull("rid")
+                    .le(StringUtils.isNotEmpty(vo.getEndDate()), "end_date", vo.getEndDate())
+                    .ge(StringUtils.isNotEmpty(vo.getBeginDate()), "begin_date", vo.getBeginDate())
+                    .eq(vo.getPaymentStatus() != null, "payment_status", vo.getPaymentStatus())
+                    .list();
+        }else if("待审批".equals(vo.getCheck())){
+            orderList = this.query()
+                    .in("house_id", houseIds)
+                    .isNotNull("rid")
+                    .le(StringUtils.isNotEmpty(vo.getEndDate()), "end_date", vo.getEndDate())
+                    .ge(StringUtils.isNotEmpty(vo.getBeginDate()), "begin_date", vo.getBeginDate())
+                    .eq(vo.getPaymentStatus() != null, "payment_status", vo.getPaymentStatus())
+                    .list();
+        }
         for (PropertyOrderDto propertyOrderDto : orderList) {
             HousingInformationDto house = housingInformationService.query().eq("id", propertyOrderDto.getHouseId()).one();
             propertyOrderDto.setVillageName(house.getVillageName());
@@ -239,5 +261,15 @@ public class PropertyOrderServiceImpl extends ServiceImpl<PropertyOrderMapper, P
         res.put("应收应退物业费", dto.getCalculateFee());
         res.put("优惠", dto.getDiscount());
         return res;
+    }
+
+    @Override
+    public void updateRid(long id, Integer rid) {
+        propertyOrderMapper.updateRid(id, rid);
+    }
+
+    @Override
+    public PropertyOrderDto selectById(Long id) {
+        return propertyOrderMapper.getById(id);
     }
 }

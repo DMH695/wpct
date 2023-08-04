@@ -215,4 +215,9 @@ public class VillageServiceImpl extends ServiceImpl<VillageMapper, VillageDto> i
         }
         return ResultBody.ok("All building numbers and houses under village have been deleted");
     }
+
+    @Override
+    public ResultBody getTreeForAdmin(String permission) {
+        return null;
+    }
 }

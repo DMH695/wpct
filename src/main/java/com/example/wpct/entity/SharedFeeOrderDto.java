@@ -107,6 +107,12 @@ public class SharedFeeOrderDto implements Serializable {
 	@ApiModelProperty(value = "更新用户", hidden = true)
 	private String updateUser;
 
+	/*@JSONField(name ="rid")
+	@ApiModelProperty(hidden = true)
+	@TableField(exist = false)*/
+	private Integer rid;
+
+
 	@ApiModelProperty(hidden = true)
 	@TableField(exist = false)
 	private String villageName;
@@ -118,5 +124,7 @@ public class SharedFeeOrderDto implements Serializable {
 	@ApiModelProperty(hidden = true)
 	@TableField(exist = false)
 	private String houseNo;
+
+
 
 }

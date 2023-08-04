@@ -6,7 +6,7 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://124.71.9.121:3306/wpct?serverTimezone=Asia/Shanghai&useSSL=false&useUnicode=true&characterEncoding=UTF8
+    url: jdbc:mysql://10.2.22.2:3306/wpct?serverTimezone=Asia/Shanghai&useSSL=false&useUnicode=true&characterEncoding=UTF8
     username: wpct
     password: 123456
   servlet:
@@ -16,7 +16,7 @@ spring:
   main:
     allow-circular-references: true
   redis:
-    host: 124.71.9.121
+    host: 10.2.22.2
     port: 6379
 mybatis-plus:
   mapper-locations: classpath:com/mapper/*.xml

@@ -23,4 +23,5 @@ public class Bill {
     private String orderNo;
     private String outTradeNo;
     private boolean isRefund;
+    private String userType;
 }

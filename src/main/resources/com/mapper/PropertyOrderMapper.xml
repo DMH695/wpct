@@ -5,4 +5,6 @@
 <mapper namespace="com.example.wpct.mapper.PropertyOrderMapper">
     <update id="updateStatus">UPDATE property_order SET payment_status=true WHERE order_no=#{orderNo}</update>
     <update id="updateStatus1">UPDATE property_order SET payment_status=false WHERE order_no=#{orderNo}</update>
+    <update id="updateRid">UPDATE property_order SET rid=#{rid} WHERE order_no=#{id}</update>
+    <select id="getById" resultType="PropertyOrderDto">select * from property_order where order_no=#{id}</select>
 </mapper>

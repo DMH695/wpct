@@ -41,6 +41,9 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
     @Lazy
     private VillageServiceImpl villageService;
 
+    @Autowired
+    SharedFeeOrderMapper sharedFeeOrderMapper;
+
     @Override
     public ResultBody insert(SharedFeeOrderDto dto) {
         Snowflake snowflake = new Snowflake();
@@ -57,12 +60,32 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
                 vo.getVillageName(), vo.getBuildNumber(), vo.getHouseNo()
         );
         PageHelper.startPage(vo.getPageNum(), vo.getPageSize());
-        List<SharedFeeOrderDto> orderList = this.query()
-                .in("house_id", houseIds)
-                .eq(vo.getPaymentStatus() != null, "payment_status", vo.getPaymentStatus())
-                .le(StringUtils.isNotEmpty(vo.getPay_time_end()), "end_date", vo.getPay_time_end())
-                .ge(StringUtils.isNotEmpty(vo.getPay_time_begin()), "begin_date", vo.getPay_time_begin())
-                .list();
+        List<SharedFeeOrderDto> orderList = new ArrayList<>();
+        if (vo.getCheck() == null || "".equals(vo.getCheck())){
+             orderList = this.query()
+                    .in("house_id", houseIds)
+                    .eq(vo.getPaymentStatus() != null, "payment_status", vo.getPaymentStatus())
+                    .le(StringUtils.isNotEmpty(vo.getPay_time_end()), "end_date", vo.getPay_time_end())
+                    .ge(StringUtils.isNotEmpty(vo.getPay_time_begin()), "begin_date", vo.getPay_time_begin())
+                    .list();
+        }else if ("已审批".equals(vo.getCheck())){
+            orderList = this.query()
+                    .in("house_id", houseIds)
+                    .isNull("rid")
+                    .eq(vo.getPaymentStatus() != null, "payment_status", vo.getPaymentStatus())
+                    .le(StringUtils.isNotEmpty(vo.getPay_time_end()), "end_date", vo.getPay_time_end())
+                    .ge(StringUtils.isNotEmpty(vo.getPay_time_begin()), "begin_date", vo.getPay_time_begin())
+                    .list();
+        }else if("待审批".equals(vo.getCheck())){
+            orderList = this.query()
+                    .in("house_id", houseIds)
+                    .isNotNull("rid")
+                    .eq(vo.getPaymentStatus() != null, "payment_status", vo.getPaymentStatus())
+                    .le(StringUtils.isNotEmpty(vo.getPay_time_end()), "end_date", vo.getPay_time_end())
+                    .ge(StringUtils.isNotEmpty(vo.getPay_time_begin()), "begin_date", vo.getPay_time_begin())
+                    .list();
+        }
+
         for (SharedFeeOrderDto order : orderList) {
             HousingInformationDto house = housingInformationService.query().eq("id", order.getHouseId()).one();
             order.setVillageName(house.getVillageName());
@@ -175,5 +198,15 @@ public class SharedFeeOrderServiceImpl extends ServiceImpl<SharedFeeOrderMapper,
             }
         }
         return count;
+    }
+
+    @Override
+    public void updateRid(long id, Integer rid) {
+        sharedFeeOrderMapper.updateRid(id, rid);
+    }
+
+    @Override
+    public SharedFeeOrderDto selectById(Long id) {
+        return sharedFeeOrderMapper.getById(id);
     }
 }

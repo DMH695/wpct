@@ -8,4 +8,6 @@ import org.apache.ibatis.annotations.Mapper;
 public interface SharedFeeOrderMapper extends BaseMapper<SharedFeeOrderDto> {
     void updateDate(Long order_no,String date);
     void updateStatus(Long order_no);
+    void updateRid(long id,Integer rid);
+    SharedFeeOrderDto getById(Long id);
 }

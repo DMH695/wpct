@@ -53,14 +53,22 @@ public class ReportServiceImpl implements ReportService {
             double sReceivable = 0;
             double pReceived = 0;
             double sReceived = 0;
+            int pCount = 0;
+            int sCount = 0;
             double po, so;
             for (PropertyOrderDto dto : propertyOrders) {
                 pReceivable += dto.getCost();
                 pReceived += dto.getPaymentStatus() == 1 ? dto.getCost() : 0;
+                if (dto.getPaymentStatus() == 0){
+                    pCount = pCount + 1;
+                }
             }
             for (SharedFeeOrderDto dto : sharedFeeOrders) {
                 sReceivable += dto.getCost();
                 sReceived += dto.getPaymentStatus() == 1 ? dto.getCost() : 0;
+                if (dto.getPaymentStatus() == 0){
+                    sCount = sCount + 1;
+                }
             }
             double subP = DecimalUtils.subDouble(pReceivable, pReceived);
             double subS = DecimalUtils.subDouble(sReceivable, sReceived);
@@ -68,6 +76,8 @@ public class ReportServiceImpl implements ReportService {
             so = sReceivable != sReceived && house.getPoolBalance() < subS ? DecimalUtils.subDouble(subS, house.getPoolBalance()) : 0;
             reportList.add(
                     ReportDto.builder()
+                            .pCount(pCount)
+                            .sCount(sCount)
                             .buildNumber(house.getBuildNumber())
                             .houseName(house.getHouseNo())
                             .name(house.getName())

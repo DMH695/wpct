@@ -1,12 +1,15 @@
 package com.example.wpct.controller.sysUser;
 
 import com.example.wpct.entity.SysUser;
+import com.example.wpct.service.RoleService;
 import com.example.wpct.service.SysUserService;
 import com.example.wpct.utils.ResultBody;
 import com.example.wpct.utils.page.PageRequest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +22,8 @@ import java.nio.charset.StandardCharsets;
 public class SysUserApi {
     @Autowired
     SysUserService sysUserService;
+    @Autowired
+    RoleService roleService;
 
     /**
      * 返回id、name、username、role
@@ -64,7 +69,16 @@ public class SysUserApi {
     @ApiOperation("删除系统用户")
     @RequestMapping(value = "/user/delete",method = RequestMethod.GET)
     //@RequiresRoles("超级管理员")
-    public Object delete(@RequestParam int id){
+    public Object delete(@RequestParam int id) throws Exception {
+        Subject subject = SecurityUtils.getSubject();
+        SysUser user = (SysUser)subject.getPrincipal();
+        if (user == null){
+            throw new Exception("请先登录");
+        }
+        String permission = roleService.getById(user.getRole()).getPermission();
+        if (!permission.contains("删除")) {
+            return ResultBody.ok("您没有删除权限");
+        }
         sysUserService.delete(id);
         return ResultBody.ok(null);
     }

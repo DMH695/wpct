@@ -101,4 +101,5 @@ public class PropertyOrderDto implements Serializable {
 	@TableField(exist = false)
 	private String houseNo;
 
+	private Integer rid;
 }

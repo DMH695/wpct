@@ -12,8 +12,8 @@ import java.security.GeneralSecurityException;
 import java.util.List;
 
 public interface WechatPayService {
-    String  jsapiPay(String openid, List<String> propertyOrderNos,List<String> sharedOrderNos) throws Exception;
-    String  investProperty(String openid, int property,int shared,int hid) throws Exception;
+    String  jsapiPay(String openid, List<String> propertyOrderNos,List<String> sharedOrderNos,String userType) throws Exception;
+    String  investProperty(String openid, int property,int shared,int hid,String userType) throws Exception;
     String  investShare(String openid, int money,int hid) throws Exception;
     List<WechatUser> getByOpenid(String openid);
     void bind(WechatUser wechatUser);

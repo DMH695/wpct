@@ -9,11 +9,15 @@ import com.example.wpct.service.impl.ExamineServiceImpl;
 import com.example.wpct.utils.ResultBody;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.SneakyThrows;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 @RestController
 @Api(tags = "意见处理")
@@ -62,6 +66,7 @@ public class ExamineController {
         return ResultBody.ok(null);
     }
 
+    @SneakyThrows
     @ApiOperation("审批")
     @PostMapping("/approve")
     //@RequiresRoles("超级管理员")
@@ -71,6 +76,10 @@ public class ExamineController {
         if (user != null){
             if (roleService.getById(user.getRole()).getPermission().contains("意见管理:审批")){
                 examineService.approval(id);
+                //审批通过后给用户推送结果
+                ExamineDto examineDto = examineService.getById(id);
+                String time = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
+                examineService.sendMsg(examineDto.getHid(),examineDto.getApprovalStatus(),time,examineDto.getResolveHandle(),examineDto.getOpenid(),examineDto.getUname());
                 return ResultBody.ok(null);
             }else {
                 return ResultBody.fail("权限不足");

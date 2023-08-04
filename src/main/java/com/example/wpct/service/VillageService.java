@@ -18,5 +18,7 @@ public interface VillageService extends IService<VillageDto> {
 
     ResultBody remove(long id);
 
+    ResultBody getTreeForAdmin(String permission);
+
 
 }

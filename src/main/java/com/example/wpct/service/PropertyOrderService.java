@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.wpct.entity.HousingInformationDto;
 import com.example.wpct.entity.PropertyOrderDto;
+import com.example.wpct.entity.SharedFeeOrderDto;
 import com.example.wpct.entity.vo.PropertyOrderVo;
 import com.example.wpct.utils.ResultBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,4 +35,9 @@ public interface PropertyOrderService extends IService<PropertyOrderDto> {
     double houseCount(long hid);
 
     JSONObject getCostDetail(HousingInformationDto dto);
+
+
+    void updateRid(long id,Integer rid);
+
+    PropertyOrderDto selectById(Long id);
 }

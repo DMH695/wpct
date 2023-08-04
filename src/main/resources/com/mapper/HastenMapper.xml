@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.wpct.mapper.HastenMapper">
+    <select id="getCountByHid" resultType="int">select count(*) from hasten WHERE hid=#{hid} </select>
+    <select id="getByHid" resultType="Hasten">select * from hasten where hid=#{hid}</select>
+    <insert id="insert">INSERT INTO hasten(hid,cost,date) VALUES (#{h.hid},#{h.cost},#{h.date})</insert>
+</mapper>

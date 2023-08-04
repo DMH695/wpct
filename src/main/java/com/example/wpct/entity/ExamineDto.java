@@ -44,7 +44,7 @@ public class ExamineDto implements Serializable {
     /**
      * 提交时间
      */
-    private LocalDateTime commitTime;
+    private String commitTime;
 
     private int hid;
     @TableField(exist = false)

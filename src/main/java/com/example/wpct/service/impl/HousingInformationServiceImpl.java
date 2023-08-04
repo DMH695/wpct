@@ -4,6 +4,7 @@ import cn.hutool.core.lang.Snowflake;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.wpct.config.CustomSheetWriteHandler;
 import com.example.wpct.entity.*;
 import com.example.wpct.entity.vo.HousingInformationVo;
 import com.example.wpct.mapper.HousingInformationMapper;
@@ -27,8 +28,6 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.IntFunction;
 
 @Service
 public class HousingInformationServiceImpl extends ServiceImpl<HousingInformationMapper, HousingInformationDto> implements HousingInformationService {
@@ -109,10 +108,12 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                 .calculateFee(0).discount(0).remarks("测试数据").poolBalance(1500).propertyFee(1500)
                 .bindWechatUser(0).dueDate(new Timestamp(System.currentTimeMillis()).toString()).build();
         excelList.add(example);
+
         response.setHeader("Content-Disposition", "attachment;filename=" + snowflake.nextIdStr() + "template.xlsx");
         EasyExcel.write(response.getOutputStream())
                 .head(HousingInformationDto.class)
                 .sheet("importTemplate")
+                .registerWriteHandler(new CustomSheetWriteHandler())
                 .doWrite(excelList);
     }
 
@@ -131,6 +132,9 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                     .eq("house_no", dto.getHouseNo()).one();
             dto.setUpdateUser("admin");
             dto.setUpdated(new Timestamp(System.currentTimeMillis()).toString());
+            if(dto.getPhone().length() != 11){
+                return ResultBody.fail("手机号码格式错误，长度小于或大于11位，请检查");
+            }
             if (one == null) {
                 saveList.add(dto);
                 saveParent(dto);
@@ -156,6 +160,7 @@ public class HousingInformationServiceImpl extends ServiceImpl<HousingInformatio
                     .endDate(new Date(calendar.getTimeInMillis())).updateTime(new Timestamp(System.currentTimeMillis()).toString()).build();
             propertyOrders.add(buildResult);
         }
+
         propertyOrderService.saveBatch(propertyOrders);
         return ResultBody.ok("insert: " + saveList.size() + ",update: " + updateList.size());
     }

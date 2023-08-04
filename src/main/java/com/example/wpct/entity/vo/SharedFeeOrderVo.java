@@ -20,4 +20,7 @@ public class SharedFeeOrderVo extends PageVo{
     private String pay_time_begin;
     @ApiModelProperty(value = "缴交时间右区间，格式2023-01-15")
     private String pay_time_end;
+
+    @ApiModelProperty(value = "审批状态：待审批、已审批")
+    private String check;
 }

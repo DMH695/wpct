@@ -22,7 +22,10 @@ import com.wechat.pay.contrib.apache.httpclient.exception.HttpCodeException;
 import com.wechat.pay.contrib.apache.httpclient.exception.NotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +33,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -44,6 +48,9 @@ public class WeChatApi {
 
     @Autowired
     WechatPayService wechatPayService;
+
+    @Autowired
+    RoleService roleService;
 
     @Autowired
     WechatUserMapper wechatUserMapper;
@@ -71,6 +78,9 @@ public class WeChatApi {
 
     @Autowired
     BillService billService;
+
+    @Autowired
+    SysUserService sysUserService;
 
     static double fee = 0;
 
@@ -185,8 +195,8 @@ public class WeChatApi {
         String ticket = (String) map2.get("ticket");
         String nonceStr = RandomUtil.randomString(32);// 随机字符串
         String timeStamp = String.valueOf(System.currentTimeMillis() / 1000);// 时间戳
-        String url = "http://wpct.x597.com";   //test
-        //String url = "http://fjwpct.com";
+        //String url = "http://wpct.x597.com";   //test
+        String url = "http://wpctjt.com";
 
         String jsapi_ticket = "jsapi_ticket=" + ticket + "&noncestr=" + nonceStr + "&timestamp=" + timeStamp + "&url=" + url;
 
@@ -204,12 +214,12 @@ public class WeChatApi {
     }
     @ApiOperation("缴交物业费")
     @PostMapping("/property/pay")
-    public Object wechatPay(@RequestParam String openid, @RequestParam(required = false) List<String> propertyOrderNos,@RequestParam(required = false) List<String> sharedOrderNos) throws Exception {
+    public Object wechatPay(@RequestParam String openid, @RequestParam(required = false) List<String> propertyOrderNos,@RequestParam(required = false) List<String> sharedOrderNos,@RequestParam String userType) throws Exception {
         if (propertyOrderNos == null && sharedOrderNos == null){
             return ResultBody.fail("请选择订单");
         }
         //List<String> orderNos1 = Arrays.asList(orderNos);
-        String resultJson = wechatPayService.jsapiPay(openid,propertyOrderNos,sharedOrderNos);
+        String resultJson = wechatPayService.jsapiPay(openid,propertyOrderNos,sharedOrderNos,userType);
         System.out.println(resultJson);
         return ResultBody.ok(resultJson);
     }
@@ -224,8 +234,8 @@ public class WeChatApi {
      */
     @ApiOperation("物业费、公摊费余额充值")
     @RequestMapping(value = "/property/balance/pay",method =RequestMethod.POST)
-    public Object investProperty(@RequestParam String openid,@RequestParam int property,@RequestParam int shared,@RequestParam int hid) throws Exception {
-        String resultJson = wechatPayService.investProperty(openid,property,shared,hid);
+    public Object investProperty(@RequestParam String openid,@RequestParam int property,@RequestParam int shared,@RequestParam int hid,@RequestParam String userType) throws Exception {
+        String resultJson = wechatPayService.investProperty(openid,property,shared,hid,userType);
         return ResultBody.ok(resultJson);
     }
 
@@ -376,7 +386,7 @@ public class WeChatApi {
         for (SharedFeeOrderDto sharedFeeOrderDto : list1){
             total = total + sharedFeeOrderDto.getCost();
         }
-        res.put("total",total);
+        res.put("total", BigDecimal.valueOf(total).doubleValue());
         return ResultBody.ok(res);
     }
     /*@ApiOperation("根据hid进行催缴")
@@ -408,5 +418,52 @@ public class WeChatApi {
         System.out.println(refundFee);
         wechatPayService.refund(out_trade_no, reason,refundFee,type);
         return ResultBody.ok(null);
+    }
+
+    @ApiOperation("根据用户名获取树")
+    @RequestMapping(value = "/getTree",method = RequestMethod.GET)
+    public Object getTree(@RequestParam String username){
+        SysUser user = sysUserService.getByUserName(username);
+        String data = roleService.getById(user.getRole()).getData();
+        List<VillageDto> villages = new ArrayList<>();
+        data = data.replaceAll("\\[|\\]", "");
+        List<String> list = Arrays.asList(data.split(","));
+        for (String str : list){
+            str = str.trim();
+            str = str.replace("\"","");
+            QueryWrapper queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("name", str.trim());
+            villages.add(villageMapper.selectOne(queryWrapper));
+        }
+        JSONArray tree = JSONArray.parseArray(JSON.toJSONString(villages));
+        JSONObject res = new JSONObject();
+        for (Object o : tree) {
+            JSONObject village = ((JSONObject) o);
+            JSONArray builds = JSONArray.parseArray(
+                    JSON.toJSONString(buildService.listByVillage(village.getInteger("id")))
+            );
+            for (Object o1 : builds) {
+                JSONObject build = ((JSONObject) o1);
+                List<HousingInformationDto> houseList = housingInformationService.query()
+                        .eq("village_name", village.getString("name"))
+                        .eq("build_number", build.getString("name")).list();
+                JSONArray houses = new JSONArray();
+                for (HousingInformationDto dto : houseList) {
+                    JSONObject tmp = new JSONObject();
+                    tmp.put("name", dto.getHouseNo());
+                    tmp.put("id", dto.getId());
+                    tmp.put("village_id", village.getString("id"));
+                    tmp.put("build_id", build.getString("id"));
+                    tmp.put("village_name", dto.getVillageName());
+                    tmp.put("build_number", dto.getBuildNumber());
+                    houses.add(tmp);
+                }
+                build.put("children", houses);
+            }
+            village.put("children", builds);
+            //JSONObject res = new JSONObject();
+        }
+        res.put("tree", tree);
+        return ResultBody.ok(res);
     }
 }

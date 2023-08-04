@@ -10,6 +10,7 @@ import com.example.wpct.entity.vo.HousingInformationVo;
 import com.example.wpct.mapper.PropertyOrderMapper;
 import com.example.wpct.mapper.SharedFeeOrderMapper;
 import com.example.wpct.mapper.WechatUserMapper;
+import com.example.wpct.service.HastenService;
 import com.example.wpct.service.PropertyOrderService;
 import com.example.wpct.service.impl.HousingInformationServiceImpl;
 import com.example.wpct.service.impl.SharedFeeOrderServiceImpl;
@@ -27,7 +28,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,6 +62,9 @@ public class HousingInformationController {
 
     @Autowired
     WechatUserMapper wechatUserMapper;
+
+    @Autowired
+    HastenService hastenService;
 
     @PostMapping("/insert")
     @ApiOperation("新增房屋信息")
@@ -160,6 +167,12 @@ public class HousingInformationController {
                 v = v + 1;
             }
         }
+        //插入一条催缴记录
+        Hasten hasten = new Hasten();
+        hasten.setCost(total);
+        hasten.setDate( new SimpleDateFormat("yyyy-MM-dd HH:mm").format(Calendar.getInstance().getTime()));
+        hasten.setHid(id);
+        hastenService.insert(hasten);
         JSONObject res = new JSONObject();
         res.put("发送成功人数",v);
         res.put("发送失败人数",f);
@@ -209,6 +222,8 @@ public class HousingInformationController {
         jsonObject.put("status","未缴费");
         jsonObject.put("total",total);
         jsonObject.put("remark","请即时缴交费用");
+        //返回已催缴次数
+        jsonObject.put("count",hastenService.getCountByHid(id));
         return ResultBody.ok(jsonObject);
     }
 
@@ -224,6 +239,26 @@ public class HousingInformationController {
         }
         return new ResultBody(true,200,null);
     }
+
+    @ApiOperation("查看催缴记录")
+    @RequestMapping(value = "/history/hasten",method = RequestMethod.GET)
+    public Object getHistory(@RequestParam int id){
+        List<JSONObject> res = new ArrayList<>();
+        for (Hasten hasten : hastenService.getByHid(id)){
+            HousingInformationDto housingInformationDto = housingInformationService.getById(id);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("id",hasten.getId());
+            jsonObject.put("villageName",housingInformationDto.getVillageName());
+            jsonObject.put("buildNum",housingInformationDto.getBuildNumber());
+            jsonObject.put("roomNum",housingInformationDto.getHouseNo());
+            jsonObject.put("cost",hasten.getCost());
+            jsonObject.put("date",hasten.getDate());
+            jsonObject.put("type","缴费合计");
+            res.add(jsonObject);
+        }
+        return new ResultBody(true,200,res);
+    }
+
 
     @ApiOperation("获取物业费、公摊费余额")
     @RequestMapping(value = "/getPoolBalance",method = RequestMethod.GET)

@@ -3,19 +3,19 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.wpct.mapper.BillMapper">
-    <insert id="insert">INSERT INTO bill(pay,detail,openid,villageName,buildName,roomNum,type,location,date,beginDate,endDate,orderNo,out_trade_no,isRefund) VALUES
+    <insert id="insert">INSERT INTO bill(pay,detail,openid,villageName,buildName,roomNum,type,location,date,beginDate,endDate,orderNo,out_trade_no,isRefund,userType) VALUES
                     (#{bill.pay},#{bill.detail},#{bill.openid},#{bill.villageName},#{bill.buildName},
-                     #{bill.roomNum},#{bill.type},#{bill.location},#{bill.date},#{bill.beginDate},#{bill.endDate},#{bill.orderNo},#{bill.outTradeNo},#{bill.isRefund})</insert>
+                     #{bill.roomNum},#{bill.type},#{bill.location},#{bill.date},#{bill.beginDate},#{bill.endDate},#{bill.orderNo},#{bill.outTradeNo},#{bill.isRefund},#{bill.userType})</insert>
     <select id="getAll" resultType="Bill">SELECT * FROM bill
         <trim prefix="where" prefixOverrides="and|or">
             <if test="villageName!=null and villageName!=''" >
-                and villageName=#{villageName}
+                and villageName like "%"#{villageName}"%"
             </if>
             <if test="buildName!=null and buildName!=''" >
-                and buildName=#{buildName}
+                and buildName like "%"#{buildName}"%"
             </if>
             <if test="roomNum!=null and roomNum!=''" >
-                and roomNum=#{roomNum}
+                and roomNum like "%"#{roomNum}"%"
             </if>
         </trim>
         ORDER BY date DESC

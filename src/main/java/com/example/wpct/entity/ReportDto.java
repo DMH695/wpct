@@ -2,8 +2,6 @@ package com.example.wpct.entity;
 
 import java.io.Serializable;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -83,4 +81,15 @@ public class ReportDto implements Serializable {
 	@JSONField(name = "deadline")
 	private String deadline;
 
+	/**
+	 * 物业费欠费月数
+	 */
+	@JSONField(name = "pCount")
+	private int pCount;
+
+	/**
+	 * 公摊费欠费月数
+	 */
+	@JSONField(name = "sCount")
+	private int sCount;
 }

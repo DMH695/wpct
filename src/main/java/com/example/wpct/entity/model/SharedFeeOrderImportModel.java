@@ -20,7 +20,7 @@ public class SharedFeeOrderImportModel {
     private double liftFee;
     @ExcelProperty("电费")
     private double eleFee;
-    @ExcelProperty("水费")
+    @ExcelProperty("其它费用")
     private double waterFee;
     @ExcelProperty("开始日期")
     private String beginDate;

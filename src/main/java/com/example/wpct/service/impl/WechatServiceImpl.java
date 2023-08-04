@@ -39,8 +39,10 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -96,7 +98,7 @@ public class WechatServiceImpl implements WechatPayService {
      * 微信用户缴费后，需要修改property_order表中的status和housing表中的due_date 并生成账单
      */
     @Override
-    public String jsapiPay(String openid, List<String> propertyOrderNos, List<String> sharedOrderNos) throws Exception {
+    public String jsapiPay(String openid, List<String> propertyOrderNos, List<String> sharedOrderNos,String userType) throws Exception {
         double total = 0;
         HousingInformationDto housingInformationDto = new HousingInformationDto();
         JSONObject jsonObject1 = new JSONObject();
@@ -151,11 +153,14 @@ public class WechatServiceImpl implements WechatPayService {
             sharedOrderNos.add(openid);
             jsonObject1.put("shared", sharedOrderNos);
         }
+        DecimalFormat df = new DecimalFormat("#.##");
+        total = Double.parseDouble(df.format(total));
         jsonObject1.put("openid",openid);
         jsonObject1.put("hid",housingInformationDto.getId());
         jsonObject1.put("cost",total);
+        jsonObject1.put("userType",userType);
         stringRedisTemplate.opsForValue().set(no, jsonObject1.toString());
-        paramsMap.put("notify_url", "http://wpct.x597.com/weixin/jsapi/notify");  //test
+        paramsMap.put("notify_url", "http://wpctjt.com/weixin/jsapi/notify");  //test
         Map amountMap = new HashMap();
         //金额转化为分
         String str = String.valueOf(total * 100);
@@ -215,7 +220,7 @@ public class WechatServiceImpl implements WechatPayService {
     }
 
     @Override
-    public String investProperty(String openid, int property, int shared, int hid) throws Exception {
+    public String investProperty(String openid, int property, int shared, int hid,String userType) throws Exception {
         HttpPost httpPost = new HttpPost(wxPayConfig.getDomain().concat("/v3/pay/transactions/jsapi"));
         //请求body参数
         //设置gson不转码
@@ -226,7 +231,7 @@ public class WechatServiceImpl implements WechatPayService {
         paramsMap.put("description", "物业费公摊费余额充值");
         String no = String.valueOf(System.currentTimeMillis());
         paramsMap.put("out_trade_no", no);
-        paramsMap.put("notify_url", "http://wpct.x597.com/weixin/jsapi/notify");  //test
+        paramsMap.put("notify_url", "http://wpctjt.com/weixin/jsapi/notify");  //test
 
         Map amountMap = new HashMap();
         amountMap.put("total", property + shared);
@@ -288,6 +293,7 @@ public class WechatServiceImpl implements WechatPayService {
             jsonObject1.put("shared", shared);
             jsonObject1.put("openid", openid);
             jsonObject1.put("hid", hid);
+            jsonObject1.put("userType",userType);
             stringRedisTemplate.opsForValue().set(no, jsonObject1.toString());
             return resultJson;
         } finally {
@@ -307,7 +313,7 @@ public class WechatServiceImpl implements WechatPayService {
         paramsMap.put("description", "公摊费余额充值");
         String no = String.valueOf(System.currentTimeMillis());
         paramsMap.put("out_trade_no", no);  //test
-        paramsMap.put("notify_url", "http://wpct.x597.com/weixin/jsapi/notify");  //test
+        paramsMap.put("notify_url", "http://wpctjt.com/weixin/jsapi/notify");  //test
 
         Map amountMap = new HashMap();
         amountMap.put("total", money);
@@ -628,11 +634,13 @@ public class WechatServiceImpl implements WechatPayService {
         String sharedOrders = jsonObject.getString("shared");
         Double propertyFee = jsonObject.getDouble("propertyFee");
         Double sharedFee = jsonObject.getDouble("sharedFee");
+        String userType = jsonObject.getString("userType");
         log.info("从redis中获取的数据：" + res);
         log.info("物业费:" + propertyOrders);
         log.info("公摊费" + sharedOrders);
         log.info("扣除物业费余额:" + propertyFee);
         log.info("扣除公摊费余额:" + sharedFee);
+        log.info("用户类型："+ userType);
         //物业费处理
         if (propertyOrders != null) {
             HousingInformationDto housingInformationDto1 = new HousingInformationDto();
@@ -688,7 +696,8 @@ public class WechatServiceImpl implements WechatPayService {
                 bill.setBeginDate(propertyOrderDto.getBeginDate());
                 bill.setEndDate(propertyOrderDto.getEndDate());
                 bill.setOrderNo(propertyOrderDto.getOrderNo().toString());
-                String date = new SimpleDateFormat("yyyy-MM-dd HH:mmZ").format(Calendar.getInstance().getTime());
+                bill.setUserType(userType);
+                String date = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(Calendar.getInstance().getTime());
                 bill.setDate(date);
                 billMapper.insert(bill);
             }
@@ -737,6 +746,7 @@ public class WechatServiceImpl implements WechatPayService {
                 bill.setBeginDate(java.sql.Date.valueOf(sharedFeeOrderDto.getBeginDate()));
                 bill.setEndDate(java.sql.Date.valueOf(sharedFeeOrderDto.getEndDate()));
                 bill.setOrderNo(String.valueOf(sharedFeeOrderDto.getOrderNo()));
+                bill.setUserType(userType);
                 billMapper.insert(bill);
             }
             //修改公摊费中的余额
@@ -759,9 +769,11 @@ public class WechatServiceImpl implements WechatPayService {
         int shared = jsonObject.getInteger("shared");
         String openid = jsonObject.getString("openid");
         int hid = jsonObject.getInteger("hid");
+        String userType = jsonObject.getString("userType");
         log.info("从redis中获取的数据：" + res);
         log.info("物业费:" + property);
         log.info("公摊费" + shared);
+        log.info("用户类型" + userType);
         //修改housing_information中的property_fee
         String str = String.valueOf(property);
         Double property_fee1 = Double.parseDouble(str);
@@ -788,6 +800,7 @@ public class WechatServiceImpl implements WechatPayService {
         bill.setOutTradeNo(out_trade_no);
         bill.setRefund(true);
         bill.setPay(property_fee + poolBanlance);
+        bill.setUserType(userType);
         String detail;
         detail = "物业费充值:" + property_fee + "(元),"+"公摊费充值:" + poolBanlance + "(元)";
         bill.setDetail(detail);
@@ -860,6 +873,7 @@ public class WechatServiceImpl implements WechatPayService {
     }
 
 
+
     /**
      * 发送请求
      */
@@ -900,7 +914,7 @@ public class WechatServiceImpl implements WechatPayService {
         String refundNo = String.valueOf(System.currentTimeMillis());
         paramsMap.put("out_refund_no", refundNo);//退款单编号
         paramsMap.put("reason", reason);//退款原因
-        paramsMap.put("notify_url", "http://wpct.x597.com/wenxin/refunds/notify");//TODO 退款通知地址  改回公众号的
+        paramsMap.put("notify_url", "http://wpctjt.com/wenxin/refunds/notify");//TODO 退款通知地址  改回公众号的
 
         Map amountMap = new HashMap();
         amountMap.put("refund", refundFee);//退款金额（分）

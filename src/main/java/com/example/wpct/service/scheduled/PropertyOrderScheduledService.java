@@ -26,7 +26,7 @@ public class PropertyOrderScheduledService {
     /**
      * 每月一号晚上两点执行生成物业费计划任务
      */
-    @Scheduled(cron = "0 0 0,2 1 * ?")
+    @Scheduled(cron = "0 0 2 1 * ?")
     public void generateOrders(){
         log.info("生成物业订单数：" + propertyOrderService.generateOrders());
     }
@@ -34,7 +34,7 @@ public class PropertyOrderScheduledService {
     /**
      * 每月一号晚上三点执行自动缴交物业费计划任务
      */
-    @Scheduled(cron = "0 0 0,3 1 * ?")
+    @Scheduled(cron = "0 0 3 1 * ?")
     public void automaticPayment(){
         log.info("物业费自动缴交订单成功数量：" + propertyOrderService.automaticPayment());
     }
